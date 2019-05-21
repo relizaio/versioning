@@ -1,0 +1,65 @@
+/**
+* Copyright 2019 Reliza Incorporated. Licensed under MIT License.
+* https://reliza.io
+*/
+
+package io.reliza.versioning;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+public enum VersionElement {
+	MAJOR(new HashSet<String>(Arrays.asList(new String[] {"major"})), "^\\d+$"),
+	MINOR(new HashSet<String>(Arrays.asList(new String[] {"minor"})), "^\\d+$"),
+	PATCH(new HashSet<String>(Arrays.asList(new String[] {"micro", "patch"})), "^\\d+$"),
+	MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"modifier", "identifier", "mod", "ident", "id"})), "^[a-zA-Z0-9]+$"),
+	METADATA(new HashSet<String>(Arrays.asList(new String[] {"meta", "metadata"})), "^[a-zA-Z0-9]+$"),
+	YYYY(new HashSet<String>(Arrays.asList(new String[] {"year", "yyyy"})), "^[12][0-9]{3}$"),
+	YY(new HashSet<String>(Arrays.asList(new String[] {"yy"})), "^([1-9][0-9]|[1-9])?[0-9]$"),
+	OY(new HashSet<String>(Arrays.asList(new String[] {"oy", "0y"})), "^([0-9])?[0-9]{2}$"),
+	MM(new HashSet<String>(Arrays.asList(new String[] {"mm", "month"})), "^(1[0-2]|[1-9])$"),
+	OM(new HashSet<String>(Arrays.asList(new String[] {"om", "0m"})), "^(1[0-2]|0[1-9])$"),
+	DD(new HashSet<String>(Arrays.asList(new String[] {"dd", "day"})), "^(3[01]|[12][0-9]|[1-9])$"),
+	OD(new HashSet<String>(Arrays.asList(new String[] {"od", "0d"})), "^(3[01]|[0-2][0-9])$") //,
+	;
+	
+	private Set<String> namingInSchema;
+	private Pattern regex;
+	
+	private final static Map<String, VersionElement> veLookupMap;
+	
+	static {
+		veLookupMap = new HashMap<>();
+		for (VersionElement ve : VersionElement.values()) {
+			ve.getNamingInSchema().forEach(name -> 
+									veLookupMap.put(name, ve));
+		}
+	}
+	
+	private VersionElement (Set<String> namingInSchema, String pattern) {
+		this.namingInSchema = namingInSchema;
+		this.regex = Pattern.compile(pattern);
+	}
+	
+	private Set<String> getNamingInSchema () {
+		return this.namingInSchema;
+	}
+	
+	public static VersionElement getVersionElement (String elStr) {
+		VersionElement retVe = null;
+		if (StringUtils.isNotEmpty(elStr)) {
+			retVe = veLookupMap.get(elStr.toLowerCase());
+		}
+		return retVe;
+	}
+	
+	public Pattern getRegexPattern () {
+		return this.regex;
+	}
+}
