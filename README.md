@@ -5,7 +5,10 @@ This tool allows for automatic generation and bumping of [CalVer](https://calver
 ## Installing
 
 ### I For command-line usage or integration with CI/CD tools (such as Jenkins)
-1. Use docker image (will be added soon)
+1. Use docker image, to get the image:
+```
+docker pull relizaio/versioning
+```
 
 2. Compile locally (requires Java 8+ and maven)
 from the project directory run
@@ -48,22 +51,37 @@ which will produce help summary page.
 
 Note that in any usage case other than help page -s (schema) parameter is required.
 
-If using docker image instead, call (coming soon)
+If using docker image instead, call for the same page:
+```
+docker run --rm relizaio/versioning -h
+```
 
 ### 2. Sample Command Line usage
 2.1. Generate Reliza flavor CalVer with "Stable" modifier
 ```
 java -jar versioning.jar -s YYYY.0M.Modifier.Micro+Metadata -i Stable
 ```
+or with docker:
+```
+docker run --rm relizaio/versioning -s YYYY.0M.Modifier.Micro+Metadata -i Stable
+```
 
 2.2. Bump patch in existing SemVer version (will produce 2.4.8)
 ```
 java -jar versioning.jar -s semver -v 2.4.7 -a Bump
 ```
+or with docker:
+```
+docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
+```
 
 2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file
 ```
 mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.modifier.patch -i Snapshot)"
+```
+or with docker:
+```
+mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.modifier.patch -i Snapshot)"
 ```
 Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
 
