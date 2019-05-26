@@ -6,6 +6,11 @@
 
 package io.reliza.versioning;
 
+/**
+ * 
+ * This class contains various constants used across the project.
+ *
+ */
 public class Constants {
 	public static final String SEMVER = "semver";
 	public static final String BASE_MODIFIER = "Snapshot";

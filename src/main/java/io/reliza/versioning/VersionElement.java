@@ -14,6 +14,10 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * This enum defines known set of version schema elements
+ *
+ */
 public enum VersionElement {
 	MAJOR(new HashSet<String>(Arrays.asList(new String[] {"major"})), "^\\d+$"),
 	MINOR(new HashSet<String>(Arrays.asList(new String[] {"minor"})), "^\\d+$"),
@@ -42,15 +46,29 @@ public enum VersionElement {
 		}
 	}
 	
+	/**
+	 * Private VersionElement enum constructor
+	 * @param namingInSchema
+	 * @param pattern
+	 */
 	private VersionElement (Set<String> namingInSchema, String pattern) {
 		this.namingInSchema = namingInSchema;
 		this.regex = Pattern.compile(pattern);
 	}
 	
+	/**
+	 * Gets string set of names how the element may be used in schema
+	 * @return namingInSchema set
+	 */
 	private Set<String> getNamingInSchema () {
 		return this.namingInSchema;
 	}
 	
+	/**
+	 * This method retrieves VersionElement by supplied string element parameter
+	 * @param elStr String
+	 * @return VersionElement
+	 */
 	public static VersionElement getVersionElement (String elStr) {
 		VersionElement retVe = null;
 		if (StringUtils.isNotEmpty(elStr)) {
@@ -59,6 +77,10 @@ public enum VersionElement {
 		return retVe;
 	}
 	
+	/**
+	 * This method returns regex pattern of this element
+	 * @return regex of this element
+	 */
 	public Pattern getRegexPattern () {
 		return this.regex;
 	}

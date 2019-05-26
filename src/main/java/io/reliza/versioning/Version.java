@@ -17,18 +17,24 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Version {
 	
+	/**
+	 * 
+	 * This class is used as a helper to parse version string
+	 *
+	 */
 	public static class VersionHelper {
 		private List<String> versionComponents;
 		private String modifier;
 		private String metadata;
 		private boolean isSnapshot = false;
 		
-		public VersionHelper(Collection<String> versionComponents, String modifier, String metadata) {
-			this.versionComponents = new ArrayList<>(versionComponents);
-			this.modifier = modifier;
-			this.metadata = metadata;
-		}
-		
+		/**
+		 * This method constructs VersionHelper class based on parsed version components
+		 * @param versionComponents Collection of Strings, parsed from version
+		 * @param modifier String
+		 * @param metadata String
+		 * @param isSnapshot boolean, true if this is maven-style snapshot
+		 */
 		public VersionHelper(Collection<String> versionComponents, String modifier, 
 												String metadata, boolean isSnapshot) {
 			this.versionComponents = new ArrayList<>(versionComponents);
@@ -37,18 +43,34 @@ public class Version {
 			this.isSnapshot = isSnapshot;
 		}
 		
+		/**
+		 * Returns list of version components used in the Versionelper
+		 * @return list of version components
+		 */
 		public List<String> getVersionComponents() {
 			return new ArrayList<>(versionComponents);
 		}
 		
+		/**
+		 * Returns modifier string of VersionHelper
+		 * @return modifier string
+		 */
 		public String getModifier() {
 			return modifier;
 		}
 		
+		/**
+		 * Returns metadata string of VersionHelper
+		 * @return metadata strng
+		 */
 		public String getMetadata() {
 			return metadata;
 		}
 		
+		/**
+		 * Returns Maven Style Snapshot status ("-SNAPSHOT" suffix)
+		 * @return isSnapshot boolean
+		 */
 		public boolean isSnapshot() {
 			return isSnapshot;
 		}
@@ -67,7 +89,7 @@ public class Version {
 	
 	/**
 	 * Initializes version based on specified schema
-	 * @param schema
+	 * @param schema String
 	 */
 	public Version (String schema) {
 		this.schema = schema;
@@ -90,8 +112,8 @@ public class Version {
 	
 	/**
 	 * Creates a Version object based on version string (origVersion) and specified schema
-	 * @param origVersion
-	 * @param schema
+	 * @param origVersion String
+	 * @param schema String
 	 */
 	public Version (String origVersion, String schema) {
 		if (!VersionUtils.isVersionMatchingSchema(schema, origVersion)) {
@@ -155,9 +177,10 @@ public class Version {
 	
 	/**
 	 * This method outputs string version based on supplied schema parameter
-	 * If parameter is not supplied, uses own schema
-	 * @param useSchema
-	 * @return
+	 * If schema parameter is not supplied, uses own schema
+	 * @param useSchema String, if not supplied, uses own schema
+	 * @param setIsSnapshot Boolean, use current status if Null
+	 * @return version String
 	 */
 	public String constructVersionString(String useSchema, Boolean setIsSnapshot) {
 		if (StringUtils.isEmpty(useSchema)) {
@@ -287,18 +310,30 @@ public class Version {
 		return versionString.toString();
 	}
 	
+	/**
+	 * This method outputs string version based on supplied schema parameter
+	 * If schema parameter is not supplied, uses own schema
+	 * uses own Maven Style Snapshot status
+	 * @param useSchema String, if not supplied, uses own schema
+	 * @return version string
+	 */
 	public String constructVersionString(String useSchema) {
 		return constructVersionString(useSchema, null); 
 	}
-			
+	
+	/**
+	 * This method outputs string version based on own schema
+	 * and own Maven Style Snapshot status
+	 * @return version String
+	 */
 	public String constructVersionString() {
 		return constructVersionString(null);
 	}
 	
 	/**
-	 * Used to set calver properties to specific date
+	 * Used to set CalVer properties to specific date
 	 * Pass null value to argument to set to current date
-	 * @param date
+	 * @param date ZonedDateTime to set CalVer version to
 	 */
 	public void setDate(ZonedDateTime date) {
 		if (null == date) {
@@ -309,10 +344,17 @@ public class Version {
 		this.day = date.getDayOfMonth();
 	}
 	
+	/**
+	 * Sets version date for CalVer to today
+	 */
 	public void setCurrentDate() {
 		setDate(null);
 	}
 	
+	/**
+	 * Increments patch element of version by step
+	 * @param step, amount by which to increment version
+	 */
 	public void bumpPatch(Integer step) {
 		if (null == step) {
 			step = 1;
@@ -320,30 +362,59 @@ public class Version {
 		this.patch = patch + step;
 	}
 	
+	/**
+	 * Sets patch element of version to patch parameter
+	 * @param patch, value to set patch element to
+	 */
 	public void setPatch(Integer patch) {
 		this.patch = patch;
 	}
 	
+	/**
+	 * Returns patch element of the version
+	 * @return patch element (integer)
+	 */
 	public Integer getPatch() {
 		return patch;
 	}
 	
+	/**
+	 * Sets minor element of version to minor parameter
+	 * @param minor, value to set minor element to
+	 */
 	public void setMinor(Integer minor) {
 		this.minor = minor;
 	}
 	
+	/**
+	 * Returns minor element of the version
+	 * @return minor element (integer)
+	 */
 	public Integer getMinor() {
 		return minor;
 	}
 	
+	/**
+	 * Sets major element of version to minor parameter
+	 * @param major, value to set minor element to
+	 */
 	public void setMajor(Integer major) {
 		this.major = major;
 	}
 	
+	/**
+	 * Returns major element of the version
+	 * @return major element (integer)
+	 */
 	public Integer getMajor() {
 		return major;
 	}
 	
+	/**
+	 * Increments minor element of version by step
+	 * Resets patch element of version to zero
+	 * @param step, amount by which to increment minor version
+	 */
 	public void bumpMinor(Integer step) {
 		if (null == step) {
 			step = 1;
@@ -352,6 +423,12 @@ public class Version {
 		this.patch = 0;
 	}
 	
+	/**
+	 * Increments major element of version by step
+	 * Resets minor element of version to zero
+	 * Resets patch element of version to zero
+	 * @param step, amount by which to increment major version
+	 */
 	public void bumpMajor(Integer step) {
 		if (null == step) {
 			step = 1;
@@ -361,10 +438,18 @@ public class Version {
 		this.patch = 0;
 	}
 	
+	/**
+	 * Sets version modifier to modifier parameter
+	 * @param modifier String
+	 */
 	public void setModifier(String modifier) {
 		this.modifier = modifier;
 	}
 	
+	/**
+	 * Sets version metadata to metadata parameter
+	 * @param metadata String
+	 */
 	public void setMetadata(String metadata) {
 		this.metadata = metadata;
 	}
@@ -385,10 +470,18 @@ public class Version {
 		}
 	}
 	
+	/**
+	 * This method returns Maven Style Snapshot status of version
+	 * @return isSnapshot boolean
+	 */
 	public boolean isSnapshot() {
 		return isSnapshot;
 	}
 	
+	/**
+	 * Sets Maven Style Snapshot to snapshot parameter
+	 * @param snapshot boolean
+	 */
 	public void setSnapshot(boolean snapshot) {
 		this.isSnapshot = snapshot;
 	}

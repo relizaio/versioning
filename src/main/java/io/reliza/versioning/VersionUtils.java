@@ -14,8 +14,17 @@ import java.util.regex.Pattern;
 
 import io.reliza.versioning.Version.VersionHelper;
 
+/**
+ * This class defines a set of various utils used for Versioning
+ *
+ */
 public class VersionUtils {
 	
+	/**
+	 * This method parses supplied schema to version elements
+	 * @param schema String
+	 * @return list of VersionElement
+	 */
 	public static List<VersionElement> parseSchema (String schema) {
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
 			schema = "major.minor.patch-identifier+metadata";
@@ -33,6 +42,11 @@ public class VersionUtils {
 		return retList;
 	}
 	
+	/**
+	 * This method extracts separators from schema
+	 * @param schema String
+	 * @return list of extracted schema separator Strings
+	 */
 	public static List<String> extractSchemaSeparators (String schema) {
 		List<String> retList = new ArrayList<>();
 		for (char c : schema.toCharArray()) {
@@ -43,6 +57,11 @@ public class VersionUtils {
 		return retList;
 	}
 	
+	/**
+	 * This method parses version string into VersionHelper
+	 * @param version String
+	 * @return VersionHelper
+	 */
 	public static VersionHelper parseVersion (String version) {
 		// check special case for Maven-style Snapshot
 		boolean isSnapshot = false;
@@ -76,6 +95,12 @@ public class VersionUtils {
 		return vh;
 	}
 	
+	/**
+	 * This method returns true if supplied version string matches supplied schema string
+	 * @param schema String
+	 * @param version String
+	 * @return true if version is matching schema, false otherwise
+	 */
 	public static boolean isVersionMatchingSchema (String schema, String version) {
 		boolean matching = true;
 		
@@ -104,17 +129,34 @@ public class VersionUtils {
 		return matching;
 	}
 	
+	/**
+	 * This method removes case-insensitive metadata or modifier flags from version
+	 * @param schema String
+	 * @return schema string without modifier or metadata elements
+	 */
 	public static String stripSchemaFromModMeta (String schema) {
-		schema = schema.replaceAll("(?i)\\+metadata", "");
-		schema = schema.replaceAll("(?i)-modifier", "");
+		schema = schema.replaceAll("(?i)(\\+|-)metadata", "");
+		schema = schema.replaceAll("(?i)(\\+|-)modifier", "");
 		return schema;
 	}
 	
+	/**
+	 * This method returns base version based on supplied schema
+	 * @param schema String
+	 * @return version String
+	 */
 	public static Version initializeEmptyVersion(String schema) {
 		Version v = new Version(schema);
 		return v;
 	}
 	
+	/**
+	 * This method returns base version based on supplied schema, modifier and metadata
+	 * @param schema String
+	 * @param modifier String
+	 * @param metadata String
+	 * @return version String
+	 */
 	public static Version initializeVersionWithModMeta(String schema, String modifier, String metadata) {
 		Version v = new Version(schema);
 		v.setModifier(modifier);
@@ -122,6 +164,11 @@ public class VersionUtils {
 		return v;
 	}
 	
+	/**
+	 * This method returns true if schema contains a year element (it is calver)
+	 * @param schema String
+	 * @return true if schema contains a year element
+	 */
 	public static boolean isSchemaCalver (String schema) {
 		boolean isCalver = false;
 		Set<VersionElement> veSet = new HashSet<>(parseSchema(schema));

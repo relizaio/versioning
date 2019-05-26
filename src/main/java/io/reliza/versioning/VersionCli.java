@@ -18,8 +18,16 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * This class is used to define command-line interface of Reliza Versioning tool
+ *
+ */
 public class VersionCli {
 
+	/**
+	 * Main method for CLI input processing
+	 * @param args Command Line args
+	 */
 	public static void main(String[] args) {
 		// create Options object
 		final Options options = new Options();
