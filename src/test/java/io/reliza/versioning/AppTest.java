@@ -157,4 +157,30 @@ public class AppTest
     	System.out.println("Ubuntu CalVer = " + version);
         assertTrue ( true );
     }
+    
+    @Test
+    public void supportMavenSnapshotAsIs() {
+    	String version = "2019.05.Stable.1-SNAPSHOT";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	Version v = new Version(version, schema);
+    	assertEquals("2019.05.Stable.1-SNAPSHOT", v.constructVersionString());
+    }
+    
+    @Test
+    public void supportMavenSnapshotForceOut() {
+    	String version = "2019.05.Stable.1-SNAPSHOT";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	Version v = new Version(version, schema);
+    	v.setSnapshot(false);
+    	assertEquals("2019.05.Stable.1", v.constructVersionString());
+    }
+    
+    @Test
+    public void supportMavenSnapshotForceIn() {
+    	String version = "2019.05.Stable.1";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	Version v = new Version(version, schema);
+    	v.setSnapshot(true);
+    	assertEquals("2019.05.Stable.1-SNAPSHOT", v.constructVersionString());
+    }
 }

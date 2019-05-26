@@ -9,4 +9,5 @@ package io.reliza.versioning;
 public class Constants {
 	public static final String SEMVER = "semver";
 	public static final String BASE_MODIFIER = "Snapshot";
+	public static final String MAVEN_STYLE_SNAPSHOT = "-SNAPSHOT";
 }

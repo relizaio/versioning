@@ -21,11 +21,20 @@ public class Version {
 		private List<String> versionComponents;
 		private String modifier;
 		private String metadata;
+		private boolean isSnapshot = false;
 		
 		public VersionHelper(Collection<String> versionComponents, String modifier, String metadata) {
 			this.versionComponents = new ArrayList<>(versionComponents);
 			this.modifier = modifier;
 			this.metadata = metadata;
+		}
+		
+		public VersionHelper(Collection<String> versionComponents, String modifier, 
+												String metadata, boolean isSnapshot) {
+			this.versionComponents = new ArrayList<>(versionComponents);
+			this.modifier = modifier;
+			this.metadata = metadata;
+			this.isSnapshot = isSnapshot;
 		}
 		
 		public List<String> getVersionComponents() {
@@ -39,6 +48,10 @@ public class Version {
 		public String getMetadata() {
 			return metadata;
 		}
+		
+		public boolean isSnapshot() {
+			return isSnapshot;
+		}
 	}
 	
 	private Integer major;
@@ -50,6 +63,7 @@ public class Version {
 	private Integer day;
 	private String metadata; // from semver, 1.0.0+20130313144700
 	private String schema;
+	private boolean isSnapshot;
 	
 	/**
 	 * Initializes version based on specified schema
@@ -84,8 +98,7 @@ public class Version {
 			throw new RuntimeException("Cannot construct Version object, since version is not matching schema");
 		}
 		this.schema = schema;
-		schema = schema.replace("+metadata", "");
-		schema = schema.replace("-modifier", "");
+		schema = VersionUtils.stripSchemaFromModMeta(schema);
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
 			schema = "Major.Minor.Patch";
 		}
@@ -93,6 +106,7 @@ public class Version {
 		VersionHelper vh = VersionUtils.parseVersion(origVersion);
 		this.modifier = vh.getModifier();
 		this.metadata = vh.getMetadata();
+		this.isSnapshot = vh.isSnapshot();
 		
 		for (int i=0; i<schemaVeList.size(); i++) {
 			switch (schemaVeList.get(i)) {
@@ -145,7 +159,7 @@ public class Version {
 	 * @param useSchema
 	 * @return
 	 */
-	public String constructVersionString(String useSchema) {
+	public String constructVersionString(String useSchema, Boolean setIsSnapshot) {
 		if (StringUtils.isEmpty(useSchema)) {
 			useSchema = schema;
 		}
@@ -259,6 +273,13 @@ public class Version {
 					versionString.append(separators.get(i));
 				}
 			}
+			Boolean setSnapshot = (null == setIsSnapshot) ? null : setIsSnapshot;
+			if (null == setSnapshot) {
+				setSnapshot = isSnapshot();
+			}
+			if (setSnapshot) {
+				versionString.append(Constants.MAVEN_STYLE_SNAPSHOT);
+			}
 			
 		} catch (NullPointerException npe) {
 			throw new RuntimeException("The schema " + useSchema + " is not supported by this Version object");
@@ -266,6 +287,10 @@ public class Version {
 		return versionString.toString();
 	}
 	
+	public String constructVersionString(String useSchema) {
+		return constructVersionString(useSchema, null); 
+	}
+			
 	public String constructVersionString() {
 		return constructVersionString(null);
 	}
@@ -358,5 +383,13 @@ public class Version {
 		} else if (VersionUtils.isSchemaCalver(schema)) {
 			this.setCurrentDate();
 		}
+	}
+	
+	public boolean isSnapshot() {
+		return isSnapshot;
+	}
+	
+	public void setSnapshot(boolean snapshot) {
+		this.isSnapshot = snapshot;
 	}
 }

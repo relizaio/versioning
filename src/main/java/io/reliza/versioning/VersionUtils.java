@@ -43,7 +43,13 @@ public class VersionUtils {
 		return retList;
 	}
 	
-	public static VersionHelper parseVersion (String version) {		
+	public static VersionHelper parseVersion (String version) {
+		// check special case for Maven-style Snapshot
+		boolean isSnapshot = false;
+		if (version.endsWith(Constants.MAVEN_STYLE_SNAPSHOT)) {
+			isSnapshot = true;
+			version = version.replaceFirst(Constants.MAVEN_STYLE_SNAPSHOT + "$", "");
+		}
 		// handle + and - differently as semver supports other separators after plus and dash
 		String[] plusel = null;
 		if (version.contains("+")) {
@@ -66,7 +72,7 @@ public class VersionUtils {
 		List<String> versionComponents = Arrays.asList(version.split("(\\.|_)"));
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
-		VersionHelper vh = new VersionHelper(versionComponents, modifier, metadata);
+		VersionHelper vh = new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
 		return vh;
 	}
 	
@@ -81,8 +87,7 @@ public class VersionUtils {
 		}
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
-		schema = schema.replace("+metadata", "");
-		schema = schema.replace("-modifier", "");
+		schema = stripSchemaFromModMeta(schema);
 		List<VersionElement> veList = parseSchema(schema);
 		
 		if (veList.size() != vh.getVersionComponents().size()) {
@@ -97,6 +102,12 @@ public class VersionUtils {
 						.matches();
 		}
 		return matching;
+	}
+	
+	public static String stripSchemaFromModMeta (String schema) {
+		schema = schema.replaceAll("(?i)\\+metadata", "");
+		schema = schema.replaceAll("(?i)-modifier", "");
+		return schema;
 	}
 	
 	public static Version initializeEmptyVersion(String schema) {

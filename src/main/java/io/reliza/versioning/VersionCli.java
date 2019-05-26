@@ -32,6 +32,14 @@ public class VersionCli {
 							    .argName( "None|Bump|BumpMinor|BumpMajor|BumpDate" )
 							    .build();
 		
+		Option snapshot = Option.builder("t")
+			    .longOpt( "snapshot" )
+			    .desc( "set maven style snapshot, none = keep as is (default), true = mark snapshot"
+			    		+ ", false = mark non-snapshot"  )
+			    .hasArg()
+			    .argName( "None|True|False" )
+			    .build();
+		
 		options.addOption("h", "help", false, "display this help page");
 		options.addOption("s", "schema", true, "schema to use");
 		options.addOption("v", "version", true, "current version, will generate baseline if empty");
@@ -41,7 +49,9 @@ public class VersionCli {
 		options.addOption("d", "date", true, "sets date for calver versions, use UTC timezone in YYYY-MM-DD format");
 		options.addOption("r", "semver", true, "sets to specific semver version, use Major.Minor.Patch format");
 		
+		
 		options.addOption(action);
+		options.addOption(snapshot);
 		try {
 			CommandLineParser parser = new DefaultParser();
 			CommandLine cmd = parser.parse( options, args);
@@ -81,7 +91,16 @@ public class VersionCli {
 					v.bumpMajor(null);
 				} else if ("bumpdate".equalsIgnoreCase(actionStr)) {
 					v.setCurrentDate();
-				} 
+				}
+				
+				String snapshotStr = cmd.getOptionValue("t");
+				
+				if ("true".equalsIgnoreCase(snapshotStr)) {
+					v.setSnapshot(true);
+				} else if ("false".equalsIgnoreCase(snapshotStr)) {
+					v.setSnapshot(false);
+				}
+
 				String date = cmd.getOptionValue("d");
 				if (StringUtils.isNotEmpty(date)) {
 					LocalDate ld = LocalDate.parse(date);
