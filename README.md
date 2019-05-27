@@ -18,7 +18,22 @@ mvn clean compile assembly:single
 This will produce .jar file in the target directory that can be run with "java -jar versioning_jar_file--jar-with-dependencies.jar"
 
 ### II To use as a java library
-1. Use as maven dependency from maven central (will be added soon)
+1. Use as maven dependency from maven central:
+For Maven:
+```
+<dependency>
+  <groupId>io.reliza</groupId>
+  <artifactId>versioning</artifactId>
+  <version>2019.05.Stable.3</version>
+</dependency>
+```
+
+For Gradle:
+```
+implementation 'io.reliza:versioning:2019.05.Stable.3'
+```
+
+See more options on the [Maven Central page](https://search.maven.org/artifact/io.reliza/versioning/)
 
 2. Compile locally (requires Java 8+ and maven)
 from the project directory run
@@ -26,7 +41,7 @@ from the project directory run
 mvn clean package
 ```
 
-And include resulting .jar file from the target directory in your project. Then use io.reliza.versioning.VersionApi class for most common operations, or use primitives from Version class with the help of VersionUtils class directly. (More documentation coming soon).
+And include resulting .jar file from the target directory in your project. Then use io.reliza.versioning.VersionApi class for most common operations. More documentation coming soon.
 
 ## Running the tests (requires Java 8+ and maven)
 From the project directory run
@@ -75,20 +90,20 @@ or with docker:
 docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
 ```
 
-2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file
+2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
 ```
-mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.modifier.patch -i Snapshot)"
+mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.modifier.patch -i Stable -t True)"
 ```
 or with docker:
 ```
-mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.modifier.patch -i Snapshot)"
+mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.modifier.patch -i Stable -t True)"
 ```
 Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
 
 Similarly, Reliza Versioning can be included into Jenkins by being called from the bash scripts.
 
 ### 3. Usage as Java Library
-Documentation coming soon.
+Use methods exposed in the VersionApi class to create vresions. More documentation is coming soon.
 
 ## Versioning
 
