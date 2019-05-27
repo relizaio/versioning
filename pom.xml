@@ -9,6 +9,23 @@
 
   <name>versioning</name>
   <url>https://reliza.io</url>
+  <description>Reliza Versioning allows for automatic generation and bumping of CalVer or SemVer or custom version schemas.</description>
+  
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://raw.githubusercontent.com/relizaio/versioning/master/LICENSE</url>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <name>Pavel Shukhman</name>
+      <email>info@reliza.io</email>
+      <organization>Reliza</organization>
+      <organizationUrl>https://reliza.io</organizationUrl>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
