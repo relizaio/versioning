@@ -455,7 +455,7 @@ public class Version {
 	}
 	
 	/**
-	 * This method tries to intellegintly bump version
+	 * This method tries to intelligently bump version
 	 * by incrementing patch if present, otherwise minor, 
 	 * otherwise bumps date to today's if using CalVer
 	 */

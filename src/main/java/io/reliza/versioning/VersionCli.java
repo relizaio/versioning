@@ -5,11 +5,6 @@
 
 package io.reliza.versioning;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -17,6 +12,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
+
+import io.reliza.versioning.VersionApi.VersionApiObject;
 
 /**
  * This class is used to define command-line interface of Reliza Versioning tool
@@ -78,51 +75,36 @@ public class VersionCli {
 				String modifier = cmd.getOptionValue("i");
 				String metadata = cmd.getOptionValue("m");
 				String version = cmd.getOptionValue("v");
-				Version v = null;
-				if (StringUtils.isEmpty(version)) {
-					v = VersionUtils.initializeVersionWithModMeta(schema, modifier, metadata);
-				} else {
-					v = new Version(version, schema);
-					if (StringUtils.isNotEmpty(modifier)) {
-						// if empty we might want to use the one from current version
-						v.setModifier(modifier);
-					}
-					v.setMetadata(metadata);
-				}
-				String actionStr = cmd.getOptionValue("a");
+				String semver = cmd.getOptionValue("r");
 				
-				if ("bump".equalsIgnoreCase(actionStr)) {
-					v.simpleBump();
-				} else if ("bumpminor".equalsIgnoreCase(actionStr)) {
-					v.bumpMinor(null);
-				} else if ("bumpmajor".equalsIgnoreCase(actionStr)) {
-					v.bumpMajor(null);
-				} else if ("bumpdate".equalsIgnoreCase(actionStr)) {
-					v.setCurrentDate();
+				VersionApiObject vao = VersionApi.createVao(schema);
+				vao.setModifier(modifier);
+				vao.setMetadata(metadata);
+				vao.setVersion(version);
+				Version v = VersionApi.initializeVersion(vao);
+				
+				if (StringUtils.isNotEmpty(semver)) {
+					VersionApi.setSemVerElementsOnVersion(v, semver);
+				}
+
+				String actionStr = cmd.getOptionValue("a");
+				if (StringUtils.isNotEmpty(actionStr)) {
+					VersionApi.applyActionOnVersion(v, actionStr);
 				}
 				
 				String snapshotStr = cmd.getOptionValue("t");
 				
 				if ("true".equalsIgnoreCase(snapshotStr)) {
-					v.setSnapshot(true);
+					VersionApi.setMavenSnapshotStatus(v, true);
 				} else if ("false".equalsIgnoreCase(snapshotStr)) {
-					v.setSnapshot(false);
+					VersionApi.setMavenSnapshotStatus(v, false);
 				}
 
 				String date = cmd.getOptionValue("d");
 				if (StringUtils.isNotEmpty(date)) {
-					LocalDate ld = LocalDate.parse(date);
-					ZonedDateTime zdate = ZonedDateTime.of(ld, LocalTime.parse("05:00"), (ZoneId.of("UTC")));
-					v.setDate(zdate);
+					VersionApi.setVersionDateFromString(v, date);
 				}
-					
-				String semver = cmd.getOptionValue("r");
-				if (StringUtils.isNotEmpty(semver)) {
-					Version semverVer = new Version(semver, Constants.SEMVER);
-					v.setMajor(semverVer.getMajor());
-					v.setMinor(semverVer.getMinor());
-					v.setPatch(semverVer.getPatch());
-				}
+
 				System.out.println(v.constructVersionString());
 			}
 		} catch (Exception e) {
