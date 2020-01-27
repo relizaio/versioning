@@ -188,7 +188,7 @@ public class VersionApi {
 	/**
 	 * Method to initialize specifically SemVer version given version string
 	 * @param version String
-	 * @return
+	 * @return Version object as initialized
 	 */
 	public static Version initializeSemVerVersion (String version) {
 		VersionApiObject vao = createVao(Constants.SEMVER);
@@ -243,8 +243,8 @@ public class VersionApi {
 	
 	/**
 	 * This method mutates version by setting its maven snapshot status to specified parameter
-	 * @param v
-	 * @param status
+	 * @param v - Version object to set snapshot status to
+	 * @param status - status of Maven snapshot, true if it is a Maven snapshot
 	 */
 	public static void setMavenSnapshotStatus (Version v, boolean status) {
 		v.setSnapshot(status);

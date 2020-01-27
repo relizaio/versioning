@@ -510,7 +510,7 @@ public class Version {
 
 	/**
 	 * Sets Buildid version field
-	 * @param value to set to Buildid field, i.e. 24
+	 * @param buildid - value to set to Buildid field, i.e. 24
 	 */
 	public void setBuildid(String buildid) {
 		this.buildid = buildid;
@@ -526,7 +526,7 @@ public class Version {
 	
 	/**
 	 * Sets Buildenv version field
-	 * @param value to set to Buildenv field, i.e. circleci
+	 * @param buildenv - value to set to Buildenv field, i.e. circleci
 	 */
 	public void setBuildenv(String buildenv) {
 		this.buildenv = buildenv;
