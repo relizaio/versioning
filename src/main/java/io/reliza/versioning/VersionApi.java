@@ -308,4 +308,17 @@ public class VersionApi {
 		}
 		return getCalverType(VersionType.CALVER_RELIZA, modifier, metadata);
 	}
+	
+	/**
+	 * This method returns a Reliza style 2020 CalVer vesion
+	 * @param modifier String
+	 * @param metadata String
+	 * @return Reliza style 2020 version
+	 */
+	public static String getRelizaCalver2020(String modifier, String metadata) {
+		if (StringUtils.isEmpty(modifier)) {
+			modifier = Constants.BASE_MODIFIER;
+		}
+		return getCalverType(VersionType.CALVER_RELIZA_2020, modifier, metadata);
+	}
 }

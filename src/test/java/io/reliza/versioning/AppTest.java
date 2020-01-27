@@ -172,6 +172,20 @@ public class AppTest
     }
     
     @Test
+    public void getRelizaCalver2020() {
+    	String version = VersionApi.getRelizaCalver2020(null, null);
+    	System.out.println("Reliza Calver 2020 = " + version);
+        assertTrue ( true );
+    }
+    
+    @Test
+    public void getRelizaCalver2020WithModMeta() {
+    	String version = VersionApi.getRelizaCalver2020("CustomModifier", "someMetaData");
+    	System.out.println("Reliza Calver 2020 With Mod and Meta = " + version);
+        assertTrue ( true );
+    }
+    
+    @Test
     public void getUbuntuCalver() {
     	String version = VersionApi.getUbuntuCalver();
     	System.out.println("Ubuntu CalVer = " + version);
