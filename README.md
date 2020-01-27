@@ -51,7 +51,7 @@ mvn clean test
 
 ## Usage instructions
 Reliza Versioning understands following elements of versioning schema (case insensitive):
-Major, Minor, Micro or Patch, Year or YYYY, YY, OY, MM, OM, DD, OD
+Major, Minor, Micro or Patch, Year or YYYY, YY, OY, MM, OM, DD, OD, CIENV, CIBUILD
 
 Dot (.), underscore(_) may be used as separators. Dash (-) or plus (+) may be used as separators once each specifically for modifier and metadata. We recommend using dash for modifier and plus for metadata as per SemVer conventions, which then would be treated by the tool as optional elements.
 

@@ -146,8 +146,7 @@ public class VersionUtils {
 	 * @return version String
 	 */
 	public static Version initializeEmptyVersion(String schema) {
-		Version v = new Version(schema);
-		return v;
+		return new Version(schema);
 	}
 	
 	/**

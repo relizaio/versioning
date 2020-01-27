@@ -1,5 +1,5 @@
 /**
-* Copyright 2019 Reliza Incorporated. Licensed under MIT License.
+* Copyright 2019 - 2020 Reliza Incorporated. Licensed under MIT License.
 * https://reliza.io
 */
 
@@ -53,6 +53,8 @@ public class VersionCli {
 		options.addOption("m", "metadata", true, "version metadata, must be supported by schema");
 		options.addOption("d", "date", true, "sets date for calver versions, use UTC timezone in YYYY-MM-DD format");
 		options.addOption("r", "semver", true, "sets to specific semver version, use Major.Minor.Patch format");
+		options.addOption("e", "cienv", true, "value of ci environment field of the version");
+		options.addOption("b", "cibuild", true, "value of ci build field of the version");
 		
 		
 		options.addOption(action);
@@ -76,12 +78,24 @@ public class VersionCli {
 				String metadata = cmd.getOptionValue("m");
 				String version = cmd.getOptionValue("v");
 				String semver = cmd.getOptionValue("r");
+				String cienv = cmd.getOptionValue("e");
+				String cibuild = cmd.getOptionValue("v");
+
 				
 				VersionApiObject vao = VersionApi.createVao(schema);
+				vao.setVersion(version);
 				vao.setModifier(modifier);
 				vao.setMetadata(metadata);
-				vao.setVersion(version);
+				
 				Version v = VersionApi.initializeVersion(vao);
+				
+				if (StringUtils.isNotEmpty(cienv)) {
+					v.setBuildenv(cienv);
+				}
+				
+				if (StringUtils.isNotEmpty(cibuild)) {
+					v.setBuildenv(cibuild);
+				}
 				
 				if (StringUtils.isNotEmpty(semver)) {
 					VersionApi.setSemVerElementsOnVersion(v, semver);
@@ -104,7 +118,7 @@ public class VersionCli {
 				if (StringUtils.isNotEmpty(date)) {
 					VersionApi.setVersionDateFromString(v, date);
 				}
-
+				
 				System.out.println(v.constructVersionString());
 			}
 		} catch (Exception e) {
