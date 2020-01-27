@@ -1,5 +1,5 @@
 /**
-* Copyright 2019 Reliza Incorporated. Licensed under MIT License.
+* Copyright 2019 - 2020 Reliza Incorporated. Licensed under MIT License.
 * https://reliza.io
 */
 
@@ -85,6 +85,8 @@ public class Version {
 	private Integer day;
 	private String metadata; // from semver, 1.0.0+20130313144700
 	private String schema;
+	private String buildid; // i.e. 24 or build24
+	private String buildenv; // i.e. circleci
 	private boolean isSnapshot;
 	
 	/**
@@ -160,6 +162,12 @@ public class Version {
 			case OD:
 				this.day = Integer.parseInt(vh.getVersionComponents().get(i));
 				break;
+			case BUILDID:
+				this.buildid = vh.getVersionComponents().get(i);
+				break;
+			case BUILDENV:
+				this.buildenv = vh.getVersionComponents().get(i);
+				break;
 			default:
 				break;
 			}
@@ -205,6 +213,12 @@ public class Version {
 					break;
 				case PATCH:
 					versionString.append(this.patch.toString());
+					break;
+				case BUILDID:
+					versionString.append(this.buildid);
+					break;
+				case BUILDENV:
+					versionString.append(this.buildenv);
 					break;
 				case MODIFIER:
 					// special handler for semver optional modifer
@@ -485,4 +499,38 @@ public class Version {
 	public void setSnapshot(boolean snapshot) {
 		this.isSnapshot = snapshot;
 	}
+
+	/**
+	 * Gets Buildid version field, i.e. 24
+	 * @return value of Buildid version element
+	 */
+	public String getBuildid() {
+		return buildid;
+	}
+
+	/**
+	 * Sets Buildid version field
+	 * @param value to set to Buildid field, i.e. 24
+	 */
+	public void setBuildid(String buildid) {
+		this.buildid = buildid;
+	}
+
+	/**
+	 * Gets Buildenv version field, i.e. circleci
+	 * @return value of Buildenv version element
+	 */
+	public String getBuildenv() {
+		return buildenv;
+	}
+	
+	/**
+	 * Sets Buildenv version field
+	 * @param value to set to Buildenv field, i.e. circleci
+	 */
+	public void setBuildenv(String buildenv) {
+		this.buildenv = buildenv;
+	}
+	
+	
 }

@@ -13,10 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.reliza.versioning.Version;
-import io.reliza.versioning.VersionApi;
-import io.reliza.versioning.VersionUtils;
-
 /**
  * Unit test for simple App.
  */
@@ -58,6 +54,13 @@ public class AppTest
     }
     
     @Test
+    public void testSchemaMatching5BuildidBuildenv() {
+    	String testSchema = "Year.Month.buildenv.buildid";
+    	String testVersion = "2019.5.circleci.24";
+        assertTrue( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
+    }
+    
+    @Test
     public void testVersionStringOutput() {
     	String testSchema = "semver";
     	String testVersion = "1.3.6-alpha.1+1234.234.5";
@@ -91,6 +94,15 @@ public class AppTest
     	Version v = new Version(testVersion, testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("2019_05.prod_7", v.constructVersionString());
+    }
+    
+    @Test
+    public void constructVersion4BuildidBuildenv() {
+    	String testSchema = "Year.OM.buildenv.buildid";
+    	String testVersion = "2020.01.circleci.24";
+    	Version v = new Version(testVersion, testSchema);
+    	System.out.println(v.constructVersionString());
+        assertEquals ("2020.01.circleci.24", v.constructVersionString());
     }
     
     @Test
@@ -132,6 +144,14 @@ public class AppTest
     @Test
     public void initializeNewVersion3() {
     	String testSchema = "yyyy.month.minor.patch";
+    	Version v = new Version(testSchema);
+    	System.out.println(v.constructVersionString());
+        assertTrue ( true );
+    }
+    
+    @Test
+    public void initializeNewVersion4BuildidBuildenv() {
+    	String testSchema = "yyyy.month.buildenv.buildid";
     	Version v = new Version(testSchema);
     	System.out.println(v.constructVersionString());
         assertTrue ( true );

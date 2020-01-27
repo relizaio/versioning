@@ -5,11 +5,12 @@
 
 package io.reliza.versioning;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,20 +31,22 @@ public enum VersionElement {
 	MM(new HashSet<String>(Arrays.asList(new String[] {"mm", "month"})), "^(1[0-2]|[1-9])$"),
 	OM(new HashSet<String>(Arrays.asList(new String[] {"om", "0m"})), "^(1[0-2]|0[1-9])$"),
 	DD(new HashSet<String>(Arrays.asList(new String[] {"dd", "day"})), "^(3[01]|[12][0-9]|[1-9])$"),
-	OD(new HashSet<String>(Arrays.asList(new String[] {"od", "0d"})), "^(3[01]|[0-2][0-9])$") //,
+	OD(new HashSet<String>(Arrays.asList(new String[] {"od", "0d"})), "^(3[01]|[0-2][0-9])$"),
+	BUILDID(new HashSet<String>(Arrays.asList(new String[] {"build", "buildid", "cibuildid", "cibuild"})), "^[a-zA-Z0-9]+$"),
+	BUILDENV(new HashSet<String>(Arrays.asList(new String[] {"cienv", "buildenv", "cibuildenv"})), "^[a-zA-Z0-9]+$")
 	;
 	
 	private Set<String> namingInSchema;
 	private Pattern regex;
 	
-	private final static Map<String, VersionElement> veLookupMap;
+	private static final Map<String, VersionElement> veLookupMap;
 	
 	static {
-		veLookupMap = new HashMap<>();
+		HashMap<String, VersionElement> veLookupMapBuild = new HashMap<>();
 		for (VersionElement ve : VersionElement.values()) {
-			ve.getNamingInSchema().forEach(name -> 
-									veLookupMap.put(name, ve));
+			ve.getNamingInSchema().forEach(name -> veLookupMapBuild.put(name, ve));
 		}
+		veLookupMap = Collections.unmodifiableMap(veLookupMapBuild);
 	}
 	
 	/**
