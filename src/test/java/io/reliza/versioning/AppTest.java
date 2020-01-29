@@ -10,8 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import io.reliza.versioning.Version.VersionStringComparator;
 
 /**
  * Unit test for simple App.
@@ -301,4 +307,87 @@ public class AppTest
     	v.setSnapshot(true);
     	assertEquals("2019.05.Stable.1-SNAPSHOT", v.constructVersionString());
     }
+    
+    @Test
+    public void versionComparison1year() {
+    	String version1 = "2020.05.Stable.1";
+    	String version2 = "2019.10.Stable.1";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	Version v1 = Version.getVersion(version1, schema);
+    	Version v2 = Version.getVersion(version2, schema);
+    	List<Version> vList = new LinkedList<>();
+    	vList.add(v2);
+    	vList.add(v1);
+    	Collections.sort(vList);
+    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
+    }
+    
+    @Test
+    public void versionComparison2semver() {
+    	String version1 = "2.3.5";
+    	String version2 = "2.7.10";
+    	String schema = Constants.SEMVER;
+    	Version v1 = Version.getVersion(version1, schema);
+    	Version v2 = Version.getVersion(version2, schema);
+    	List<Version> vList = new LinkedList<>();
+    	vList.add(v2);
+    	vList.add(v1);
+    	Collections.sort(vList);
+    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
+    }
+    
+    @Test
+    public void versionComparison3buildid() {
+    	String version1 = "2.3.5.28";
+    	String version2 = "2.3.5.7";
+    	String schema = "major.minor.patch.buildid";
+    	Version v1 = Version.getVersion(version1, schema);
+    	Version v2 = Version.getVersion(version2, schema);
+    	List<Version> vList = new LinkedList<>();
+    	vList.add(v2);
+    	vList.add(v1);
+    	Collections.sort(vList);
+    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
+    }
+    
+    @Test
+    public void versionStringComparator1Semver() {
+    	String version1 = "2.3.25";
+    	String version2 = "2.3.7";
+    	String schema = Constants.SEMVER;
+    	List<String> vList = new LinkedList<>();
+    	vList.add(version2);
+    	vList.add(version1);
+    	Collections.sort(vList, new VersionStringComparator(schema));
+    	assertTrue(version1.equals(vList.get(0)));
+    }
+    
+    @Test
+    public void versionStringComparator2Calver() {
+    	String version1 = "2020.03.Stable.1";
+    	String version2 = "2019.10.Stable.1";
+    	String version3 = "2019.09.Stable.1";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	List<String> vList = new LinkedList<>();
+    	vList.add(version2);
+    	vList.add(version1);
+    	vList.add(version3);
+    	Collections.sort(vList, new VersionStringComparator(schema));
+    	assertTrue(version1.equals(vList.get(0)));
+    }
+    
+    @Test
+    public void versionStringComparator3CalverNotMatching() {
+    	String version1 = "2020.03.Stable.1";
+    	String version2 = "2021.10.15.Stable.1"; // this version doesn't match schema so it will be at the bottom of the list
+    	String version3 = "2019.09.Stable.1";
+    	String schema = VersionType.CALVER_RELIZA.getSchema();
+    	List<String> vList = new LinkedList<>();
+    	vList.add(version2);
+    	vList.add(version1);
+    	vList.add(version3);
+    	Collections.sort(vList, new VersionStringComparator(schema));
+    	assertTrue(version1.equals(vList.get(0)));
+    }
+    
 }

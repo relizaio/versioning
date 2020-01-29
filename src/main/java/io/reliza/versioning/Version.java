@@ -9,13 +9,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Version {
+public class Version implements Comparable<Version> {
 	
 	/**
 	 * 
@@ -548,7 +549,7 @@ public class Version {
 		v.schema = schema;
 		schema = VersionUtils.stripSchemaFromModMeta(schema);
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "Major.Minor.Patch";
+			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
 		// initialize all elements at zero first
@@ -559,7 +560,8 @@ public class Version {
 		// now populate whatever we can from pin
 		VersionHelper vh = VersionUtils.parseVersion(pin);
 		v.modifier = vh.getModifier();
-		if (StringUtils.isEmpty(v.modifier)) {
+		// dirty workaround for initialization tests - TODO: improve
+		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
 			v.modifier = Constants.BASE_MODIFIER;
 		}
 		v.metadata = vh.getMetadata();
@@ -608,6 +610,137 @@ public class Version {
 			}
 		}
 		return v;
+	}
+	
+	/**
+	 * This methods compares any 2 integer values between version objects
+	 * Used to generalize comparisons for compareTo method
+	 * @param i1 Integer
+	 * @param i2 Integer
+	 * @return -1 if i1 is larger, 1 if i2 is larger or 0 if both are null or equal
+	 */
+	private int compareVersionIntegers (Integer i1, Integer i2) {
+		if (null != i1 && null == i2) {
+			return -1;
+		} else if (null == i1 && null != i2) {
+			return 1;
+		} else if (null != i1 && i1 > i2) {
+			return -1;
+		} else if (null != i1 && i1 < i2) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		StringBuilder sb = new StringBuilder();
+		if (null != major) {
+			sb.append(major.toString());
+		}
+		if (null != minor) {
+			sb.append(minor.toString());
+		}
+		if (null != patch) {
+			sb.append(patch.toString());
+		}
+		if (null != modifier) {
+			sb.append(modifier);
+		}
+		if (null != year) {
+			sb.append(year.toString());
+		}
+		if (null != month) {
+			sb.append(month.toString());
+		}
+		if (null != day) {
+			sb.append(day.toString());
+		}
+		if (null != metadata) {
+			sb.append(metadata);
+		}
+		if (null != schema) {
+			sb.append(schema);
+		}
+		if (null != buildid) {
+			sb.append(buildid);
+		}
+		if (null != buildenv) {
+			sb.append(buildenv);
+		}
+		if (isSnapshot) {
+			sb.append('1');
+		} else {
+			sb.append('0');
+		}
+		return sb.toString().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Version) {
+			return hashCode() == other.hashCode();
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int compareTo(Version otherV) {
+		int comparison = compareVersionIntegers(year, otherV.year);
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(month, otherV.month);
+		}
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(major, otherV.major);
+		}
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(day, otherV.day);
+		}
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(minor, otherV.minor);
+		}
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(patch, otherV.patch);
+		}
+		if (0 == comparison && StringUtils.isNotEmpty(buildid) && StringUtils.isNotEmpty(otherV.buildid)) {
+			try {
+				comparison = compareVersionIntegers(Integer.parseInt(buildid), Integer.parseInt(otherV.buildid));
+			} catch (NumberFormatException nfe) {}
+		}
+		return comparison;
+	}
+	
+	/**
+	 * This class is used to compare any 2 version strings based on common schema
+	 * @author pavel
+	 *
+	 */
+	public static class VersionStringComparator implements Comparator<String> {
+
+		private String schema;
+		
+		public VersionStringComparator(String schema) {
+			this.schema = schema;
+		}
+		
+		@Override
+		public int compare(String v1Str, String v2Str) {
+			boolean v1Matching = VersionUtils.isVersionMatchingSchema(schema, v1Str);
+			boolean v2Matching = VersionUtils.isVersionMatchingSchema(schema, v2Str);
+			if (v1Matching && !v2Matching) {
+				return -1;
+			} else if (!v1Matching && v2Matching) {
+				return 1;
+			} else if (v1Matching) {
+				Version v1 = Version.getVersion(v1Str, schema);
+				Version v2 = Version.getVersion(v2Str, schema);
+				return v1.compareTo(v2);
+			}
+			return 0;
+		}
+		
 	}
 	
 }

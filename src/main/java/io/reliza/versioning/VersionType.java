@@ -12,7 +12,9 @@ package io.reliza.versioning;
 public enum VersionType {
 	CALVER_UBUNTU("YY.0M.Micro"),
 	CALVER_RELIZA("YYYY.0M.Modifier.Micro+Metadata"),
-	CALVER_RELIZA_2020("YYYY.0M.Modifier.Minor.Micro+Metadata")
+	CALVER_RELIZA_2020("YYYY.0M.Modifier.Minor.Micro+Metadata"),
+	SEMVER_FULL_NOTATION("Major.Minor.Patch-Modifier+Metadata"),
+	SEMVER_SHORT_NOTATION("Major.Minor.Patch")
 	;
 	
 	private String schema;
