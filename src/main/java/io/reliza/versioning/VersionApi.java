@@ -107,7 +107,7 @@ public class VersionApi {
 	 * Enum to store available api actions
 	 *
 	 */
-	public static enum ActionEnum {
+	public enum ActionEnum {
 		BUMP("bump"),
 		BUMP_MINOR("bumpminor"),
 		BUMP_MAJOR("bumpmajor"),
@@ -116,7 +116,7 @@ public class VersionApi {
 		
 		private String actionName;
 		
-		private final static Map<String, ActionEnum> aLookupMap;
+		private static final Map<String, ActionEnum> aLookupMap;
 		
 		static {
 			aLookupMap = new HashMap<>();
@@ -175,7 +175,7 @@ public class VersionApi {
 			v = VersionUtils.initializeVersionWithModMeta(vao.getSchema(),
 										vao.getModifier(), vao.getMetadata());
 		} else {
-			v = new Version(vao.getVersion(), vao.getSchema());
+			v = Version.getVersion(vao.getVersion(), vao.getSchema());
 			if (StringUtils.isNotEmpty(vao.getModifier())) {
 				// if empty we might want to use the one from current version
 				v.setModifier(vao.getModifier());

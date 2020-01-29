@@ -64,7 +64,7 @@ public class AppTest
     public void testVersionStringOutput() {
     	String testSchema = "semver";
     	String testVersion = "1.3.6-alpha.1+1234.234.5";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v);
         assertTrue( true );
     }
@@ -73,7 +73,7 @@ public class AppTest
     public void constructVersion1() {
     	String testSchema = "semver";
     	String testVersion = "1.3.6-alpha.1+1234.234.5";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("1.3.6-alpha.1+1234.234.5", v.constructVersionString());
     }
@@ -82,7 +82,7 @@ public class AppTest
     public void constructVersion2() {
     	String testSchema = "YYYY.OM.modifier.patch";
     	String testVersion = "2019.05.prod.7";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("2019.05.prod.7", v.constructVersionString());
     }
@@ -91,7 +91,7 @@ public class AppTest
     public void constructVersion3() {
     	String testSchema = "YYYY_OM.modifier_patch";
     	String testVersion = "2019_05.prod_7";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("2019_05.prod_7", v.constructVersionString());
     }
@@ -100,7 +100,7 @@ public class AppTest
     public void constructVersion4BuildidBuildenv() {
     	String testSchema = "Year.OM.buildenv.buildid";
     	String testVersion = "2020.01.circleci.24";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("2020.01.circleci.24", v.constructVersionString());
     }
@@ -109,7 +109,7 @@ public class AppTest
     public void constructVersionOtherSchemaFail() {
     	String testSchema = "YYYY_OM.modifier_patch";
     	String testVersion = "2019_05.prod_7";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
         Assertions.assertThrows(RuntimeException.class, () -> {
         	System.out.println(v.constructVersionString("semver"));
         });
@@ -120,7 +120,7 @@ public class AppTest
     	String testSchema = "semver";
     	String testVersion = "7.4.284";
     	String useSchema = "major.minor";
-    	Version v = new Version(testVersion, testSchema);
+    	Version v = Version.getVersion(testVersion, testSchema);
     	System.out.println(v.constructVersionString(useSchema));
         assertEquals ("7.4", v.constructVersionString(useSchema));
     }
@@ -128,7 +128,7 @@ public class AppTest
     @Test
     public void initializeNewVersion1() {
     	String testSchema = "semver";
-    	Version v = new Version(testSchema);
+    	Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
         assertEquals ("0.1.0", v.constructVersionString());
     }
@@ -136,7 +136,7 @@ public class AppTest
     @Test
     public void initializeNewVersion2() {
     	String testSchema = "yyyy.month-modifier";
-    	Version v = new Version(testSchema);
+    	Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
         assertTrue ( true );
     }
@@ -144,7 +144,7 @@ public class AppTest
     @Test
     public void initializeNewVersion3() {
     	String testSchema = "yyyy.month.minor.patch";
-    	Version v = new Version(testSchema);
+    	Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
         assertTrue ( true );
     }
@@ -152,7 +152,7 @@ public class AppTest
     @Test
     public void initializeNewVersion4BuildidBuildenv() {
     	String testSchema = "yyyy.month.buildenv.buildid";
-    	Version v = new Version(testSchema);
+    	Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
         assertTrue ( true );
     }
@@ -196,7 +196,7 @@ public class AppTest
     public void supportMavenSnapshotAsIs() {
     	String version = "2019.05.Stable.1-SNAPSHOT";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
-    	Version v = new Version(version, schema);
+    	Version v = Version.getVersion(version, schema);
     	assertEquals("2019.05.Stable.1-SNAPSHOT", v.constructVersionString());
     }
     
@@ -204,7 +204,7 @@ public class AppTest
     public void supportMavenSnapshotForceOut() {
     	String version = "2019.05.Stable.1-SNAPSHOT";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
-    	Version v = new Version(version, schema);
+    	Version v = Version.getVersion(version, schema);
     	v.setSnapshot(false);
     	assertEquals("2019.05.Stable.1", v.constructVersionString());
     }
@@ -213,7 +213,7 @@ public class AppTest
     public void supportMavenSnapshotForceIn() {
     	String version = "2019.05.Stable.1";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
-    	Version v = new Version(version, schema);
+    	Version v = Version.getVersion(version, schema);
     	v.setSnapshot(true);
     	assertEquals("2019.05.Stable.1-SNAPSHOT", v.constructVersionString());
     }

@@ -90,90 +90,9 @@ public class Version {
 	private boolean isSnapshot;
 	
 	/**
-	 * Initializes version based on specified schema
-	 * @param schema String
+	 * Private constructor to denote uninitializable class
 	 */
-	public Version (String schema) {
-		this.schema = schema;
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
-		if (schemaVeList.contains(VersionElement.MINOR)) {
-			this.minor = 1;
-			this.major = 0;
-			this.patch = 0;
-		} else if (schemaVeList.contains(VersionElement.MAJOR)) {
-			this.minor = 0;
-			this.major = 1;
-			this.patch = 0;
-		} else if (schemaVeList.contains(VersionElement.PATCH)) {
-			this.minor = 0;
-			this.major = 0;
-			this.patch = 1;
-		}
-		setCurrentDate();
-	}
-	
-	/**
-	 * Creates a Version object based on version string (origVersion) and specified schema
-	 * @param origVersion String
-	 * @param schema String
-	 */
-	public Version (String origVersion, String schema) {
-		if (!VersionUtils.isVersionMatchingSchema(schema, origVersion)) {
-			throw new RuntimeException("Cannot construct Version object, since version is not matching schema");
-		}
-		this.schema = schema;
-		schema = VersionUtils.stripSchemaFromModMeta(schema);
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "Major.Minor.Patch";
-		}
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
-		VersionHelper vh = VersionUtils.parseVersion(origVersion);
-		this.modifier = vh.getModifier();
-		this.metadata = vh.getMetadata();
-		this.isSnapshot = vh.isSnapshot();
-		
-		for (int i=0; i<schemaVeList.size(); i++) {
-			switch (schemaVeList.get(i)) {
-			case MAJOR:
-				this.major = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case MINOR:
-				this.minor = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case PATCH:
-				this.patch = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case MODIFIER:
-				this.modifier = vh.getVersionComponents().get(i);
-				break;
-			case METADATA:
-				this.metadata = vh.getVersionComponents().get(i);
-				break;
-			case YYYY:
-			case YY:
-			case OY:
-				this.year = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case MM:
-			case OM:
-				this.month = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case DD:
-			case OD:
-				this.day = Integer.parseInt(vh.getVersionComponents().get(i));
-				break;
-			case BUILDID:
-				this.buildid = vh.getVersionComponents().get(i);
-				break;
-			case BUILDENV:
-				this.buildenv = vh.getVersionComponents().get(i);
-				break;
-			default:
-				break;
-			}
-		}
-	}
-	
+	private Version () {}
 	
 	@Override
 	public String toString() {
@@ -532,5 +451,93 @@ public class Version {
 		this.buildenv = buildenv;
 	}
 	
+	/**
+	 * Factory method to initialize version based on specified schema
+	 * @param schema String
+	 */
+	public static Version getVersion (String schema) {
+		Version v = new Version();
+		v.schema = schema;
+		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		if (schemaVeList.contains(VersionElement.MINOR)) {
+			v.minor = 1;
+			v.major = 0;
+			v.patch = 0;
+		} else if (schemaVeList.contains(VersionElement.MAJOR)) {
+			v.minor = 0;
+			v.major = 1;
+			v.patch = 0;
+		} else if (schemaVeList.contains(VersionElement.PATCH)) {
+			v.minor = 0;
+			v.major = 0;
+			v.patch = 1;
+		}
+		v.setCurrentDate();
+		return v;
+	}
+	
+	/**
+	 * Factory method to create a Version object based on version string (origVersion) and specified schema
+	 * @param origVersion String
+	 * @param schema String
+	 */
+	public static Version getVersion (String origVersion, String schema) {
+		if (!VersionUtils.isVersionMatchingSchema(schema, origVersion)) {
+			throw new RuntimeException("Cannot construct Version object, since version is not matching schema");
+		}
+		Version v = new Version();
+		v.schema = schema;
+		schema = VersionUtils.stripSchemaFromModMeta(schema);
+		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
+			schema = "Major.Minor.Patch";
+		}
+		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		VersionHelper vh = VersionUtils.parseVersion(origVersion);
+		v.modifier = vh.getModifier();
+		v.metadata = vh.getMetadata();
+		v.isSnapshot = vh.isSnapshot();
+		
+		for (int i=0; i<schemaVeList.size(); i++) {
+			switch (schemaVeList.get(i)) {
+			case MAJOR:
+				v.major = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case MINOR:
+				v.minor = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case PATCH:
+				v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case MODIFIER:
+				v.modifier = vh.getVersionComponents().get(i);
+				break;
+			case METADATA:
+				v.metadata = vh.getVersionComponents().get(i);
+				break;
+			case YYYY:
+			case YY:
+			case OY:
+				v.year = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case MM:
+			case OM:
+				v.month = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case DD:
+			case OD:
+				v.day = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case BUILDID:
+				v.buildid = vh.getVersionComponents().get(i);
+				break;
+			case BUILDENV:
+				v.buildenv = vh.getVersionComponents().get(i);
+				break;
+			default:
+				break;
+			}
+		}
+		return v;
+	}
 	
 }

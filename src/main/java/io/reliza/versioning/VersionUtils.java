@@ -21,6 +21,11 @@ import io.reliza.versioning.Version.VersionHelper;
 public class VersionUtils {
 	
 	/**
+	 * Private constructor for uninitializable class
+	 */
+	private VersionUtils () {}
+	
+	/**
 	 * This method parses supplied schema to version elements
 	 * @param schema String
 	 * @return list of VersionElement
@@ -146,7 +151,7 @@ public class VersionUtils {
 	 * @return version String
 	 */
 	public static Version initializeEmptyVersion(String schema) {
-		return new Version(schema);
+		return Version.getVersion(schema);
 	}
 	
 	/**
@@ -157,7 +162,7 @@ public class VersionUtils {
 	 * @return version String
 	 */
 	public static Version initializeVersionWithModMeta(String schema, String modifier, String metadata) {
-		Version v = new Version(schema);
+		Version v = Version.getVersion(schema);
 		v.setModifier(modifier);
 		v.setMetadata(metadata);
 		return v;
