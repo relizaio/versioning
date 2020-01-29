@@ -51,9 +51,11 @@ mvn clean test
 
 ## Usage instructions
 Reliza Versioning understands following elements of versioning schema (case insensitive):
-Major, Minor, Micro or Patch, Year or YYYY, YY, OY, MM, OM, DD, OD, CIENV, CIBUILD
+Major, Minor, Micro or Patch, Year or YYYY, YY, OY, MM, OM, DD, OD, CIENV, CIBUILD, MODIFIER, CALVERMODIFIER, METADATA
 
 Dot (.), underscore(_) may be used as separators. Dash (-) or plus (+) may be used as separators once each specifically for modifier and metadata. We recommend using dash for modifier and plus for metadata as per SemVer conventions, which then would be treated by the tool as optional elements.
+
+Note: for SemVer always use "modifier" notation, for CalVer still use "modifier" if it's used after -, i.e. YYYY.MM-modifier, but use calvermodifier in the dot notation, i.e. YYYY.MM.Calvermodifier.Patch
 
 Reliza versioning also understands "SemVer" as a code for "major.minor.patch-identifier+metadata" (where identifier and metadata are treated as optional).
 
@@ -74,11 +76,11 @@ docker run --rm relizaio/versioning -h
 ### 2. Sample Command Line usage
 2.1. Generate Reliza flavor CalVer with "Stable" modifier
 ```
-java -jar versioning.jar -s YYYY.0M.Modifier.Micro+Metadata -i Stable
+java -jar versioning.jar -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
 ```
 or with docker:
 ```
-docker run --rm relizaio/versioning -s YYYY.0M.Modifier.Micro+Metadata -i Stable
+docker run --rm relizaio/versioning -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
 ```
 
 2.2. Bump patch in existing SemVer version (will produce 2.4.8)
@@ -92,11 +94,11 @@ docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
 
 2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
 ```
-mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.modifier.patch -i Stable -t True)"
+mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
 ```
 or with docker:
 ```
-mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.modifier.patch -i Stable -t True)"
+mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
 ```
 Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
 

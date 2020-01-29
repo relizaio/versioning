@@ -140,7 +140,10 @@ public class Version implements Comparable<Version> {
 				case BUILDENV:
 					versionString.append(this.buildenv);
 					break;
-				case MODIFIER:
+				case CALVER_MODIFIER:
+					versionString.append(this.modifier);
+					break;
+				case SEMVER_MODIFIER:
 					// special handler for semver optional modifer
 					if (StringUtils.isNotEmpty(this.modifier)) {
 						versionString.append(this.modifier);
@@ -471,11 +474,10 @@ public class Version implements Comparable<Version> {
 			v.major = 0;
 			v.patch = 1;
 		}
-		v.setCurrentDate();
-		// dirty workaround for initialization tests - TODO: improve
-		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
+		if (schemaVeList.contains(VersionElement.CALVER_MODIFIER)) {
 			v.modifier = Constants.BASE_MODIFIER;
 		}
+		v.setCurrentDate();
 		return v;
 	}
 	
@@ -497,13 +499,8 @@ public class Version implements Comparable<Version> {
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
 		VersionHelper vh = VersionUtils.parseVersion(origVersion);
 		v.modifier = vh.getModifier();
-		// dirty workaround for initialization tests - TODO: improve
-		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
-			v.modifier = Constants.BASE_MODIFIER;
-		}
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
-		
 		for (int i=0; i<schemaVeList.size(); i++) {
 			switch (schemaVeList.get(i)) {
 			case MAJOR:
@@ -515,8 +512,12 @@ public class Version implements Comparable<Version> {
 			case PATCH:
 				v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
 				break;
-			case MODIFIER:
+			case SEMVER_MODIFIER:
+			case CALVER_MODIFIER:
 				v.modifier = vh.getVersionComponents().get(i);
+				if (null == v.modifier) {
+					v.modifier = Constants.BASE_MODIFIER;
+				}
 				break;
 			case METADATA:
 				v.metadata = vh.getVersionComponents().get(i);
@@ -566,10 +567,6 @@ public class Version implements Comparable<Version> {
 		// now populate whatever we can from pin
 		VersionHelper vh = VersionUtils.parseVersion(pin);
 		v.modifier = vh.getModifier();
-		// dirty workaround for initialization tests - TODO: improve
-		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
-			v.modifier = Constants.BASE_MODIFIER;
-		}
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
 		
@@ -585,7 +582,8 @@ public class Version implements Comparable<Version> {
 				case PATCH:
 					v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
 					break;
-				case MODIFIER:
+				case SEMVER_MODIFIER:
+				case CALVER_MODIFIER:
 					v.modifier = vh.getVersionComponents().get(i);
 					break;
 				case METADATA:
@@ -613,6 +611,8 @@ public class Version implements Comparable<Version> {
 				default:
 					break;
 				}
+			} else if (schemaVeList.get(i) == VersionElement.CALVER_MODIFIER) {
+				v.modifier = Constants.BASE_MODIFIER;
 			}
 		}
 		return v;
