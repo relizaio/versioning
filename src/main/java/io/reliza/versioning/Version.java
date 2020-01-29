@@ -399,8 +399,6 @@ public class Version implements Comparable<Version> {
 			this.bumpPatch(null);
 		} else if (veList.contains(VersionElement.MINOR)) {
 			this.bumpMinor(null);
-		} else if (VersionUtils.isSchemaCalver(schema)) {
-			this.setCurrentDate();
 		}
 	}
 	

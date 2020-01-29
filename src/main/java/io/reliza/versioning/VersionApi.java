@@ -109,6 +109,7 @@ public class VersionApi {
 	 */
 	public enum ActionEnum {
 		BUMP("bump"),
+		BUMP_PATCH("bumppatch"),
 		BUMP_MINOR("bumpminor"),
 		BUMP_MAJOR("bumpmajor"),
 		BUMP_DATE("bumpdate")
@@ -204,6 +205,8 @@ public class VersionApi {
 	public static void applyActionOnVersion (Version v, ActionEnum ae) {
 		if (ActionEnum.BUMP == ae) {
 			v.simpleBump();
+		} else if (ActionEnum.BUMP_PATCH == ae) {
+			v.bumpPatch(null);
 		} else if (ActionEnum.BUMP_MINOR == ae) {
 			v.bumpMinor(null);
 		} else if (ActionEnum.BUMP_MAJOR == ae) {
