@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.reliza.versioning.Version.VersionStringComparator;
+import io.reliza.versioning.VersionApi.ActionEnum;
 
 /**
  * Unit test for simple App.
@@ -111,7 +112,23 @@ public class AppTest
     }
     
     @Test
-    public void testVersionMatchingPinAndSchema3FailSemver() {
+    public void testVersionMatchingPinAndSchema3SemverOptionalModifier() {
+    	String testSchema = "major.minor.patch-modifier";
+    	String testPin = "1.3.patch-modifier";
+    	String testVersion = "1.3.5-PROD";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema4SemverOptionalMeta() {
+    	String testSchema = "major.minor.patch+metadata";
+    	String testPin = "1.3.patch+metadata";
+    	String testVersion = "1.3.5+PROD";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema5FailSemver() {
     	String testSchema = "major.minor.patch-modifier";
     	String testPin = "1.3.patch";
     	String testVersion = "1.2.5";
@@ -119,12 +136,52 @@ public class AppTest
     }
     
     @Test
-    public void testVersionMatchingPinAndSchema4FailCalver() {
+    public void testVersionMatchingPinAndSchema6CalverDiffModifier() {
     	String testSchema = "Year.Month.minor.patch-modifier";
     	String testPin = "2020.1.minor.patch-modifier";
-    	String testVersion = "2020.2.7.8-mod";
+    	String testVersion = "2020.1.7.8-Prod";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema6CalverOptionalModifier() {
+    	String testSchema = "Year.Month.minor.patch-modifier";
+    	String testPin = "2020.1.minor.patch-modifier";
+    	String testVersion = "2020.1.7.8";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema6CalverOptionalMetadata() {
+    	String testSchema = "Year.Month.minor.patch+metadata";
+    	String testPin = "2020.1.minor.patch+metadata";
+    	String testVersion = "2020.1.7.8";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema7CalverMidModifier() {
+    	String testSchema = VersionType.CALVER_RELIZA_2020.getSchema();
+    	String testPin = "2019.12.Modifier.Minor.Micro+metadata";
+    	String testVersion = "2019.12.Snapshot.0.0";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema8SemverOptionalMetadata() {
+    	String testSchema = "Year.Month.minor.patch+metadata";
+    	String testPin = "2020.1.minor.patch+metadata";
+    	String testVersion = "2020.2.7.8";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema9CalverFail() {
+    	String testSchema = VersionType.CALVER_RELIZA_2020.getSchema();
+    	String testPin = "2019.12.Modifier.Minor.Micro+metadata";
+    	String testVersion = "2019.11.Snapshot.0.0";
         assertFalse( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
-    }    
+    }
     
     @Test
     public void testVersionStringOutput() {
@@ -388,6 +445,18 @@ public class AppTest
     	vList.add(version3);
     	Collections.sort(vList, new VersionStringComparator(schema));
     	assertTrue(version1.equals(vList.get(0)));
+    }
+    
+    @Test
+    public void bumpPatchCalver() {
+    	String schema = VersionType.CALVER_RELIZA_2020.getSchema();
+    	Version v = Version.getVersion(schema);
+    	assertEquals("2020.01.Snapshot.1.0", v.constructVersionString());
+    	v.bumpPatch(null);
+    	assertEquals("2020.01.Snapshot.1.1", v.constructVersionString());
+    	v = Version.getVersion("2020.01.Snapshot.0.0", schema);
+    	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
+    	assertEquals("2020.01.Snapshot.0.1", v.constructVersionString());
     }
     
 }

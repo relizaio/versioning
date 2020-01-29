@@ -96,8 +96,7 @@ public class VersionUtils {
 		List<String> versionComponents = Arrays.asList(version.split("(\\.|_)"));
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
-		VersionHelper vh = new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
-		return vh;
+		return new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
 	}
 	
 	/**
@@ -113,7 +112,7 @@ public class VersionUtils {
 
 		// handle semver as schema name
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "Major.Minor.Patch";
+			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
@@ -148,7 +147,7 @@ public class VersionUtils {
 
 		// handle semver as schema name
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "Major.Minor.Patch";
+			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
@@ -187,7 +186,7 @@ public class VersionUtils {
 	
 			// handle semver as schema name
 			if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-				schema = "Major.Minor.Patch";
+				schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 			}
 			
 			// remove -modifier and +metadata from schema as it's irrelevant
@@ -204,7 +203,10 @@ public class VersionUtils {
 				matching = p
 							.matcher(vhVersion.getVersionComponents().get(i))
 							.matches();
-				if (matching && p.matcher(vhPin.getVersionComponents().get(i)).matches()) {
+				if (matching && p.matcher(vhPin.getVersionComponents().get(i)).matches() &&
+						// make sure that it's not a name of version element inside pin
+						// i.e. could happen with string elements such as modifier / metadata
+						null == VersionElement.getVersionElement(vhPin.getVersionComponents().get(i))) {
 					// here we know that version is matching schema and need to verify if it's matching pin
 					// means we're dealing with pin item that must match version element exactly
 					matching = vhPin.getVersionComponents().get(i).equals(vhVersion.getVersionComponents().get(i));

@@ -472,6 +472,10 @@ public class Version implements Comparable<Version> {
 			v.patch = 1;
 		}
 		v.setCurrentDate();
+		// dirty workaround for initialization tests - TODO: improve
+		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
+			v.modifier = Constants.BASE_MODIFIER;
+		}
 		return v;
 	}
 	
@@ -493,6 +497,10 @@ public class Version implements Comparable<Version> {
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
 		VersionHelper vh = VersionUtils.parseVersion(origVersion);
 		v.modifier = vh.getModifier();
+		// dirty workaround for initialization tests - TODO: improve
+		if (StringUtils.isEmpty(v.modifier) && !schema.equalsIgnoreCase(VersionType.SEMVER_SHORT_NOTATION.getSchema())) {
+			v.modifier = Constants.BASE_MODIFIER;
+		}
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
 		
