@@ -540,4 +540,74 @@ public class Version {
 		return v;
 	}
 	
+	public static Version getVersionFromPin (String schema, String pin) {
+		if (!VersionUtils.isPinMatchingSchema(schema, pin)) {
+			throw new RuntimeException("Cannot construct Version object, since pin is not matching schema");
+		}
+		Version v = new Version();
+		v.schema = schema;
+		schema = VersionUtils.stripSchemaFromModMeta(schema);
+		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
+			schema = "Major.Minor.Patch";
+		}
+		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		// initialize all elements at zero first
+		v.minor = 0;
+		v.major = 0;
+		v.patch = 0;
+		v.setCurrentDate();
+		// now populate whatever we can from pin
+		VersionHelper vh = VersionUtils.parseVersion(pin);
+		v.modifier = vh.getModifier();
+		if (StringUtils.isEmpty(v.modifier)) {
+			v.modifier = Constants.BASE_MODIFIER;
+		}
+		v.metadata = vh.getMetadata();
+		v.isSnapshot = vh.isSnapshot();
+		
+		for (int i=0; i<schemaVeList.size(); i++) {
+			if (VersionElement.getVersionElement(vh.getVersionComponents().get(i)) != schemaVeList.get(i)) {
+				switch (schemaVeList.get(i)) {
+				case MAJOR:
+					v.major = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case MINOR:
+					v.minor = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case PATCH:
+					v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case MODIFIER:
+					v.modifier = vh.getVersionComponents().get(i);
+					break;
+				case METADATA:
+					v.metadata = vh.getVersionComponents().get(i);
+					break;
+				case YYYY:
+				case YY:
+				case OY:
+					v.year = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case MM:
+				case OM:
+					v.month = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case DD:
+				case OD:
+					v.day = Integer.parseInt(vh.getVersionComponents().get(i));
+					break;
+				case BUILDID:
+					v.buildid = vh.getVersionComponents().get(i);
+					break;
+				case BUILDENV:
+					v.buildenv = vh.getVersionComponents().get(i);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		return v;
+	}
+	
 }

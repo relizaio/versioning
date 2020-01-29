@@ -61,6 +61,66 @@ public class AppTest
     }
     
     @Test
+    public void testPinMatching1Semver() {
+    	String testSchema = "major.minor.patch-modifier";
+    	String testPin = "1.3.patch";
+        assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+    
+    @Test
+    public void testPinMatching2Calver() {
+    	String testSchema = "Year.Month.minor.patch-modifier";
+    	String testPin = "2020.1.minor.patch-modifier";
+        assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+    
+    @Test
+    public void testPinMatching3FailSemver() {
+    	String testSchema = "major.minor.patch-modifier";
+    	String testPin = "1.major.patch";
+        assertFalse( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+    
+    @Test
+    public void testPinMatching4FailCalver() {
+    	String testSchema = "Year.Month.minor.patch-modifier";
+    	String testPin = "2020.22.minor.patch-modifier";
+        assertFalse( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema1Semver() {
+    	String testSchema = "major.minor.patch-modifier";
+    	String testPin = "1.3.patch";
+    	String testVersion = "1.3.5";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema2Calver() {
+    	String testSchema = "Year.Month.minor.patch-modifier";
+    	String testPin = "2020.1.minor.patch-modifier";
+    	String testVersion = "2020.1.18.5-testMod";
+        assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema3FailSemver() {
+    	String testSchema = "major.minor.patch-modifier";
+    	String testPin = "1.3.patch";
+    	String testVersion = "1.2.5";
+        assertFalse( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }
+    
+    @Test
+    public void testVersionMatchingPinAndSchema4FailCalver() {
+    	String testSchema = "Year.Month.minor.patch-modifier";
+    	String testPin = "2020.1.minor.patch-modifier";
+    	String testVersion = "2020.2.7.8-mod";
+        assertFalse( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
+    }    
+    
+    @Test
     public void testVersionStringOutput() {
     	String testSchema = "semver";
     	String testVersion = "1.3.6-alpha.1+1234.234.5";
@@ -155,6 +215,30 @@ public class AppTest
     	Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
         assertTrue ( true );
+    }
+    
+    @Test
+    public void initializeVersionFromPin1SemVer() {
+    	String testSchema = "semver";
+    	String testPin = "1.2.patch";
+    	Version v = Version.getVersionFromPin(testSchema, testPin);
+        assertEquals("1.2.0", v.constructVersionString());
+    }
+    
+    @Test
+    public void initializeVersionFromPin2SemVer() {
+    	String testSchema = "semver";
+    	String testPin = "3.minor.patch";
+    	Version v = Version.getVersionFromPin(testSchema, testPin);
+        assertEquals("3.0.0", v.constructVersionString());
+    }
+    
+    @Test
+    public void initializeVersionFromPin3CalVer() {
+    	String testSchema = VersionType.CALVER_RELIZA_2020.getSchema();
+    	String testPin = "2020.01.Modifier.Minor.Micro+Metadata";
+    	Version v = Version.getVersionFromPin(testSchema, testPin);
+        assertEquals("2020.01.Snapshot.0.0+Metadata", v.constructVersionString());
     }
     
     @Test

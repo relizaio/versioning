@@ -135,6 +135,87 @@ public class VersionUtils {
 	}
 	
 	/**
+	 * This method returns true if supplied version pin matches supplied schema string
+	 * Pin here means pinned version for a branch, i.e. YYYY.0M.Patch schema should match 2020.01.Patch pin
+	 * @param schema String
+	 * @param pin String
+	 * @return true if pin is matching schema, false otherwise
+	 */
+	public static boolean isPinMatchingSchema (String schema, String pin) {
+		boolean matching = true;
+		
+		VersionHelper vh = parseVersion(pin);
+
+		// handle semver as schema name
+		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
+			schema = "Major.Minor.Patch";
+		}
+		
+		// remove -modifier and +metadata from schema as it's irrelevant
+		schema = stripSchemaFromModMeta(schema);
+		List<VersionElement> veList = parseSchema(schema);
+		
+		if (veList.size() != vh.getVersionComponents().size()) {
+			matching = false;
+		}
+		for (int i=0; matching && i<vh.getVersionComponents().size(); i++) {
+			Pattern p = veList
+							.get(i)
+							.getRegexPattern();
+			matching = p
+						.matcher(vh.getVersionComponents().get(i))
+						.matches() ||
+					   VersionElement.getVersionElement(vh.getVersionComponents().get(i)) == veList.get(i);
+		}
+		return matching;
+	}
+	
+	/**
+	 * This method returns true if supplied version matches supplied pin as well as supplied schema string
+	 * Pin here means pinned version for a branch, i.e. YYYY.0M.Patch schema should match 2020.01.Patch pin
+	 * @param schema String
+	 * @param pin String
+	 * @param version String
+	 * @return true if version is matching schema and pin, false otherwise
+	 */
+	public static boolean isVersionMatchingSchemaAndPin (String schema, String pin, String version) {
+		boolean matching = isPinMatchingSchema(schema, pin);
+		if (matching) {
+			
+			VersionHelper vhPin = parseVersion(pin);
+			VersionHelper vhVersion = parseVersion(version);
+	
+			// handle semver as schema name
+			if (Constants.SEMVER.equalsIgnoreCase(schema)) {
+				schema = "Major.Minor.Patch";
+			}
+			
+			// remove -modifier and +metadata from schema as it's irrelevant
+			schema = stripSchemaFromModMeta(schema);
+			List<VersionElement> veList = parseSchema(schema);
+			
+			if (veList.size() != vhPin.getVersionComponents().size() || veList.size() != vhVersion.getVersionComponents().size()) {
+				matching = false;
+			}
+			for (int i=0; matching && i<vhVersion.getVersionComponents().size(); i++) {
+				Pattern p = veList
+								.get(i)
+								.getRegexPattern();
+				matching = p
+							.matcher(vhVersion.getVersionComponents().get(i))
+							.matches();
+				if (matching && p.matcher(vhPin.getVersionComponents().get(i)).matches()) {
+					// here we know that version is matching schema and need to verify if it's matching pin
+					// means we're dealing with pin item that must match version element exactly
+					matching = vhPin.getVersionComponents().get(i).equals(vhVersion.getVersionComponents().get(i));
+				}
+			}
+		}
+		return matching;
+	}
+	
+	
+	/**
 	 * This method removes case-insensitive metadata or modifier flags from version
 	 * @param schema String
 	 * @return schema string without modifier or metadata elements
