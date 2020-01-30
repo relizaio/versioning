@@ -109,7 +109,7 @@ Use methods exposed in the VersionApi class to create vresions. More documentati
 
 ## Versioning
 
-We use Reliza flavor of CalVer for versioning, which has the following schema: YYYY.0M.Modifier.Micro+Metadata
+We use Reliza flavor of CalVer for versioning, v2020, which has the following schema: YYYY.0M.Calvermodifier.Minor.Micro+Metadata
 
 ## Authors
 
