@@ -117,7 +117,7 @@ public class Version implements Comparable<Version> {
 		StringBuilder versionString = new StringBuilder();
 		
 		if (Constants.SEMVER.equalsIgnoreCase(useSchema)) {
-			useSchema = "Major.Minor.Patch-modifier+metadata";
+			useSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
 		}
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(useSchema);
 		List<String> separators = VersionUtils.extractSchemaSeparators(useSchema);
@@ -144,13 +144,21 @@ public class Version implements Comparable<Version> {
 					versionString.append(this.modifier);
 					break;
 				case SEMVER_MODIFIER:
-					// special handler for semver optional modifer
+					// special handler for semver optional modifier
+					char separatorCharMod = '0';
+					if (versionString.length() > 1) {
+						separatorCharMod = versionString.charAt(versionString.length()-1);
+					}
 					if (StringUtils.isNotEmpty(this.modifier)) {
+						// check if we need to add minus
+						if ('-' != separatorCharMod && '+' != separatorCharMod && '.' != separatorCharMod && 
+								'_' != separatorCharMod && '-' != separatorCharMod) {
+							versionString.append('-');
+						}
 						versionString.append(this.modifier);
 					} else {
 						if (versionString.length() > 1 && 
-							('-' == versionString.charAt(versionString.length()-1) ||
-							'+' == versionString.charAt(versionString.length()-1))) {
+							('-' == separatorCharMod || '+' == separatorCharMod)) {
 							// delete trailing dash or plus
 							versionString.delete(versionString.length()-1, versionString.length());
 						}
@@ -158,15 +166,22 @@ public class Version implements Comparable<Version> {
 					}
 					break;
 				case METADATA:
+					char separatorChar = '0';
+					if (versionString.length() > 1) {
+						separatorChar = versionString.charAt(versionString.length()-1);
+					}
 					if (StringUtils.isNotEmpty(this.metadata)) {
+						// check if we need to add plus
+						if ('-' != separatorChar && '+' != separatorChar && '.' != separatorChar && 
+								'_' != separatorChar && '-' != separatorChar) {
+							versionString.append('+');
+						}
 						versionString.append(this.metadata);
 					} else {
 						// special handler for semver optional modifer
-						if (versionString.length() > 1 && 
-								('-' == versionString.charAt(versionString.length()-1) ||
-								'+' == versionString.charAt(versionString.length()-1))) {
-								// delete trailing dash or plus
-								versionString.delete(versionString.length()-1, versionString.length());
+						if ('-' == separatorChar || '+' == separatorChar) {
+							// delete trailing dash or plus
+							versionString.delete(versionString.length()-1, versionString.length());
 						}
 						useEl = false;
 					}

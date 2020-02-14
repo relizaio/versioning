@@ -451,12 +451,20 @@ public class AppTest
     public void bumpPatchCalver() {
     	String schema = VersionType.CALVER_RELIZA_2020.getSchema();
     	Version v = Version.getVersion(schema);
-    	assertEquals("2020.01.Snapshot.1.0", v.constructVersionString());
+    	assertEquals("2020.02.Snapshot.1.0", v.constructVersionString());
     	v.bumpPatch(null);
-    	assertEquals("2020.01.Snapshot.1.1", v.constructVersionString());
+    	assertEquals("2020.02.Snapshot.1.1", v.constructVersionString());
     	v = Version.getVersion("2020.01.Snapshot.0.0", schema);
     	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
     	assertEquals("2020.01.Snapshot.0.1", v.constructVersionString());
+    }
+    
+    @Test
+    public void testSemverWithMetadata() {
+    	String schema = "semver";
+    	Version v = Version.getVersion(schema);
+    	v.setMetadata("testmetadata");
+    	assertEquals("0.1.0+testmetadata", v.constructVersionString());
     }
     
 }

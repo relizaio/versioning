@@ -32,7 +32,7 @@ public class VersionUtils {
 	 */
 	public static List<VersionElement> parseSchema (String schema) {
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "major.minor.patch-identifier+metadata";
+			schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
 		}
 		List<VersionElement> retList = new ArrayList<>();
 		// split schema to elements
