@@ -471,6 +471,7 @@ public class Version implements Comparable<Version> {
 	/**
 	 * Factory method to initialize version based on specified schema
 	 * @param schema String
+	 * @return Version object corresponding to the supplied schema
 	 */
 	public static Version getVersion (String schema) {
 		Version v = new Version();
@@ -500,6 +501,7 @@ public class Version implements Comparable<Version> {
 	 * Factory method to create a Version object based on version string (origVersion) and specified schema
 	 * @param origVersion String
 	 * @param schema String
+	 * @return Version object corresponding to supplied schema and based on supplied original version string
 	 */
 	public static Version getVersion (String origVersion, String schema) {
 		if (!VersionUtils.isVersionMatchingSchema(schema, origVersion)) {
