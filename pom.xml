@@ -5,7 +5,7 @@
 
   <groupId>io.reliza</groupId>
   <artifactId>versioning</artifactId>
-  <version>2020.01.Stable.7-SNAPSHOT</version>
+  <version>2020.02.Stable.1-SNAPSHOT</version>
 
   <name>versioning</name>
   <url>https://reliza.io</url>
@@ -199,7 +199,7 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
+            <version>3.1.1</version>
             <executions>
                 <execution>
                     <id>attach-javadoc</id>
