@@ -576,6 +576,9 @@ public class Version implements Comparable<Version> {
 			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
+			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		}
 		// initialize all elements at zero first
 		v.minor = 0;
 		v.major = 0;

@@ -142,13 +142,17 @@ public class VersionUtils {
 	 */
 	public static boolean isPinMatchingSchema (String schema, String pin) {
 		boolean matching = true;
-		
-		VersionHelper vh = parseVersion(pin);
 
 		// handle semver as schema name
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
 			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
+		
+		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
+			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		}
+		
+		VersionHelper vh = parseVersion(pin);
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
@@ -181,13 +185,17 @@ public class VersionUtils {
 		boolean matching = isPinMatchingSchema(schema, pin);
 		if (matching) {
 			
-			VersionHelper vhPin = parseVersion(pin);
-			VersionHelper vhVersion = parseVersion(version);
-	
 			// handle semver as schema name
 			if (Constants.SEMVER.equalsIgnoreCase(schema)) {
 				schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 			}
+			
+			if (Constants.SEMVER.equalsIgnoreCase(pin)) {
+				schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+			}
+			
+			VersionHelper vhPin = parseVersion(pin);
+			VersionHelper vhVersion = parseVersion(version);
 			
 			// remove -modifier and +metadata from schema as it's irrelevant
 			schema = stripSchemaFromModMeta(schema);

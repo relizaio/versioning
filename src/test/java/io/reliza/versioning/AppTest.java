@@ -467,4 +467,11 @@ public class AppTest
     	assertEquals("0.1.0+testmetadata", v.constructVersionString());
     }
     
+    @Test
+    public void TestSemverPinMatchingSemverSchema() {
+    	String schema = "semver";
+    	String pin = "semver";
+    	assertTrue(VersionUtils.isPinMatchingSchema(schema, pin));
+    }
+    
 }
