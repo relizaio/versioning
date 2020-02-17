@@ -191,7 +191,7 @@ public class VersionUtils {
 			}
 			
 			if (Constants.SEMVER.equalsIgnoreCase(pin)) {
-				schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+				pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 			}
 			
 			VersionHelper vhPin = parseVersion(pin);

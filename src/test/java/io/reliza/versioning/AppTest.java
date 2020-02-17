@@ -474,4 +474,12 @@ public class AppTest
     	assertTrue(VersionUtils.isPinMatchingSchema(schema, pin));
     }
     
+    @Test
+    public void TestSemverPinMatchingSemverSchemaVersionMeta() {
+    	String schema = "semver";
+    	String pin = "semver";
+    	String version = "0.0.0+test3.relizahub.com";
+    	assertTrue(VersionUtils.isVersionMatchingSchemaAndPin(schema, pin, version));
+    }
+    
 }
