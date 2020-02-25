@@ -16,6 +16,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.versioning.VersionApi.ActionEnum;
+
 public class Version implements Comparable<Version> {
 	
 	/**
@@ -566,8 +568,24 @@ public class Version implements Comparable<Version> {
 	}
 	
 	public static Version getVersionFromPin (String schema, String pin) {
+		return getVersionFromPinAndOldVersion(schema, pin, null, null);
+	}
+	
+	/**
+	 * If oldVersionString is present and we're dealing with calver schema, this effectively does simple bump relative to old version date based on schema and pin
+	 * if it's semver schema and old version present, this will effectively return old version making sure it's matching schema and pin
+	 * if old version is not present, this will do simple bump relative to semver
+	 * @param schema String, required
+	 * @param pin String, required
+	 * @param oldVersionString String, optional
+	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
+	 */
+	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae) {
 		if (!VersionUtils.isPinMatchingSchema(schema, pin)) {
 			throw new RuntimeException("Cannot construct Version object, since pin is not matching schema");
+		}
+		if (StringUtils.isNotEmpty(oldVersionString) && !VersionUtils.isVersionMatchingSchemaAndPin(schema, pin, oldVersionString)) {
+			throw new RuntimeException("Cannot construct Version object, since old version is not matching either pin or schema");
 		}
 		Version v = new Version();
 		v.schema = schema;
@@ -575,32 +593,65 @@ public class Version implements Comparable<Version> {
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
 			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
+		Version oldV = null;
+		if (StringUtils.isNotEmpty(oldVersionString)) {
+			oldV = Version.getVersion(oldVersionString, schema);
+		}
+		
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
 		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
 			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
-		// initialize all elements at zero first
-		v.minor = 0;
-		v.major = 0;
-		v.patch = 0;
+		// initialize all elements at zero first or old version values if present
+		if (null != oldV && null != oldV.getMinor()) {
+			v.minor = oldV.getMinor();
+		} else {
+			v.minor = 0;
+		}
+		if (null != oldV && null != oldV.getMajor()) {
+			v.major = oldV.getMajor();
+		} else {
+			v.major = 0;
+		}
+		if (null != oldV && null != oldV.getPatch()) {
+			v.patch = oldV.getPatch();
+		} else {
+			v.patch = 0;
+		}
 		v.setCurrentDate();
-		// now populate whatever we can from pin
+		if (null != oldV && null != oldV.year) {
+			v.year = oldV.year;
+		}
+		if (null != oldV && null != oldV.month) {
+			v.month = oldV.month;
+		}
+		if (null != oldV && null != oldV.day) {
+			v.day = oldV.day;
+		}
+		// skipping metadata and such - which seems reasonable in this context
+		// now populate whatever we can from pin -> pin overrides old version
 		VersionHelper vh = VersionUtils.parseVersion(pin);
 		v.modifier = vh.getModifier();
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
+
+		// this would be set of unmodifiable elements since they are set by pin
+		Set<VersionElement> elsProtectedByPin = new HashSet<>(); // skipping dates since we are not bumping dates below
 		
 		for (int i=0; i<schemaVeList.size(); i++) {
 			if (VersionElement.getVersionElement(vh.getVersionComponents().get(i)) != schemaVeList.get(i)) {
 				switch (schemaVeList.get(i)) {
 				case MAJOR:
 					v.major = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(VersionElement.MAJOR);
 					break;
 				case MINOR:
 					v.minor = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(VersionElement.MINOR);
 					break;
 				case PATCH:
 					v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(VersionElement.PATCH);
 					break;
 				case SEMVER_MODIFIER:
 				case CALVER_MODIFIER:
@@ -633,7 +684,44 @@ public class Version implements Comparable<Version> {
 				}
 			} else if (schemaVeList.get(i) == VersionElement.CALVER_MODIFIER) {
 				v.modifier = Constants.BASE_MODIFIER;
+			} else {
+				// pin matches schema and we need to resolve dates as current if present
+				ZonedDateTime date = ZonedDateTime.now(ZoneId.of("UTC"));
+				switch (schemaVeList.get(i)) {
+				case YYYY:
+				case YY:
+				case OY:
+					v.year = date.getYear();
+					break;
+				case MM:
+				case OM:
+					v.month = date.getMonth().getValue();
+					break;
+				case DD:
+				case OD:
+					v.day = date.getDayOfMonth();
+					break;
+				default:
+					break;
+				}
 			}
+		}
+		
+		// check if we had any updated calver components - and if yes, we reset semver components to 0
+		if (null != oldV && ((null != oldV.year && v.year > oldV.year) || (null != oldV.month && v.month > oldV.month) || (null != oldV.day && v.day > oldV.day))) {
+			// calver update happened, reset semver
+			v.minor = 0;
+			v.major = 0;
+			v.patch = 0;
+		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
+			++v.major;
+			v.minor = 0;
+			v.patch = 0;
+		} else if (ae == ActionEnum.BUMP_MINOR && !elsProtectedByPin.contains(VersionElement.MINOR)) {
+			++v.minor;
+			v.patch = 0;
+		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
+			++v.patch;
 		}
 		return v;
 	}
