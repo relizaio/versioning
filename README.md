@@ -24,13 +24,13 @@ For Maven:
 <dependency>
   <groupId>io.reliza</groupId>
   <artifactId>versioning</artifactId>
-  <version>2020.02.Stable.5</version>
+  <version>2020.02.Stable.6</version>
 </dependency>
 ```
 
 For Gradle:
 ```
-implementation 'io.reliza:versioning:2020.02.Stable.5'
+implementation 'io.reliza:versioning:2020.02.Stable.6'
 ```
 
 See more options on the [Maven Central page](https://search.maven.org/artifact/io.reliza/versioning/)
