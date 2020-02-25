@@ -5,7 +5,7 @@
 
   <groupId>io.reliza</groupId>
   <artifactId>versioning</artifactId>
-  <version>2020.02.Stable.7-SNAPSHOT</version>
+  <version>2020.02.Stable.7</version>
 
   <name>versioning</name>
   <url>https://reliza.io</url>
@@ -39,7 +39,7 @@
         <connection>scm:git:git://github.com/relizaio/versioning.git</connection>
         <developerConnection>scm:git:git@github.com:relizaio/versioning.git</developerConnection>
         <url>https://github.com/relizaio/versioning</url>
-        <tag>versioning-2020.02.Stable.6</tag>
+        <tag>versioning-2020.02.Stable.7</tag>
     </scm>
   
     <distributionManagement>
