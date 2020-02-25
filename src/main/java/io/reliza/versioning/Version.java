@@ -490,7 +490,7 @@ public class Version implements Comparable<Version> {
 		} else if (schemaVeList.contains(VersionElement.PATCH)) {
 			v.minor = 0;
 			v.major = 0;
-			v.patch = 1;
+			v.patch = 0;
 		}
 		if (schemaVeList.contains(VersionElement.CALVER_MODIFIER)) {
 			v.modifier = Constants.BASE_MODIFIER;
@@ -708,7 +708,11 @@ public class Version implements Comparable<Version> {
 		}
 		
 		// check if we had any updated calver components - and if yes, we reset semver components to 0
-		if (null != oldV && ((null != oldV.year && v.year > oldV.year) || (null != oldV.month && v.month > oldV.month) || (null != oldV.day && v.day > oldV.day))) {
+		
+		// normalize years, months and days for comparison
+
+		
+		if (isCalverUpdated(v, oldV)) {
 			// calver update happened, reset semver
 			v.minor = 0;
 			v.major = 0;
@@ -724,6 +728,27 @@ public class Version implements Comparable<Version> {
 			++v.patch;
 		}
 		return v;
+	}
+	
+	private static boolean isCalverUpdated (final Version v, final Version oldV) {
+		boolean calverUpdated = false;
+		if (null != oldV && null != oldV.year && null != v.year) {
+			if (oldV.year.toString().length() == 2 && v.year.toString().length() == 4) {
+				Integer newYearNormalized = Integer.parseInt(v.year.toString().substring(2));
+				if (newYearNormalized > oldV.year) {
+					calverUpdated = true;
+				}
+			} else {
+				calverUpdated = (v.year > oldV.year);
+			}
+		}
+		if (!calverUpdated && null != oldV && null != oldV.month && null != v.month && v.month > oldV.month) {
+			calverUpdated = true;
+		}
+		if (!calverUpdated && null != oldV && null != oldV.day && null != v.day && v.day > oldV.day) {
+			calverUpdated = true;
+		}
+		return calverUpdated;
 	}
 	
 	/**

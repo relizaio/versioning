@@ -13,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.versioning.VersionApi.ActionEnum;
 import io.reliza.versioning.VersionApi.VersionApiObject;
 
 /**
@@ -34,7 +35,7 @@ public class VersionCli {
 							    .longOpt( "action" )
 							    .desc( "action for auto-increment, default is no auto-increment"  )
 							    .hasArg()
-							    .argName( "None|Bump|BumpMinor|BumpMajor|BumpDate" )
+							    .argName( "None|Bump|BumpMinor|BumpMajor|BumpDate|BumpPatch" )
 							    .build();
 		
 		Option snapshot = Option.builder("t")
@@ -79,7 +80,7 @@ public class VersionCli {
 				String version = cmd.getOptionValue("v");
 				String semver = cmd.getOptionValue("r");
 				String cienv = cmd.getOptionValue("e");
-				String cibuild = cmd.getOptionValue("v");
+				String cibuild = cmd.getOptionValue("b");
 
 				
 				VersionApiObject vao = VersionApi.createVao(schema);
@@ -102,7 +103,9 @@ public class VersionCli {
 				}
 
 				String actionStr = cmd.getOptionValue("a");
-				if (StringUtils.isNotEmpty(actionStr)) {
+				if ("bump".equalsIgnoreCase(actionStr) && StringUtils.isNotEmpty(schema) && StringUtils.isNotEmpty(version)) {
+					v = Version.getVersionFromPinAndOldVersion(schema, schema, version, ActionEnum.BUMP);
+				} else if (StringUtils.isNotEmpty(actionStr)) {
 					VersionApi.applyActionOnVersion(v, actionStr);
 				}
 				

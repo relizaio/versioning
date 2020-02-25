@@ -530,6 +530,15 @@ public class AppTest
     }
     
     @Test
+    public void bumpCalverVersionWithPin5() {
+    	String testSchema = "YY.OM.Micro";
+    	String testPin = "YY.OM.Micro";
+    	String testOldVer = "20.02.1";
+    	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
+    	assertEquals("20.02.2", v.constructVersionString());
+    }
+    
+    @Test
     public void bumpSemverVersionWithPin1() {
     	String testSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
     	String testPin = "5.9.patch";
@@ -554,5 +563,5 @@ public class AppTest
     	String testOldVer = "5.6.2";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP_MINOR);
     	assertEquals("5.7.0", v.constructVersionString());
-    }   
+    }
 }
