@@ -90,6 +90,7 @@ public class Version implements Comparable<Version> {
 	private String schema;
 	private String buildid; // i.e. 24 or build24
 	private String buildenv; // i.e. circleci
+	private String branch; // name of branch, i.e. 234-ticket_I_work_on
 	private boolean isSnapshot;
 	
 	/**
@@ -135,6 +136,9 @@ public class Version implements Comparable<Version> {
 					break;
 				case PATCH:
 					versionString.append(this.patch.toString());
+					break;
+				case BRANCH:
+					versionString.append(this.branch);
 					break;
 				case BUILDID:
 					versionString.append(this.buildid);
@@ -470,6 +474,23 @@ public class Version implements Comparable<Version> {
 		this.buildenv = buildenv;
 	}
 	
+	
+	/**
+	 * Gets Branch version field
+	 * @return value of Branch version element
+	 */
+	public String getBranch() {
+		return branch;
+	}
+
+	/**
+	 * Sets Branch version field
+	 * @param branch - value to set Branch field to
+	 */
+	public void setBranch(String branch) {
+		this.branch = branch;
+	}
+
 	/**
 	 * Factory method to initialize version based on specified schema
 	 * @param schema String
@@ -516,7 +537,7 @@ public class Version implements Comparable<Version> {
 			schema = "Major.Minor.Patch";
 		}
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
-		VersionHelper vh = VersionUtils.parseVersion(origVersion);
+		VersionHelper vh = VersionUtils.parseVersion(origVersion, schema);
 		v.modifier = vh.getModifier();
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
@@ -559,6 +580,9 @@ public class Version implements Comparable<Version> {
 				break;
 			case BUILDENV:
 				v.buildenv = vh.getVersionComponents().get(i);
+				break;
+			case BRANCH:
+				v.branch = vh.getVersionComponents().get(i);
 				break;
 			default:
 				break;
@@ -639,7 +663,8 @@ public class Version implements Comparable<Version> {
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); // skipping dates since we are not bumping dates below
 		
 		for (int i=0; i<schemaVeList.size(); i++) {
-			if (VersionElement.getVersionElement(vh.getVersionComponents().get(i)) != schemaVeList.get(i)) {
+			VersionElement parsedVe = VersionElement.getVersionElement(vh.getVersionComponents().get(i));
+			if (parsedVe != schemaVeList.get(i)) {
 				switch (schemaVeList.get(i)) {
 				case MAJOR:
 					v.major = Integer.parseInt(vh.getVersionComponents().get(i));
@@ -673,6 +698,9 @@ public class Version implements Comparable<Version> {
 				case OD:
 					v.day = Integer.parseInt(vh.getVersionComponents().get(i));
 					break;
+				case BRANCH:
+					v.branch = vh.getVersionComponents().get(i);
+					break;
 				case BUILDID:
 					v.buildid = vh.getVersionComponents().get(i);
 					break;
@@ -701,6 +729,8 @@ public class Version implements Comparable<Version> {
 				case OD:
 					v.day = date.getDayOfMonth();
 					break;
+				case BRANCH:
+					v.branch = oldV.branch;
 				default:
 					break;
 				}

@@ -56,6 +56,7 @@ public class VersionCli {
 		options.addOption("r", "semver", true, "sets to specific semver version, use Major.Minor.Patch format");
 		options.addOption("e", "cienv", true, "value of ci environment field of the version");
 		options.addOption("b", "cibuild", true, "value of ci build field of the version");
+		options.addOption("n", "branch", true, "value of branch field of the version");
 		
 		
 		options.addOption(action);
@@ -81,6 +82,7 @@ public class VersionCli {
 				String semver = cmd.getOptionValue("r");
 				String cienv = cmd.getOptionValue("e");
 				String cibuild = cmd.getOptionValue("b");
+				String branch = cmd.getOptionValue("n");
 
 				
 				VersionApiObject vao = VersionApi.createVao(schema);
@@ -96,6 +98,10 @@ public class VersionCli {
 				
 				if (StringUtils.isNotEmpty(cibuild)) {
 					v.setBuildenv(cibuild);
+				}
+				
+				if (StringUtils.isNotEmpty(branch)) {
+					v.setBranch(branch);
 				}
 				
 				if (StringUtils.isNotEmpty(semver)) {

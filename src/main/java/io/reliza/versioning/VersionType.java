@@ -14,7 +14,9 @@ public enum VersionType {
 	CALVER_RELIZA("YYYY.0M.Calvermodifier.Micro+Metadata"),
 	CALVER_RELIZA_2020("YYYY.0M.Calvermodifier.Minor.Micro+Metadata"),
 	SEMVER_FULL_NOTATION("Major.Minor.Patch-Modifier+Metadata"),
-	SEMVER_SHORT_NOTATION("Major.Minor.Patch")
+	SEMVER_SHORT_NOTATION("Major.Minor.Patch"),
+	FEATURE_BRANCH("Branch.Micro"),
+	FEATURE_BRANCH_CALVER("YYYY.0M.Branch.Micro")
 	;
 	
 	private String schema;

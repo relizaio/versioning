@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.reliza.versioning.Version.VersionHelper;
 
 /**
@@ -68,6 +70,18 @@ public class VersionUtils {
 	 * @return VersionHelper
 	 */
 	public static VersionHelper parseVersion (String version) {
+		return parseVersion(version, null);
+	}
+	
+	/**
+	 * This method parses version string into VersionHelper based on provided schema
+	 * The need for schema arises where version elements need to include special characters themselves, such as dashes, periods or underscores
+	 * @param version String
+	 * @param schema String
+	 * @return VersionHelper
+	 */
+	public static VersionHelper parseVersion (String version, String schema) {
+		boolean handleBranchInVersion = StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase());
 		// check special case for Maven-style Snapshot
 		boolean isSnapshot = false;
 		if (version.endsWith(Constants.MAVEN_STYLE_SNAPSHOT)) {
@@ -76,7 +90,7 @@ public class VersionUtils {
 		}
 		// handle + and - differently as semver supports other separators after plus and dash
 		String[] plusel = null;
-		if (version.contains("+")) {
+		if (version.contains("+") && !handleBranchInVersion) {
 			plusel = version.split("\\+");
 			// if more than one plus raise an error
 			if (plusel.length > 2) {
@@ -85,7 +99,7 @@ public class VersionUtils {
 			version = plusel[0];
 		}
 		String[] dashel = null;
-		if (version.contains("-")) {
+		if (version.contains("-") && !handleBranchInVersion) {
 			dashel = version.split("-");
 			// if more than one dash raise an error
 			if (dashel.length > 2) {
@@ -93,7 +107,11 @@ public class VersionUtils {
 			}
 			version = dashel[0];
 		}
-		List<String> versionComponents = Arrays.asList(version.split("(\\.|_)"));
+		String splitRegex = "\\.";
+		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
+			splitRegex = "(\\.|_)";
+		}
+		List<String> versionComponents = Arrays.asList(version.split(splitRegex));
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
 		return new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
@@ -108,7 +126,7 @@ public class VersionUtils {
 	public static boolean isVersionMatchingSchema (String schema, String version) {
 		boolean matching = true;
 		
-		VersionHelper vh = parseVersion(version);
+		VersionHelper vh = parseVersion(version, schema);
 
 		// handle semver as schema name
 		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
@@ -195,7 +213,7 @@ public class VersionUtils {
 			}
 			
 			VersionHelper vhPin = parseVersion(pin);
-			VersionHelper vhVersion = parseVersion(version);
+			VersionHelper vhVersion = parseVersion(version, schema);
 			
 			// remove -modifier and +metadata from schema as it's irrelevant
 			schema = stripSchemaFromModMeta(schema);
