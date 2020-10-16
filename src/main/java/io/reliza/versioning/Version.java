@@ -245,7 +245,7 @@ public class Version implements Comparable<Version> {
 					if (this.day < 10) {
 						versionString.append("0");
 					}
-					versionString.append(this.year.toString());
+					versionString.append(this.day.toString());
 					break;
 				default:
 					break;
