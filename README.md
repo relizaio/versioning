@@ -63,6 +63,7 @@ Reliza Versioning understands following elements of versioning schema (case inse
 - **OD** - 2-digit day presentation, if 1st digit is 0, it's still displayed as 0
 - **CIENV**
 - **CIBUILD**
+- **BRANCH** - accepts any keyword, suggested for feature branch names
 - **MODIFIER** - semver modifier (see note below), by convention separated by minus (-), if another separator is not specified
 - **CALVERMODIFIER** - calver modifier (not to be used with SemVer)
 - **METADATA** - can be used with both CalVer or SemVer, by convention separated by plus (+), if another separator is not specified
