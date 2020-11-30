@@ -89,24 +89,50 @@ public class VersionUtils {
 			version = version.replaceFirst(Constants.MAVEN_STYLE_SNAPSHOT + "$", "");
 		}
 		// handle + and - differently as semver supports other separators after plus and dash
+		String[] pluselHelper = null;
 		String[] plusel = null;
 		if (version.contains("+") && !handleBranchInVersion) {
-			plusel = version.split("\\+");
-			// if more than one plus raise an error
-			if (plusel.length > 2) {
-				throw new RuntimeException("Cannot handle more than one plus in version = " + version);
+		    pluselHelper = version.split("\\+");
+		    // if more than one plus raise an error
+		    if (pluselHelper.length > 2) {
+			// if there are no dots, then only split on the last plus
+			if (pluselHelper[pluselHelper.length - 1].contains(".")) {
+			    // if there are dots after dashes then dashes are just part of the version - do nothing
+			} else {
+			    // just take the latest plus and split on that
+			    plusel = new String[2];
+			    plusel[1] = pluselHelper[pluselHelper.length - 1];
+			    plusel[0] = version.replaceFirst("+" + plusel[1], "");
 			}
+		    } else {
+			// only one plus
+			plusel = pluselHelper;
 			version = plusel[0];
+		    }
 		}
+
+		String[] dashelHelper = null;
 		String[] dashel = null;
 		if (version.contains("-") && !handleBranchInVersion) {
-			dashel = version.split("-");
-			// if more than one dash raise an error
-			if (dashel.length > 2) {
-				throw new RuntimeException("Cannot handle more than one dash in version = " + version);
+		    dashelHelper = version.split("-");
+		    // if more than one dash raise an error
+		    if (dashelHelper.length > 2) {
+			// if there are no dots, then only split on the last dash
+			if (dashelHelper[dashelHelper.length - 1].contains(".")) {
+			    // if there are dots after dashes then dashes are just part of the version - do nothing
+			} else {
+			    // just take the latest dash and split on that
+			    dashel = new String[2];
+			    dashel[1] = dashelHelper[dashelHelper.length - 1];
+			    dashel[0] = version.replaceFirst("-" + dashel[1], "");
 			}
+		    } else {
+			// only one dash
+			dashel = dashelHelper;
 			version = dashel[0];
+		    }
 		}
+		
 		String splitRegex = "\\.";
 		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
 			splitRegex = "(\\.|_)";
