@@ -1,0 +1,72 @@
+on: [push]
+
+name: Build Docker Image And Submit Metadata To Reliza Hub
+
+jobs:
+  build:
+    name: Build And Push
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAMESPACE: ${{ secrets.IMAGE_NAMESPACE }}
+      IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+    steps:
+      - name: Record build start
+        run: echo "BUILD_START=$(date -Iseconds)"  >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login to Docker Registry
+        run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+      - name: Get Version
+        run: |
+          reliza_ver=$(docker run --rm relizaio/reliza-go-client getversion -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF --metadata GitHub)
+          echo "completed getting ver"
+          echo $reliza_ver
+          echo "RLZ_VER_JSON=$reliza_ver" >> $GITHUB_ENV
+      - name: Extract Actual Version From JSON
+        run: |
+          full_ver=$(echo $RLZ_VER_JSON | jq -r ".version")
+          # version without meta for docker registry, since plus sign is not allowed there
+          short_ver=$(echo $RLZ_VER_JSON | jq -r ".dockerTagSafeVersion")
+          echo "RLZ_FULL_VER=$full_ver" >> $GITHUB_ENV
+          echo "RLZ_SHORT_VER=$short_ver" >> $GITHUB_ENV
+      - name: Instantiate Reliza status as Rejected to handle possible build failure
+        run: echo "--status rejected " > reliza_command
+      - name: Build and push docker container to Docker Hub
+        continue-on-error: true
+        run: |
+          docker build -t $IMAGE_NAMESPACE/$IMAGE_NAME:$RLZ_SHORT_VER -t $IMAGE_NAMESPACE/$IMAGE_NAME:latest --build-arg VERSION=$RLZ_FULL_VER  \
+            --build-arg CI_ENV=github$GITHUB_SHA --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF .
+          docker_sha_256=$(docker push $IMAGE_NAMESPACE/$IMAGE_NAME:$RLZ_SHORT_VER | grep sha256 | cut -f 3 -d ' ')
+          # push latest also
+          docker push $IMAGE_NAMESPACE/$IMAGE_NAME:latest
+          # save sha256 to env var
+          echo "DOCKER_SHA_256=$docker_sha_256" >> $GITHUB_ENV
+          echo "--status completed " > reliza_command
+      - name: Submit metadata to Reliza Hub
+        run: |
+          echo -n "-b $GITHUB_REF --vcstype git --commit $GITHUB_SHA -k ${{ secrets.RELIZA_API_KEY }} \
+            -i ${{ secrets.RELIZA_API_ID }} --vcsuri github.com/$GITHUB_REPOSITORY \
+            --date $(git log -1 --date=iso-strict --pretty='%ad') \
+            -v $RLZ_FULL_VER " >> reliza_command
+          echo -n "--artid $IMAGE_NAMESPACE/$IMAGE_NAME " >> reliza_command
+          echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
+          echo -n "--artcimeta GitHub Actions " >> reliza_command
+          echo -n "--arttype Docker " >> reliza_command
+          if [ $DOCKER_SHA_256 != "" ]
+          then
+            echo -n "--artdigests $DOCKER_SHA_256 " >> reliza_command
+          fi
+          echo -n "--datestart $BUILD_START " >> reliza_command
+          echo -n "--dateend $(date -Iseconds) " >> reliza_command
+          # debug
+          cat reliza_command
+          # send data
+          docker run --rm relizaio/reliza-go-client addrelease $(cat reliza_command)
+      - name: Fail build if reliza status is rejected
+        run: |
+          status_rejected_check=$(grep 'status rejected' reliza_command | wc -l)
+          if [ $status_rejected_check -gt 0 ]
+          then
+            echo "Failing build since Reliza build Status is rejected"
+            exit 1
+          fi
