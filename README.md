@@ -2,54 +2,59 @@
 
 This tool allows for automatic generation and bumping of [CalVer](https://calver.org/) or [SemVer](https://semver.org/) or custom version schemas.
 
-## Installing
 
-### I For command-line usage or integration with CI/CD tools (such as Jenkins)
-1. Use docker image, to get the image:
-```
-docker pull relizaio/versioning
-```
+<p align="center"><img src="/img/terminal_demo.gif?raw=true"/></p>
 
-2. Compile locally (requires Java 8+ and maven)
-from the project directory run
-```
-mvn clean compile assembly:single
-```
-This will produce .jar file in the target directory that can be run with "java -jar versioning_jar_file--jar-with-dependencies.jar"
 
-### II To use as a java library
-1. Use as maven dependency from maven central:
-For Maven:
+## 1. Features
+- Generate CalVer or SemVer versions
+- Bump CalVer or SemVer versions
+- Flexibility in creating and managing different flavors of versioning schemas
+- Usage as either Java Library or a CLI tool
+
+## 2. Sample Command Line usage
+
+#### 2.1. Generate Reliza flavor CalVer with "Stable" modifier
 ```
-<dependency>
-  <groupId>io.reliza</groupId>
-  <artifactId>versioning</artifactId>
-  <version>2020.11.Stable.1</version>
-</dependency>
+java -jar versioning.jar -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
+```
+or with docker:
+```
+docker run --rm relizaio/versioning -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
 ```
 
-For Gradle:
+#### 2.2. Bump patch in existing SemVer version (will produce 2.4.8)
 ```
-implementation 'io.reliza:versioning:2020.11.Stable.1'
+java -jar versioning.jar -s semver -v 2.4.7 -a Bump
 ```
-
-See more options on the [Maven Central page](https://search.maven.org/artifact/io.reliza/versioning/)
-
-2. Compile locally (requires Java 8+ and maven)
-from the project directory run
+or with docker:
 ```
-mvn clean package
+docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
 ```
 
-And include resulting .jar file from the target directory in your project. Then use io.reliza.versioning.VersionApi class for most common operations. More documentation coming soon.
-
-## Running the tests (requires Java 8+ and maven)
-From the project directory run
+#### 2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
 ```
-mvn clean test
+mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
 ```
+or with docker:
+```
+mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
+```
+Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
 
-## Usage instructions
+Similarly, Reliza Versioning can be included into Jenkins by being called from the bash scripts.
+
+#### 2.4. Show help page
+
+```
+docker run --rm relizaio/versioning -h
+```
+which will produce help summary page.
+
+Note that in any usage case other than help page -s (schema) parameter is required.
+
+#### 2.5. Known version elements:
+
 Reliza Versioning understands following elements of versioning schema (case insensitive):
 - **Major**
 - **Minor**
@@ -74,57 +79,56 @@ Note: for SemVer always use "modifier" notation, for CalVer still use "modifier"
 
 Reliza Versioning also understands "SemVer" as a code for "major.minor.patch-identifier+metadata" (where identifier and metadata are treated as optional).
 
-### 1. Specific Command Line usage and samples
-Assuming, that we use a compiled jar with dependencies called versioning.jar, call from CLI as
-```
-java -jar versioning.jar -h
-```
-which will produce help summary page.
+## 3 Different ways to use - CLI vs Java Library
 
-Note that in any usage case other than help page -s (schema) parameter is required.
+### 3.1. For command-line usage or integration with CI/CD tools (such as Jenkins)
 
-If using docker image instead, call for the same page:
+#### 3.1.1. Use docker image:
 ```
-docker run --rm relizaio/versioning -h
+docker pull relizaio/versioning
 ```
 
-### 2. Sample Command Line usage
-2.1. Generate Reliza flavor CalVer with "Stable" modifier
+#### 3.1.2. Compile locally (requires Java 8+ and maven) as jar CLI tool
+from the project directory run
 ```
-java -jar versioning.jar -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
+mvn clean compile assembly:single
 ```
-or with docker:
+This will produce .jar file in the target directory that can be run with "java -jar versioning_jar_file--jar-with-dependencies.jar"
+
+### 3.2. II To use as a java library
+#### 3.2.1. Use as maven dependency from maven central:
+For Maven:
 ```
-docker run --rm relizaio/versioning -s YYYY.0M.Calvermodifier.Micro+Metadata -i Stable
+<dependency>
+  <groupId>io.reliza</groupId>
+  <artifactId>versioning</artifactId>
+  <version>2020.11.Stable.1</version>
+</dependency>
 ```
 
-2.2. Bump patch in existing SemVer version (will produce 2.4.8)
+For Gradle:
 ```
-java -jar versioning.jar -s semver -v 2.4.7 -a Bump
-```
-or with docker:
-```
-docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
+implementation 'io.reliza:versioning:2020.11.Stable.1'
 ```
 
-2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
-```
-mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
-```
-or with docker:
-```
-mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
-```
-Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
+See more options on the [Maven Central page](https://search.maven.org/artifact/io.reliza/versioning/)
 
-Similarly, Reliza Versioning can be included into Jenkins by being called from the bash scripts.
+#### 3.2.2. Compile locally (requires Java 8+ and maven)
+from the project directory run
+```
+mvn clean package
+```
 
-### 3. Usage as Java Library
+And include resulting .jar file from the target directory in your project. Then use io.reliza.versioning.VersionApi class for most common operations. More documentation coming soon.
+
+## Running the tests (requires Java 8+ and maven)
+From the project directory run
+```
+mvn clean test
+```
+
+## 4. Usage as Java Library
 Use methods exposed in the VersionApi class to create vresions. More documentation is coming soon.
-
-## Versioning
-
-We use Reliza flavor of CalVer for versioning, v2020, which has the following schema: YYYY.0M.Calvermodifier.Minor.Micro+Metadata
 
 ## Authors
 
