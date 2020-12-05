@@ -68,6 +68,7 @@ public class VersionCli {
 			if (cmd.hasOption("help")) {
 				// automatically generate the help statement
 				HelpFormatter formatter = new HelpFormatter();
+				formatter.setWidth(250);
 				formatter.printHelp( "versioncli", options, true);
 			} else {
 				// make sure schema is set
