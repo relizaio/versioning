@@ -25,7 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-    private static final String CURRENT_MONTH = "11";
+	private static final String CURRENT_MONTH_SINGLE = "1";
+    private static final String CURRENT_MONTH = "01";
     
     @Test
     public void testSchemaMatching1() {
@@ -470,7 +471,7 @@ public class AppTest
     	String schema = VersionType.FEATURE_BRANCH_CALVER.getSchema();
     	Version v = Version.getVersion(schema);
     	v.setBranch("234-my_feature");
-    	assertEquals("2020." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
     }
     
     @Test
@@ -485,7 +486,7 @@ public class AppTest
     	String schema = VersionType.FEATURE_BRANCH_CALVER.getSchema();
     	String oldVersion = "2020.09.234-my_feature.0";
     	Version v = Version.getVersionFromPinAndOldVersion(schema, schema, oldVersion, ActionEnum.BUMP);
-    	assertEquals("2020." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
     }
     
     @Test
@@ -506,12 +507,12 @@ public class AppTest
     public void bumpPatchCalver() {
     	String schema = VersionType.CALVER_RELIZA_2020.getSchema();
     	Version v = Version.getVersion(schema);
-    	assertEquals("2020." + CURRENT_MONTH + ".Snapshot.1.0", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH + ".Snapshot.1.0", v.constructVersionString());
     	v.bumpPatch(null);
-    	assertEquals("2020." + CURRENT_MONTH + ".Snapshot.1.1", v.constructVersionString());
-    	v = Version.getVersion("2020.01.Snapshot.0.0", schema);
+    	assertEquals("2021." + CURRENT_MONTH + ".Snapshot.1.1", v.constructVersionString());
+    	v = Version.getVersion("2021.01.Snapshot.0.0", schema);
     	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
-    	assertEquals("2020.01.Snapshot.0.1", v.constructVersionString());
+    	assertEquals("2021.01.Snapshot.0.1", v.constructVersionString());
     }
     
     @Test
@@ -550,40 +551,40 @@ public class AppTest
     @Test
     public void bumpCalverVersionWithPin2() {
     	String testSchema = "Year.Month.minor.patch-modifier";
-    	String testPin = "2020.month.minor.patch-modifier";
-    	String testOldVer = "2020." + CURRENT_MONTH + ".3.4-testmod";
+    	String testPin = "2021.month.minor.patch-modifier";
+    	String testOldVer = "2021." + CURRENT_MONTH_SINGLE + ".3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2020." + CURRENT_MONTH + ".3.5-newmodifier", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
     }
     
     @Test
     public void bumpCalverVersionWithPin3() {
     	String testSchema = "Year.Month.minor.patch-modifier";
-    	String testPin = "2020.month.minor.patch-modifier";
-    	String testOldVer = "2020.1.3.4-testmod";
+    	String testPin = "2021.month.minor.patch-modifier";
+    	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2020." + CURRENT_MONTH + ".0.0-newmodifier", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
     }
     
     @Test
     public void bumpCalverVersionWithPin4() {
     	String testSchema = "Year.Month.minor.patch-modifier";
     	String testPin = "Year.Month.minor.patch-modifier";
-    	String testOldVer = "2020.1.3.4-testmod";
+    	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2020." + CURRENT_MONTH + ".0.0-newmodifier", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
     }
     
     @Test
     public void bumpCalverVersionWithPin5() {
     	String testSchema = "YY.OM.Micro";
     	String testPin = "YY.OM.Micro";
-    	String testOldVer = "20." + CURRENT_MONTH + ".1";
+    	String testOldVer = "21." + CURRENT_MONTH + ".1";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
-    	assertEquals("20." + CURRENT_MONTH + ".2", v.constructVersionString());
+    	assertEquals("21." + CURRENT_MONTH + ".2", v.constructVersionString());
     }
     
     @Test
