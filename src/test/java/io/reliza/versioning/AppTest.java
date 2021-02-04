@@ -25,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	private static final String CURRENT_MONTH_SINGLE = "1";
-    private static final String CURRENT_MONTH = "01";
+	private static final String CURRENT_MONTH_SINGLE = "2";
+    private static final String CURRENT_MONTH = "02";
     
     @Test
     public void testSchemaMatching1() {
@@ -565,7 +565,7 @@ public class AppTest
     	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".0.0-newmodifier", v.constructVersionString());
     }
     
     @Test
@@ -575,7 +575,7 @@ public class AppTest
     	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".0.0-newmodifier", v.constructVersionString());
     }
     
     @Test
