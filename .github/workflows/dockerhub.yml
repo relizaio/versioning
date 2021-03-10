@@ -50,6 +50,7 @@ jobs:
             -v $RLZ_FULL_VER " >> reliza_command
           echo -n "--artid $IMAGE_NAMESPACE/$IMAGE_NAME " >> reliza_command
           echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
+          echo -n "--artbuilduri https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID " >> reliza_command
           echo -n "--artcimeta GitHub Actions " >> reliza_command
           echo -n "--arttype Docker " >> reliza_command
           if [ $DOCKER_SHA_256 != "" ]
