@@ -14,6 +14,8 @@ jobs:
         run: echo "BUILD_START=$(date -Iseconds)"  >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Login to Docker Registry
         run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
       - name: Get Version
@@ -42,10 +44,18 @@ jobs:
           # save sha256 to env var
           echo "DOCKER_SHA_256=$docker_sha_256" >> $GITHUB_ENV
           echo "--status completed " > reliza_command
+      - name: Extract Last Release Commit And Prepare List Of Commits
+        run: |
+          last_commit=$(docker run --rm relizaio/reliza-cli getlatestrelease -i ${{ secrets.RELIZA_API_ID }} -k ${{ secrets.RELIZA_API_KEY }} --branch $GITHUB_REF | jq -r ".sourceCodeEntryDetails.commit")
+          if [ ! -z "$last_commit" ]
+          then
+            echo -n "--commits $(git log $last_commit..$GITHUB_SHA --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0) " >> reliza_command
+          fi
       - name: Submit metadata to Reliza Hub
         run: |
-          echo -n "-b $GITHUB_REF --vcstype git --commit $GITHUB_SHA -k ${{ secrets.RELIZA_API_KEY }} \
-            -i ${{ secrets.RELIZA_API_ID }} --vcsuri github.com/$GITHUB_REPOSITORY \
+          echo -n "-b $GITHUB_REF --vcstype git --commit $GITHUB_SHA --commitmessage "$(git log -1 --pretty='%s')" \
+            -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} \
+            --vcsuri github.com/$GITHUB_REPOSITORY \
             --date $(git log -1 --date=iso-strict --pretty='%ad') \
             -v $RLZ_FULL_VER " >> reliza_command
           echo -n "--artid $IMAGE_NAMESPACE/$IMAGE_NAME " >> reliza_command
