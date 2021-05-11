@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 50
       - name: Login to Docker Registry
         run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
       - name: Get Version
@@ -53,7 +53,7 @@ jobs:
           fi
       - name: Submit metadata to Reliza Hub
         run: |
-          echo -n "-b $GITHUB_REF --vcstype git --commit $GITHUB_SHA --commitmessage "$(git log -1 --pretty='%s')" \
+          echo -n "-b $GITHUB_REF --vcstype git --commit $GITHUB_SHA --commitmessage \"$(git log -1 --pretty='%s')\" \
             -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} \
             --vcsuri github.com/$GITHUB_REPOSITORY \
             --date $(git log -1 --date=iso-strict --pretty='%ad') \
@@ -72,7 +72,8 @@ jobs:
           # debug
           cat reliza_command
           # send data
-          docker run --rm relizaio/reliza-cli addrelease $(cat reliza_command)
+          echo docker run --rm relizaio/reliza-cli addrelease $(cat reliza_command) > rlz_cmd_exec
+          eval $(cat rlz_cmd_exec)
       - name: Fail build if reliza status is rejected
         run: |
           status_rejected_check=$(grep 'status rejected' reliza_command | wc -l)
