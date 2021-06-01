@@ -43,7 +43,7 @@ jobs:
           docker push $IMAGE_NAMESPACE/$IMAGE_NAME:latest
           # save sha256 to env var
           echo "DOCKER_SHA_256=$docker_sha_256" >> $GITHUB_ENV
-          echo "--status completed " > reliza_command
+          echo "--status complete " > reliza_command
       - name: Extract Last Release Commit And Prepare List Of Commits
         run: |
           last_commit=$(docker run --rm relizaio/reliza-cli getlatestrelease -i ${{ secrets.RELIZA_API_ID }} -k ${{ secrets.RELIZA_API_KEY }} --branch $GITHUB_REF | jq -r ".sourceCodeEntryDetails.commit")
