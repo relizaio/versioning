@@ -13,6 +13,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.changelog.CommitParserUtil;
+import io.reliza.changelog.ConventionalCommit;
 import io.reliza.versioning.VersionApi.ActionEnum;
 import io.reliza.versioning.VersionApi.VersionApiObject;
 
@@ -58,6 +60,8 @@ public class VersionCli {
 		options.addOption("b", "cibuild", true, "value of ci build field of the version");
 		options.addOption("n", "branch", true, "value of branch field of the version");
 		
+		options.addOption("c", "commit", true, "parse commit message and bump version according to" +
+											   " Conventional Commits specificaiton.");
 		
 		options.addOption(action);
 		options.addOption(snapshot);
@@ -115,6 +119,14 @@ public class VersionCli {
 				} else if (StringUtils.isNotEmpty(actionStr)) {
 					VersionApi.applyActionOnVersion(v, actionStr);
 				}
+				
+				String rawCommitStr = cmd.getOptionValue("c");
+				//System.out.println("Bumped based on parsing of commit:\n" + rawCommitStr + "\n");
+				//CommitMatcherUtil.COMMIT_MESSAGE_REGEX.toString();
+				ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
+				System.out.println(parsedCommit.isBreakingChange());
+				System.out.println(parsedCommit);
+				
 				
 				String snapshotStr = cmd.getOptionValue("t");
 				
