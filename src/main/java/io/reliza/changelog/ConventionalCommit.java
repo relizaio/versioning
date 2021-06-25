@@ -1,6 +1,8 @@
 /**
-* Copyright Reliza Incorporated. 2019 - 2021. All rights reserved.
+* Copyright 2021 Reliza Incorporated. Licensed under MIT License.
+* https://reliza.io
 */
+
 
 package io.reliza.changelog;
 

@@ -1,0 +1,32 @@
+// INVALID / empty
+""
+// INVALID / invalid type (1 char)
+"f"
+// INVALID / invalid type (2 char)
+"fx"
+// INVALID / invalid type (2 char) with almost valid type
+"fe"
+// INVALID / invalid type (3 char)
+"fit"
+// INVALID / invalid type (3 char) again
+"fei"
+// INVALID / invalid type (3 char) with almost valid type
+"fea"
+// INVALID / invalid type (4 char)
+"feax"
+// INVALID / missing colon after type fix
+"fix"
+// INVALID / missing colon after type feat
+"feat"
+// INVALID / invalid type (2 char) + colon
+"fi:"
+// INVALID / invalid type (3 char) + colon
+"fea:"
+// VALID / minimal commit message
+"fix: x"
+// INVALID / missing colon after valid commit message type
+"fix>"
+// INVALID / missing colon after valid commit message type
+"feat?"
+// INVALID / invalid after valid type and scope
+"fix(scope)"

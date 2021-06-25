@@ -1,0 +1,839 @@
+test cases: 
+
+	//  INVALID / invalid type (1 char)
+""
+
+	//  INVALID / invalid type (2 char)
+"f"
+
+	//  INVALID / invalid type (2 char) with almost valid type
+"fx"
+
+	//  INVALID / invalid type (3 char)
+"fe"
+
+	//  INVALID / invalid type (3 char) again
+"fit"
+
+	//  INVALID / invalid type (3 char) with almost valid type
+"fei"
+
+	//  INVALID / invalid type (4 char)
+"fea"
+
+	//  INVALID / missing colon after type fix
+"feax"
+
+	//  INVALID / missing colon after type feat
+"fix"
+
+	//  INVALID / invalid type (2 char) + colon
+"feat"
+
+	//  INVALID / invalid type (3 char) + colon
+"fi:"
+
+	//  VALID / minimal commit message
+"fea:"
+
+	//  INVALID / missing colon after valid commit message type
+"fix: x"
+
+	//  INVALID / missing colon after valid commit message type
+"fix>"
+
+	//  INVALID / invalid after valid type and scope
+"feat?"
+
+	//  VALID / type + scope + description
+"fix(scope)"
+
+	//  VALID / type + scope + multiple whitespaces + description
+"fix(aaa): bbb"
+
+	//  VALID / type + scope + breaking + description
+"fix(aaa):          bbb"
+
+	//  VALID / empty scope is ignored
+"fix(aaa)!: bbb"
+
+	//  VALID / type + empty scope + breaking + description
+"fix(): bbb"
+
+	//  VALID / type + breaking + description
+"fix()!: bbb"
+
+	//  INVALID / missing whitespace after colon (with breaking)
+"fix!: bbb"
+
+	//  INVALID / missing whitespace after colon with scope
+"fix!:a"
+
+	//  INVALID / missing whitespace after colon with empty scope
+"fix(x):a"
+
+	//  INVALID / missing whitespace after colon
+"fix():a"
+
+	//  INVALID / invalid initial character
+"fix:a"
+
+	//  INVALID / invalid second character
+"(type: a description"
+
+	//  INVALID / invalid after valid type, scope, and breaking
+"f description"
+
+	//  INVALID / invalid after valid type, scope, and colon
+"fix(scope)!"
+
+	//  INVALID / invalid after valid type, scope, breaking, and colon
+"fix(scope):"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-space
+"fix(scope)!:"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-spaces
+"fix(scope)!: "
+
+	//  INVALID / double left parentheses in scope
+"fix(scope)!:  "
+
+	//  INVALID / double left parentheses in scope after valid character
+"fix(("
+
+	//  INVALID / double right parentheses in place of an exclamation, or a colon
+"fix(a("
+
+	//  INVALID / new left parentheses after valid scope
+"fix(a))"
+
+	//  INVALID / newline rather than whitespace in description
+"feat(az)("
+
+	//  INVALID / newline after whitespace in description
+"feat(az):
+ description on newline"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(az): 
+description on newline"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(az): new
+line"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(az)!: bla
+l"
+
+	//  VALID / multi-line body is valid (after a blank line)
+"feat(az)!: bla
+"
+
+	//  VALID / multi-line body ending with multiple blank lines (they gets discarded) is valid
+`fix: x
+
+see the issue for details
+
+on typos fixed.`
+
+	//  VALID / multi-line body starting with many extra blank lines is valid
+`fix: x
+
+see the issue for details
+
+on typos fixed.
+
+`
+
+	//  VALID / multi-line body starting and ending with many extra blank lines is valid
+`fix: magic
+
+
+
+see the issue for details
+
+on typos fixed.`
+
+	//  VALID / single line body (after blank line) is valid
+`fix: magic
+
+
+
+see the issue for details
+
+on typos fixed.
+
+
+`
+
+	//  VALID / empty body is okay (it's optional)
+`fix: correct minor typos in code
+
+see the issue for details.`
+
+	//  VALID / multiple blank lines body is okay (it's considered empty)
+`fix: correct something
+
+`
+
+	//  VALID / only footer
+`fix: descr
+
+
+
+
+
+`
+
+	//  VALID / only footer after many blank lines (that gets ignored)
+`fix: only footer
+
+Fixes #3
+Signed-off-by: Leo`
+
+	//  VALID / only footer ending with many blank lines (that gets ignored)
+`fix: only footer
+
+
+
+
+Fixes #3
+Signed-off-by: Leo`
+
+	//  VALID / only footer containing repetitions
+`fix: only footer
+
+Fixes #3
+Signed-off-by: Leo
+
+
+`
+
+	//  VALID / Multi-line body with extras blank lines after and footer with multiple trailers
+`fix: only footer
+
+Fixes #3
+Fixes #4
+Fixes #5`
+
+	//  VALID / Multi-line body with newlines inside and many blank lines after and footer with multiple trailers
+`fix: sarah
+
+FUCK
+
+COVID-19.
+This is the only message I have in my mind
+
+right now.
+
+
+
+Fixes #22
+Co-authored-by: My other personality <persona@email.com>
+Signed-off-by: Leonardo Di Donato <some@email.com>`
+
+	//  VALID / Multi-line body with newlines inside and many blank lines before it, plus footer with multiple trailers
+`fix: sarah
+
+FUCK
+COVID-19.
+This is the only message I have in my mind
+right
+now.
+
+
+
+Fixes #22
+Co-authored-by: My other personality <persona@email.com>
+Signed-off-by: Leonardo Di Donato <some@email.com>`
+
+	//  INVALID / invalid type (1 char)
+`fix: sarah
+
+
+
+FUCK
+COVID-19.
+This is the only message I have in my mind
+right
+now.
+
+
+
+Fixes #22
+Co-authored-by: My other personality <persona@email.com>
+Signed-off-by: Leonardo Di Donato <some@email.com>`
+
+	//  INVALID / invalid type (2 char)
+""
+
+	//  INVALID / invalid type (2 char) with almost valid type
+"c"
+
+	//  INVALID / invalid type (2 char) with almost valid type
+"bx"
+
+	//  INVALID / invalid type (3 char)
+"fe"
+
+	//  INVALID / invalid type (3 char) again
+"re"
+
+	//  INVALID / invalid type (3 char) with almost valid type
+"net"
+
+	//  INVALID / invalid type (4 char)
+"fei"
+
+	//  INVALID / invalid type (4 char)
+"bui"
+
+	//  INVALID / missing colon after type fix
+"docx"
+
+	//  INVALID / missing colon after type feat
+"perz"
+
+	//  INVALID / invalid type (2 char) + colon
+"fix"
+
+	//  INVALID / invalid type (3 char) + colon
+"test"
+
+	//  VALID / minimal commit message
+"ch:"
+
+	//  VALID / minimal commit message
+"upd:"
+
+	//  VALID / minimal commit message with uppercase type
+"fix: w"
+
+	//  INVALID / missing colon after valid commit message type
+"rule: super secure rule"
+
+	//  INVALID / missing colon after valid uppercase commit message type
+"RULE: super secure rule"
+
+	//  INVALID / missing colon after valid commit message type
+"new>"
+
+	//  INVALID / missing colon after valid uppercase commit message type
+"NEW>"
+
+	//  INVALID / missing colon after valid commit message type
+"perf?"
+
+	//  INVALID / missing colon after valid uppercase commit message type
+"PERF?"
+
+	//  VALID / type + scope + description
+"build?"
+
+	//  VALID / uppercase type + scope + description
+"BUILD?"
+
+	//  VALID / type + scope + multiple whitespaces + description
+"new(xyz): ccc"
+
+	//  VALID / type + scope + breaking + description
+"NEW(xyz): ccc"
+
+	//  VALID / type + scope + breaking + description
+"fix(aaa):          bbb"
+
+	//  VALID / uppercase type + scope + breaking + description
+"fix(aaa)!: bbb"
+
+	//  VALID / empty scope is ignored
+"feat(aaa)!: bbb"
+
+	//  VALID / empty scope is ignored (uppercase type)
+"FEAT(aaa)!: bbb"
+
+	//  VALID / type + empty scope + breaking + description
+"fix(): bbb"
+
+	//  VALID / type + breaking + description
+"FIX(): bbb"
+
+	//  INVALID / missing whitespace after colon (with breaking)
+"fix()!: bbb"
+
+	//  INVALID / missing whitespace after colon (with breaking, uppercase type)
+"fix!: bbb"
+
+	//  INVALID / missing whitespace after colon with scope
+"fix!:a"
+
+	//  INVALID / missing whitespace after colon with empty scope
+"FIX!:a"
+
+	//  INVALID / missing whitespace after colon
+"fix(x):a"
+
+	//  INVALID / invalid after valid type and scope
+"fix():a"
+
+	//  INVALID / invalid initial character
+"fix:a"
+
+	//  INVALID / invalid second character
+"new(scope)"
+
+	//  INVALID / invalid after valid type, scope, and breaking
+"(type: a description"
+
+	//  INVALID / invalid after valid type, scope, and colon
+"c description"
+
+	//  INVALID / invalid after valid type, scope, breaking, and colon
+"new(scope)!"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-space
+"fix(scope):"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-spaces
+"new(scope)!:"
+
+	//  INVALID / double left parentheses in scope
+"revert(scope)!: "
+
+	//  INVALID / double left parentheses in scope after valid character
+"ci(scope)!:  "
+
+	//  INVALID / double right parentheses in place of an exclamation, or a colon
+"chore(("
+
+	//  INVALID / new left parentheses after valid scope
+"perf(a("
+
+	//  INVALID / newline rather than whitespace in description
+"fix(a))"
+
+	//  INVALID / newline after whitespace in description
+"new(az)("
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"perf(ax):
+ description on newline"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(az): 
+description on newline"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(ae): new
+line"
+
+	//  VALID
+"docs(az)!: bla
+l"
+
+	//  VALID
+"docs(az)!: bla
+"
+
+	//  VALID
+`fix: correct minor typos in code
+
+see the issue for details
+
+on typos fixed.`
+
+	//  VALID
+`fix: correct minor typos in code
+
+see the issue for details.`
+
+	//  INVALID / invalid type (1 char)
+`fix: correct something
+
+`
+
+	//  INVALID / invalid type (2 char)
+`fix: correct something
+
+
+
+`
+
+	//  INVALID / invalid type (2 char) with almost valid type
+""
+
+	//  INVALID / invalid type (2 char) with almost valid type
+"c"
+
+	//  INVALID / invalid type (3 char)
+"bx"
+
+	//  INVALID / invalid type (3 char) again
+"fe"
+
+	//  INVALID / invalid type (3 char) with almost valid type
+"re"
+
+	//  INVALID / invalid type (4 char)
+"fit"
+
+	//  INVALID / invalid type (4 char) with almost valid type
+"fei"
+
+	//  INVALID / invalid type (4 char)
+"bui"
+
+	//  INVALID / invalid type (5 char) with almost valid type
+"tesx"
+
+	//  INVALID / invalid type (6 char) with almost valid type
+"refa"
+
+	//  INVALID / invalid type (7 char) with almost valid type
+"perz"
+
+	//  INVALID / missing colon after type fix
+"refac"
+
+	//  INVALID / missing colon after type test
+"refact"
+
+	//  INVALID / invalid type (2 char) + colon
+"refacto"
+
+	//  INVALID / invalid type (3 char) + colon
+"fix"
+
+	//  VALID / minimal commit message
+"test"
+
+	//  VALID / minimal commit message
+"ch:"
+
+	//  VALID / minimal commit message with uppercase type
+"sty:"
+
+	//  INVALID / missing colon after valid commit message type
+"fix: w"
+
+	//  INVALID / missing colon after valid commit message type
+"style: CSS skillz"
+
+	//  INVALID / missing colon after valid commit message type
+"STYLE: CSS skillz"
+
+	//  VALID / type + scope + description
+"fix>"
+
+	//  VALID / uppercase type + scope + description
+"perf?"
+
+	//  VALID / type + scope + multiple whitespaces + description
+"build?"
+
+	//  VALID / type + scope + breaking + description
+"refactor(xyz): ccc"
+
+	//  VALID / type + scope + breaking + description
+"REFACTOR(xyz): ccc"
+
+	//  VALID / empty scope is ignored
+"fix(aaa):          bbb"
+
+	//  VALID / type + empty scope + breaking + description
+"fix(aaa)!: bbb"
+
+	//  VALID / type + breaking + description
+"feat(aaa)!: bbb"
+
+	//  INVALID / missing whitespace after colon (with breaking)
+"fix(): bbb"
+
+	//  INVALID / missing whitespace after colon with scope
+"fix()!: bbb"
+
+	//  INVALID / missing whitespace after colon with empty scope
+"fix!: bbb"
+
+	//  INVALID / missing whitespace after colon
+"fix!:a"
+
+	//  INVALID / invalid after valid type and scope
+"fix(x):a"
+
+	//  INVALID / invalid initial character
+"fix():a"
+
+	//  INVALID / invalid second character
+"fix:a"
+
+	//  INVALID / invalid after valid type, scope, and breaking
+"test(scope)"
+
+	//  INVALID / invalid after valid mixed-case type, scope, and breaking
+"(type: a description"
+
+	//  INVALID / invalid after valid type, scope, and colon
+"c description"
+
+	//  INVALID / invalid after valid type, scope, breaking, and colon
+"test(scope)!"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-space
+"Test(scope)!"
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-spaces
+"fix(scope):"
+
+	//  INVALID / double left parentheses in scope
+"ci(scope)!:"
+
+	//  INVALID / incomplete scope
+"revert(scope)!: "
+
+	//  INVALID / double left parentheses in scope after valid character
+"ci(scope)!:  "
+
+	//  INVALID / double right parentheses in place of an exclamation, or a colon
+"chore(("
+
+	//  INVALID / new left parentheses after valid scope
+"fix(scope"
+
+	//  INVALID / newline rather than whitespace in description
+"perf(a("
+
+	//  INVALID / newline after whitespace in description
+"fix(a))"
+
+	//  INVALID / newline in the description
+	// VALID / newline in description ignored in best effort mode
+"build(az)("
+
+	//  INVALID / newline in the description
+	// VALID / newline in description ignored in best effort mode
+"perf(ax):
+ description on newline"
+
+	//  INVALID / newline in the description
+	// VALID / until the newline
+"feat(az): 
+description on newline"
+
+	//  VALID
+"feat(ap): new
+line"
+
+	//  VALID
+"perf(at)!: rrr
+l"
+
+	//  VALID
+"perf(at)!: rrr
+"
+
+	//  VALID
+`fix: correct minor typos in code
+
+see the issue for details
+
+on typos fixed.`
+
+	//  VALID / multi-line body (with blank lines and non alphanumberic character after a blank line) and multiple different trailers
+`fix: correct minor typos in code
+
+see the issue for details.`
+
+	//  VALID / type containing slash
+`fix: correct something
+
+`
+
+	//  VALID / colon and space separator in the description
+`fix: correct something
+
+
+
+`
+
+	//  VALID / free form type containing comma and space
+`kconfig: highlight xconfig 'comment' lines with '***'
+
+Mark Kconfig "comment" lines with "*** <commentstring> ***"
+so that it is clear that these lines are comments and not some
+kconfig item that cannot be modified.
+
+This is helpful in some menus to be able to provide a menu
+"sub-heading" for groups of similar config items.
+
+This also makes the comments be presented in a way that is
+similar to menuconfig and nconfig.
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>`
+
+	//  VALID / valid type (uppercase) + description starting with type-like string
+`bpf: fix buggy r0 retval refinement for tracing helpers
+
+See the glory details in 100605035e15 ("bpf: Verifier, do_refine_retval_range
+may clamp umin to 0 incorrectly") for why 849fa50662fb ("bpf/verifier: refine
+retval R0 state for bpf_get_stack helper") is buggy. The whole series however
+is not suitable for stable since it adds significant amount [0] of verifier
+complexity in order to add 32bit subreg tracking. Something simpler is needed.
+
+Unfortunately, reverting 849fa50662fb ("bpf/verifier: refine retval R0 state
+for bpf_get_stack helper") or just cherry-picking 100605035e15 ("bpf: Verifier,
+do_refine_retval_range may clamp umin to 0 incorrectly") is not an option since
+it will break existing tracing programs badly (at least those that are using
+bpf_get_stack() and bpf_probe_read_str() helpers). Not fixing it in stable is
+also not an option since on 4.19 kernels an error will cause a soft-lockup due
+to hitting dead-code sanitized branch since we don't hard-wire such branches
+in old kernels yet. But even then for 5.x 849fa50662fb ("bpf/verifier: refine
+retval R0 state for bpf_get_stack helper") would cause wrong bounds on the
+verifier simluation when an error is hit.
+
+In one of the earlier iterations of mentioned patch series for upstream there
+was the concern that just using smax_value in do_refine_retval_range() would
+nuke bounds by subsequent <<32 >>32 shifts before the comparison against 0 [1]
+which eventually led to the 32bit subreg tracking in the first place. While I
+initially went for implementing the idea [1] to pattern match the two shift
+operations, it turned out to be more complex than actually needed, meaning, we
+could simply treat do_refine_retval_range() similarly to how we branch off
+verification for conditionals or under speculation, that is, pushing a new
+reg state to the stack for later verification. This means, instead of verifying
+the current path with the ret_reg in [S32MIN, msize_max_value] interval where
+later bounds would get nuked, we split this into two: i) for the success case
+where ret_reg can be in [0, msize_max_value], and ii) for the error case with
+ret_reg known to be in interval [S32MIN, -1]. Latter will preserve the bounds
+during these shift patterns and can match reg < 0 test. test_progs also succeed
+with this approach.
+
+[0] https://lore.kernel.org/bpf/158507130343.15666.8018068546764556975.stgit@john-Precision-5820-Tower/
+[1] https://lore.kernel.org/bpf/158015334199.28573.4940395881683556537.stgit@john-XPS-13-9370/T/#m2e0ad1d5949131014748b6daa48a3495e7f0456d
+
+Fixes: 849fa50662fb ("bpf/verifier: refine retval R0 state for bpf_get_stack helper")
+Reported-by: Lorenzo Fontana <fontanalorenz@gmail.com>
+Reported-by: Leonardo Di Donato <leodidonato@gmail.com>
+Reported-by: John Fastabend <john.fastabend@gmail.com>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+Acked-by: Alexei Starovoitov <ast@kernel.org>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
+Tested-by: John Fastabend <john.fastabend@gmail.com>
+Tested-by: Lorenzo Fontana <fontanalorenz@gmail.com>
+Tested-by: Leonardo Di Donato <leodidonato@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>`
+
+	//  VALID / free form type with scope
+`selftests/bpf: Fix core_reloc test runner
+
+Fix failed tests checks in core_reloc test runner, which allowed failing tests
+to pass quietly. Also add extra check to make sure that expected to fail test cases with
+invalid names are caught as test failure anyway, as this is not an expected
+failure mode. Also fix mislabeled probed vs direct bitfield test cases.
+
+Fixes: 124a892d1c41 ("selftests/bpf: Test TYPE_EXISTS and TYPE_SIZE CO-RE relocations")
+Reported-by: Lorenz Bauer <lmb@cloudflare.com>
+Signed-off-by: Andrii Nakryiko <andrii@kernel.org>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Acked-by: Lorenz Bauer <lmb@cloudflare.com>
+Link: https://lore.kernel.org/bpf/20210426192949.416837-6-andrii@kernel.org`
+
+	//  INVALID / text after well-formed scope
+`bpf: selftests: Add kfunc_call test
+
+Signed-off-by: Martin KaFai Lau <kafai@fb.com>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Link: https://lore.kernel.org/bpf/20210325015252.1551395-1-kafai@fb.com`
+
+	//  INVALID / invalid after valid type, scope, breaking, colon, and white-spaces
+`bpf, selftests: test_maps generating unrecognized data section`
+
+	//  INVALID / double left parentheses in scope
+`KVM: nVMX: Truncate base/index GPR value on address calc in !64-bit`
+
+	//  INVALID / incomplete scope
+`KVM(nVMX): Truncate base/index GPR value on address calc in !64-bit`
+
+	//  INVALID / double left parentheses in scope after valid character
+`some(scope)text: aaaa`
+
+	//  VALID / breaking free form type with scope
+"fix(scope)!:  "
+
+	//  VALID / breaking change trailer
+"fix(("
+
+	//  VALID / breaking-change trailer
+"fix(scope"
+
+	//  VALID / breaking change trailer before other trailers
+"fix(a("
+
+	//  VALID / breaking change trailer after trailers
+`some(scope)!: breaking desc`
+
+	//  VALID / breaking change trailer after blank lines and other trailers
+`fix: description
+
+BREAKING CHANGE: APIs`
+
+	//  VALID / invalid BREAKING CHANGE trailer separator after body
+	// Note that because of the wrong separator (#) the BREAKING CHANGE trailer gets discarded as a footer component and captured as body content
+`fix: description
+
+BREAKING-CHANGE: APIs`
+
+	//  INVALID / invalid BREAKING CHANGE trailer separator after valid trailers
+	// VALID / until the last valid footer trailer
+`fix: description
+
+BREAKING CHANGE: APIs
+Acked-by: Leo Di Donato`
+
+	//  INVALID / incomplete BREAKING CHANGE trailer
+	// VALID / until the last valid footer trailer
+`fix: description
+
+
+Acked-by: Leo Di Donato
+BREAKING CHANGE: APIs`
+
+	//  INVALID / lowercase (space separated) BREAKING CHANGE trailer
+	// VALID / until the last valid footer trailer
+`fix: description
+
+
+Acked-by: Leo Di Donato
+
+
+BREAKING CHANGE: APIs`
+
+	//  INVALID / illegal trailer after valid trailer
+	// VALID / until the last valid footer trailer
+`fix: description
+
+Some text.
+
+BREAKING CHANGE #5`
+
+	//  INVALID / illegal trailer after valid trailer with an ending newline
+	// VALID / until the last valid footer trailer
+`fix: description
+
+Tested-by: Leo
+BREAKING CHANGE #5`
+
+	//  INVALID / incomplete trailer after valid trailer with an ending newline
+	// VALID / until the last valid footer trailer
+`fix: description
+
+Tested-by: Leo
+BREAKING CHANG: XYZ`
+

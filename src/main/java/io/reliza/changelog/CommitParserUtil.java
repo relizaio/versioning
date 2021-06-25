@@ -1,6 +1,8 @@
 /**
-* Copyright Reliza Incorporated. 2019 - 2021. All rights reserved.
+* Copyright 2021 Reliza Incorporated. Licensed under MIT License.
+* https://reliza.io
 */
+
 
 package io.reliza.changelog;
 
@@ -43,7 +45,7 @@ public final class CommitParserUtil {
      * @param rawCommitMessage String containing the raw commit message.
      * @return A ConventionalCommit object representing the raw commit.
      */
-    public static ConventionalCommit parseRawCommit(String rawCommitMessage) {
+    public static ConventionalCommit parseRawCommit(String rawCommitMessage) throws IllegalStateException {
     	if (rawCommitMessage == null || rawCommitMessage.isBlank()) {
     		System.out.println("Error please provide non-empty/non-null commit message.");
     		System.exit(1);
