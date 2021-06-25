@@ -14,6 +14,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.changelog.CommitType;
+import io.reliza.changelog.ConventionalCommit;
+
 /**
  * This class contains static methods to use for higher level versioning API
  *
@@ -242,6 +245,23 @@ public class VersionApi {
 		} else {
 			applyActionOnVersion(v, ae);
 		}
+	}
+	
+	/**
+	 * This method takes a ConventionalCommit object and returns the corresponding
+	 * action to be applied to the version.
+	 * @param commit ConventionalCommit
+	 * @return ActionEnum value, null if no action is required.
+	 */
+	public static ActionEnum getActionFromConventionalCommit(ConventionalCommit commit) {
+		if (commit.isBreakingChange()) {
+			return ActionEnum.BUMP_MAJOR;
+		} else if (commit.getType() == CommitType.FEAT) {
+			return ActionEnum.BUMP_MINOR;
+		} else if (commit.getType() == CommitType.BUG_FIX) {
+			return ActionEnum.BUMP_PATCH;
+		}
+		return null;
 	}
 	
 	/**

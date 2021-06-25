@@ -112,7 +112,7 @@ public class VersionCli {
 				if (StringUtils.isNotEmpty(semver)) {
 					VersionApi.setSemVerElementsOnVersion(v, semver);
 				}
-
+				
 				String actionStr = cmd.getOptionValue("a");
 				if ("bump".equalsIgnoreCase(actionStr) && StringUtils.isNotEmpty(schema) && StringUtils.isNotEmpty(version)) {
 					v = Version.getVersionFromPinAndOldVersion(schema, schema, version, ActionEnum.BUMP);
@@ -122,11 +122,18 @@ public class VersionCli {
 				
 				String rawCommitStr = cmd.getOptionValue("c");
 				//System.out.println("Bumped based on parsing of commit:\n" + rawCommitStr + "\n");
-				//CommitMatcherUtil.COMMIT_MESSAGE_REGEX.toString();
-				ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
-				System.out.println(parsedCommit.isBreakingChange());
-				System.out.println(parsedCommit);
-				
+				// Only want to bump from commit, if have not bumped from action yet.
+				if (rawCommitStr != null && actionStr == null) {
+					ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
+					System.out.println("breaking: " + parsedCommit.isBreakingChange());
+					System.out.println("type: " + parsedCommit.getType());
+					ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
+					if (actionToTake == null) {
+						System.out.println("No need to change version based on commit message contents.");
+					} else {
+						VersionApi.applyActionOnVersion(v, actionToTake);
+					}
+				}
 				
 				String snapshotStr = cmd.getOptionValue("t");
 				
