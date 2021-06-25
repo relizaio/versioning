@@ -45,8 +45,8 @@ public final class CommitParserUtil {
     	if (rawCommitMessage == null || rawCommitMessage.isBlank()) {
     		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
     	}
-    	// get first line as header
-    	String[] commitLines = rawCommitMessage.split(System.lineSeparator());
+    	// split to get first line as header, use negative limit to preserve trailing empty strings
+    	String[] commitLines = rawCommitMessage.split(System.lineSeparator(), -1);
     	String rawHeader = commitLines[0];
     	
     	// Check for body and footer
@@ -87,14 +87,14 @@ public final class CommitParserUtil {
         		}
     		} else {
     			// Conventional Commit message should have a blank line before body and footer sections
-    			throw new IllegalArgumentException("Error: commit message does not meet conventional commit specification. " + 
+    			throw new IllegalArgumentException("Commit message does not meet conventional commit specification. " + 
     							   "Conventional Commit message should have a blank line before body and footer sections");
     		}
     		
     	} else if (commitLines.length == 2) {
-    		// Conventional Commit should never be just two lines. Needs to be 1 or at least 3.
-			throw new IllegalArgumentException("Error: commit message does not meet conventional commit specification. " +
-							   "Conventional Commit should never be just two lines. Needs to be 1 or at least 3.");
+    		// Conventional Commit should not be just two lines. Needs to be 1 or at least 3.
+			throw new IllegalArgumentException("Commit message does not meet conventional commit specification. " +
+							   "Conventional Commit should not be just two lines. Needs to be 1 or at least 3.");
     	} else {
     		// body and footer are null
     	}
