@@ -32,6 +32,10 @@ public final class CommitParserUtil {
      * into its header, body and footer components (may not contain body or footer),
      * and return a ConventionalCommit object representing the commit message.
      * 
+     * Maybe change to throw exception instead of system.exit on failure.
+     * Or just return null?
+     * Return Null if commit does not meet specification. or if error pasring commit?
+     * 
      * First line is header (message)
      * Rest is body and footer, seperated by a blank line
      * Footer is marked by git trailers
@@ -111,7 +115,17 @@ public final class CommitParserUtil {
     	}
     	
     	// Construct commit objects from raw strings
-    	CommitMessage commitMessage = new CommitMessage(rawHeader);
+    	CommitMessage commitMessage;
+    	// Should maybe catch this exception directly in CommitMessage->getType() method
+    	// Problem is passing invalid commit messages, where to catch errors with conventional commit specs?
+    	try {
+    		commitMessage = new CommitMessage(rawHeader);
+    	} catch (IllegalStateException e) {
+    		System.out.println("Error: commit does not meet convnetional commit specification. " + 
+    						   "Threw error when attemping to create CommitMessage object: " + e);
+    		return null;
+    	}
+    	
     	CommitBody commitBody = null;
     	if (!rawBody.isEmpty()) {
     		String[] rawBodyArray = new String[rawBody.size()];

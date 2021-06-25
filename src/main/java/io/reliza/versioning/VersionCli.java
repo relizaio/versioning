@@ -125,8 +125,8 @@ public class VersionCli {
 				// Only want to bump from commit, if have not bumped from action yet.
 				if (rawCommitStr != null && actionStr == null) {
 					ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
-					System.out.println("breaking: " + parsedCommit.isBreakingChange());
-					System.out.println("type: " + parsedCommit.getType());
+					//System.out.println("breaking: " + parsedCommit.isBreakingChange());
+					//System.out.println("type: " + parsedCommit.getType());
 					ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
 					if (actionToTake == null) {
 						System.out.println("No need to change version based on commit message contents.");

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.changelog.CommitParserUtil;
 import io.reliza.changelog.CommitType;
 import io.reliza.changelog.ConventionalCommit;
 
@@ -254,14 +255,50 @@ public class VersionApi {
 	 * @return ActionEnum value, null if no action is required.
 	 */
 	public static ActionEnum getActionFromConventionalCommit(ConventionalCommit commit) {
-		if (commit.isBreakingChange()) {
-			return ActionEnum.BUMP_MAJOR;
-		} else if (commit.getType() == CommitType.FEAT) {
-			return ActionEnum.BUMP_MINOR;
-		} else if (commit.getType() == CommitType.BUG_FIX) {
-			return ActionEnum.BUMP_PATCH;
+		if (commit != null) {
+			if (commit.isBreakingChange()) {
+				return ActionEnum.BUMP_MAJOR;
+			} else if (commit.getType() == CommitType.FEAT) {
+				return ActionEnum.BUMP_MINOR;
+			} else if (commit.getType() == CommitType.BUG_FIX) {
+				return ActionEnum.BUMP_PATCH;
+			}
 		}
 		return null;
+	}
+	
+	/**
+	 * This method takes a raw commit message string as input and returns the corresponding
+	 * action to be applied to the version. The commit must be formatted according to the
+	 * conentional commit specification or else there will be an error.
+	 * @param rawCommit String containing the raw commit message.
+	 * @return ActionEnum representing the version action to take based on commit message.
+	 */
+	public static ActionEnum getActionFromRawCommit(String rawCommit) {
+		ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommit);
+		ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
+		return actionToTake;
+	}
+	
+	/**
+	 * This method applies a version bump on the given version object, corresponding to the
+	 * supplied parsed commit and conventional commit specification.
+	 * @param v The version to apply the action to.
+	 * @param parsedCommit ConventionalCommit commit message that has been parsed as a conventoinal commit object.
+	 */
+	public static void applyActionOnVersionFromCommit(Version v, ConventionalCommit parsedCommit) {
+		ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
+		VersionApi.applyActionOnVersion(v, actionToTake);
+	}
+	
+	/**
+	 * 
+	 * @param v Version
+	 * @param rawCommit String
+	 */
+	public static void applyActionOnVersionFromCommit(Version v, String rawCommit) {
+		ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommit);
+		VersionApi.applyActionOnVersionFromCommit(v, parsedCommit);
 	}
 	
 	/**
