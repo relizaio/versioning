@@ -124,14 +124,18 @@ public class VersionCli {
 				//System.out.println("Bumped based on parsing of commit:\n" + rawCommitStr + "\n");
 				// Only want to bump from commit, if have not bumped from action yet.
 				if (rawCommitStr != null && actionStr == null) {
-					ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
-					//System.out.println("breaking: " + parsedCommit.isBreakingChange());
-					//System.out.println("type: " + parsedCommit.getType());
-					ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
-					if (actionToTake == null) {
-						System.out.println("No need to change version based on commit message contents.");
-					} else {
-						VersionApi.applyActionOnVersion(v, actionToTake);
+					try {
+						ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommitStr);
+						//System.out.println("breaking: " + parsedCommit.isBreakingChange());
+						//System.out.println("type: " + parsedCommit.getType());
+						ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
+						if (actionToTake == null) {
+							System.out.println("No need to change version based on commit message contents.");
+						} else {
+							VersionApi.applyActionOnVersion(v, actionToTake);
+						}
+					} catch (IllegalArgumentException e) {
+						System.out.println(e.getMessage());
 					}
 				}
 				

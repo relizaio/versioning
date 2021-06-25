@@ -34,21 +34,16 @@ public final class CommitParserUtil {
      * into its header, body and footer components (may not contain body or footer),
      * and return a ConventionalCommit object representing the commit message.
      * 
-     * Maybe change to throw exception instead of system.exit on failure.
-     * Or just return null?
-     * Return Null if commit does not meet specification. or if error pasring commit?
-     * 
-     * First line is header (message)
-     * Rest is body and footer, seperated by a blank line
-     * Footer is marked by git trailers
+     * If the commit message passed does not meet the Convetional Commit specification, then
+     * an IllegalArgumentException will be thrown.
      * 
      * @param rawCommitMessage String containing the raw commit message.
      * @return A ConventionalCommit object representing the raw commit.
+     * @throws IllegalArgumentException thrown if the raw commit message passed does not meet the conventional commit specification.
      */
-    public static ConventionalCommit parseRawCommit(String rawCommitMessage) throws IllegalStateException {
+    public static ConventionalCommit parseRawCommit(String rawCommitMessage) throws IllegalArgumentException {
     	if (rawCommitMessage == null || rawCommitMessage.isBlank()) {
-    		System.out.println("Error please provide non-empty/non-null commit message.");
-    		System.exit(1);
+    		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
     	}
     	// get first line as header
     	String[] commitLines = rawCommitMessage.split(System.lineSeparator());
@@ -76,9 +71,8 @@ public final class CommitParserUtil {
             				inFooter = true;
         				} else {
         					// Must have blank line before footer
-        					System.out.println("Error: commit message does not meet conventional commit specification. " +
-        									   "Must have blank line before footer section.");
-        					System.exit(1);
+        					throw new IllegalArgumentException("Commit message does not meet conventional commit specification. " +
+									   "Must have blank line before footer section.");
         				}
         			}
         			// Add line to body arraylist, unless we are in the footer section
@@ -93,16 +87,14 @@ public final class CommitParserUtil {
         		}
     		} else {
     			// Conventional Commit message should have a blank line before body and footer sections
-    			System.out.println("Error: commit message does not meet conventional commit specification. " + 
+    			throw new IllegalArgumentException("Error: commit message does not meet conventional commit specification. " + 
     							   "Conventional Commit message should have a blank line before body and footer sections");
-    			System.exit(1);
     		}
     		
     	} else if (commitLines.length == 2) {
     		// Conventional Commit should never be just two lines. Needs to be 1 or at least 3.
-			System.out.println("Error: commit message does not meet conventional commit specification. " +
+			throw new IllegalArgumentException("Error: commit message does not meet conventional commit specification. " +
 							   "Conventional Commit should never be just two lines. Needs to be 1 or at least 3.");
-			System.exit(1);
     	} else {
     		// body and footer are null
     	}
@@ -123,9 +115,8 @@ public final class CommitParserUtil {
     	try {
     		commitMessage = new CommitMessage(rawHeader);
     	} catch (IllegalStateException e) {
-    		System.out.println("Error: commit does not meet convnetional commit specification. " + 
-    						   "Threw error when attemping to create CommitMessage object: " + e);
-    		return null;
+    		throw new IllegalArgumentException("Commit does not meet convnetional commit specification. " + 
+    						   				   "Threw error when attemping to create CommitMessage object: " + e);
     	}
     	
     	CommitBody commitBody = null;
