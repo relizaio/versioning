@@ -9,6 +9,8 @@ package io.reliza.changelog;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.reliza.changelog.CommitType;
 
 import static java.util.stream.Collectors.joining;
@@ -42,7 +44,7 @@ public final class CommitParserUtil {
      * @throws IllegalArgumentException thrown if the raw commit message passed does not meet the conventional commit specification.
      */
     public static ConventionalCommit parseRawCommit(String rawCommitMessage) throws IllegalArgumentException {
-    	if (rawCommitMessage == null || rawCommitMessage.isBlank()) {
+    	if (rawCommitMessage == null || StringUtils.isBlank(rawCommitMessage)) {
     		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
     	}
     	// split to get first line as header, use negative limit to preserve trailing empty strings
