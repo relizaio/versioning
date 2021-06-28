@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -137,7 +138,49 @@ public class VersionUtils {
 		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
 			splitRegex = "(\\.|_)";
 		}
+		
 		List<String> versionComponents = Arrays.asList(version.split(splitRegex));
+		
+		// Alternative way to split version string into components. See
+		// VersionUtilsTest::testParseVersion_BranchWithVersionInName() for example that would fail with just above code
+		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_"))) { // Only works if schema is of form VersionElement.VersoinElement...
+			// Create regex to split version string into parts based on schema
+			String schemaRegex = "";
+			ArrayList<VersionElement> veList = (ArrayList<VersionElement>) parseSchema(schema);
+			// Make sure splitRegex is not a capturing group
+			if (splitRegex.startsWith("(")) {
+				splitRegex = splitRegex.replace("(", "(?:");
+			}
+			
+			for (VersionElement ve : veList) {
+				// Remove first and last characters from regex patter string (^ and $)
+				String veRegex = ve.getRegexPattern().pattern().substring(1, ve.getRegexPattern().pattern().length()-1);
+				// If version element regex has capturing groups -> make non capture groups so they do not interfere
+				if (veRegex.startsWith("(")) {
+					veRegex = veRegex.replace("(", "(?:");
+				}
+				// Construct total schema regex from individual version element regex's
+				if (schemaRegex.equals("")) { // first
+					schemaRegex += "(" + veRegex + ")";
+				} else {
+					schemaRegex += splitRegex + "(?=" + veRegex + ")(" + veRegex + ")";
+				}
+			}
+			// Deconstruct version string using regex
+			Pattern pattern = Pattern.compile(schemaRegex);
+			Matcher matcher = pattern.matcher(version);
+			// Extract groups from regex result and add to new version components collection
+			if (matcher.matches()) {
+				versionComponents = new ArrayList<String>();
+				// get elements of version from results to versionComponents.
+				for (int i = 1; i <= matcher.groupCount(); i++) {
+					versionComponents.add(matcher.group(i));
+				}
+			} else {
+				// No match, do not replace versionComponents.
+			}
+		}
+		
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
 		return new VersionHelper(versionComponents, modifier, metadata, isSnapshot);

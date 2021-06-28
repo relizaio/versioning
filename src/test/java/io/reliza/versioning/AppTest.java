@@ -25,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	private static final String CURRENT_MONTH_SINGLE = "2";
-    private static final String CURRENT_MONTH = "02";
+	private static final String CURRENT_MONTH_SINGLE = "6";
+    private static final String CURRENT_MONTH = "06";
     
     @Test
     public void testSchemaMatching1() {

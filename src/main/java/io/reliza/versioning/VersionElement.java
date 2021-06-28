@@ -35,7 +35,7 @@ public enum VersionElement {
 	OD(new HashSet<String>(Arrays.asList(new String[] {"od", "0d"})), "^(3[01]|[0-2][0-9])$"),
 	BUILDID(new HashSet<String>(Arrays.asList(new String[] {"build", "buildid", "cibuildid", "cibuild"})), "^[a-zA-Z0-9]+$"),
 	BUILDENV(new HashSet<String>(Arrays.asList(new String[] {"cienv", "buildenv", "cibuildenv"})), "^[a-zA-Z0-9]+$"),
-	BRANCH(new HashSet<String>(Arrays.asList(new String[] {"Branch", "branch", "branchName", "branchname"})), "^[-/_a-zA-Z0-9\\:]+$")
+	BRANCH(new HashSet<String>(Arrays.asList(new String[] {"Branch", "branch", "branchName", "branchname"})), "^[-./_a-zA-Z0-9\\:]+$")
 	;
 	
 	private Set<String> namingInSchema;
