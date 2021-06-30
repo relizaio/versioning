@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import io.reliza.versioning.VersionApi.ActionEnum;
 import io.reliza.versioning.VersionApi.VersionApiObject;
 
 class VersionApiTest {
@@ -29,5 +30,17 @@ class VersionApiTest {
 		String actualMessage = e.getMessage();
 		assertTrue(actualMessage.contains(expectedMessage));
 	}
-
+	
+	@Test
+	void testApplyActionOnVersion_BumpBranchMicro() {
+		VersionApiObject vao = VersionApi.createVao("Branch.Major.Micro");
+		vao.setVersion("branch-name.1.1");
+		Version v = VersionApi.initializeVersion(vao);
+		ActionEnum action = ActionEnum.BUMP;
+		VersionApi.applyActionOnVersion(v, action);
+		String expectedVersion = "branch-name.1.2";
+		String actualVersion = v.constructVersionString();
+		System.out.println(actualVersion);
+		assertEquals(expectedVersion, actualVersion);
+	}
 }

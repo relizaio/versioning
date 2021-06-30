@@ -602,6 +602,7 @@ public class Version implements Comparable<Version> {
 	 * @param schema String, required
 	 * @param pin String, required
 	 * @param oldVersionString String, optional
+	 * @param ae ActionEnum
 	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
 	 */
 	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae) {

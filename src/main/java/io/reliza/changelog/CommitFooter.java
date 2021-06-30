@@ -10,9 +10,9 @@ package io.reliza.changelog;
  * https://www.conventionalcommits.org/en/v1.0.0/#specification
  * 
  * Regex for Conventional Commits Footer (single footer)
- * "^(?<token>[\w\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>.*)"(gm for multiple)
+ * {@code "^(?<token>[\w\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>.*)" (gm for multiple) }
  * Regex for multiple footers (also supports multi line values)
- * "^(?<token>[\w\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>.*?(?=^([\w\-]+|BREAKING CHANGE)(: | #)))"gms
+ * {@code "^(?<token>[\w\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>.*?(?=^([\w\-]+|BREAKING CHANGE)(: | #)))"gms }
  */
 public final class CommitFooter implements BreakingChangeItem{
     public static final CommitFooter EMPTY = new CommitFooter("");
