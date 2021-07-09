@@ -40,6 +40,14 @@ public final class CommitBody implements BreakingChangeItem{
             ? getBreakingChangeText()
             : ""; // body is not required unless breaking change
     }
+    
+    public String getRawBody() {
+    	String rawBody = "";
+    	for (String line : body) {
+    		rawBody += line + System.lineSeparator();
+    	}
+    	return rawBody;
+    }
 
     private static boolean doesContainBreakingChange(String string) {
         return string.contains("BREAKING-CHANGE:") || string.contains("BREAKING CHANGE");

@@ -38,6 +38,10 @@ public final class ConventionalCommit {
     public String getBody() {
         return commitBody.getBody();
     }
+    
+    public String getRawBody() {
+    	return commitBody.getRawBody();
+    }
 
     public String getRawMessage() {
         return commitMessage.getRawMessage();
