@@ -19,6 +19,18 @@ class VersionApiTest {
 	}
 	
 	@Test
+	void testApplyActionOnVersionFromCommitVersionString_BreakingChangeFooter() {
+		VersionApiObject vao = VersionApi.createVao("semver");
+		vao.setVersion("1.0.0");
+		Version v = VersionApi.initializeVersion(vao);
+		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
+		VersionApi.applyActionOnVersionFromCommit(v, rawCommit);
+		System.out.println(rawCommit);
+		System.out.println(v.constructVersionString());
+		assert v.constructVersionString().equals("2.0.0");
+	}
+	
+	@Test
 	void testApplyActionOnVersionFromCommitVersionString_IvalidRawCommitFormat() {
 		VersionApiObject vao = VersionApi.createVao("semver");
 		vao.setVersion("1.0.0");
