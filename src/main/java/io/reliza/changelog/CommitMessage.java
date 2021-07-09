@@ -59,7 +59,7 @@ public final class CommitMessage implements BreakingChangeItem{
         }
     
         CommitType getType() {
-            return CommitType.of(matcher.group(1));
+            return CommitType.of((matcher.group(1).toLowerCase()));
         }
     
         String getScope() {

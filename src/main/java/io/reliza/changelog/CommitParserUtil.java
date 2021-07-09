@@ -7,19 +7,19 @@
 package io.reliza.changelog;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import io.reliza.changelog.CommitType;
-
 import static java.util.stream.Collectors.joining;
 
-import java.util.ArrayList;
+
 
 public final class CommitParserUtil {
     public static final Pattern COMMIT_MESSAGE_REGEX = createRegexPattern();
-    public static final String LINE_SEPARATOR = "\n\n";
+    //public static final String LINE_SEPARATOR = "\n\n";
+    public static final String LINE_SEPARATOR_REGEX = "(?:\\r\\n|\\n)";
 
     private CommitParserUtil() {
     }
@@ -27,8 +27,8 @@ public final class CommitParserUtil {
     private static Pattern createRegexPattern() {
         // i.e. ^(build|test|chore|feat|fix|docs)
         String typePrefix = Arrays.stream(CommitType.values()).map(CommitType::getPrefix).collect(joining("|", "^(", ")"));
-        
-        return Pattern.compile(typePrefix + "[(]?([\\w\\-]+)?[)]?(!)?:\\s(.+)");
+        // Make regex case insensitive, so capitlized types can be parsed: ex: "FIX: a commit message" is a valid commit header
+        return Pattern.compile(typePrefix + "[(]?([\\w\\-]+)?[)]?(!)?:\\s(.+)", Pattern.CASE_INSENSITIVE);
     }
     
     /**
@@ -44,11 +44,12 @@ public final class CommitParserUtil {
      * @throws IllegalArgumentException thrown if the raw commit message passed does not meet the conventional commit specification.
      */
     public static ConventionalCommit parseRawCommit(String rawCommitMessage) throws IllegalArgumentException {
-    	if (rawCommitMessage == null || StringUtils.isBlank(rawCommitMessage)) {
-    		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
+    	if (StringUtils.isBlank(rawCommitMessage)) {
+    		// throw if input rawCommitMessage is empty, null or only whitespace
+    		throw new IllegalArgumentException("Cannot parse empty/null commit message.");
     	}
     	// split to get first line as header, use negative limit to preserve trailing empty strings
-    	String[] commitLines = rawCommitMessage.split(System.lineSeparator(), -1);
+    	String[] commitLines = rawCommitMessage.split(LINE_SEPARATOR_REGEX, -1);
     	String rawHeader = commitLines[0];
     	
     	// Check for body and footer
@@ -67,7 +68,7 @@ public final class CommitParserUtil {
         		for (int i = 2; i < commitLines.length; i++) {
         			String currentLine = commitLines[i];
         			// Check if current line is git trailer, if we have not found footer yet
-        			if (inFooter == false && currentLine.matches("^(?<token>[\\w\\-]+|BREAKING CHANGE)(?<seperator>: | #)(.*)")) {
+        			if (inFooter == false && currentLine.matches("^(?:([\\w\\-]+)(: | #)|(BREAKING CHANGE: ))(.*)")) {
         				if (previousLine == "") {
         					// Then current line is first git trailer (ie first footer line)
             				inFooter = true;
@@ -79,7 +80,15 @@ public final class CommitParserUtil {
         			}
         			// Add line to body arraylist, unless we are in the footer section
         			if (inFooter) {
-        				rawFooter = rawFooter + currentLine + System.lineSeparator();
+        				// Make sure line is in proper form for footer
+        				if (currentLine.matches("^(?:([\\w\\-]+)(: | #)|(BREAKING CHANGE: ))(.*)")) {
+            				rawFooter = rawFooter + currentLine + System.lineSeparator();
+        				} else if (currentLine.equals("")) {
+        					// ignore blank lines in footer, so do nothing and skip to next commitLine
+        				} else {
+        					throw new IllegalArgumentException("Commit message does not meet conventional commit specification. " + 
+     							   							   "Lines in footer must follow git trailer convention.");
+        				}
         			} else {
         				rawBody.add(currentLine);
         			}
@@ -150,4 +159,66 @@ public final class CommitParserUtil {
     	
     	return commit;
     }
+    
+    /**
+     * WIP do not use this method. Use parseRawCommit(String rawCommitMessage) instead.
+     * This is not guaranteed to parse commits correctly at the moment.
+     * 
+     * @param rawCommitMessage
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static ConventionalCommit parseRawCommitRegex(String rawCommitMessage) throws IllegalArgumentException {
+    	if (rawCommitMessage == null || StringUtils.isBlank(rawCommitMessage)) {
+    		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
+    	}
+    	String LS = false ? System.lineSeparator() : LINE_SEPARATOR_REGEX;
+    	String fullCommitRegex = "(?<header>^(?<type>fix|feat|perf|revert|refactor|build|test|docs|chore|ci|style)[(]?(?<scope>[\\w\\-]+)?[)]?(?<modifier>!)?: (?<desc>.+))(?<body>(?<spacer>"+LS+LS+")(?<bodyline>.+"+LS+"|"+LS+")*)?(?<footer>"+LS+"(?<trailer>^(?<token>[\\w\\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>(?<valueline>.+"+LS+")*?(?=([\\w\\-]+|BREAKING CHANGE)(: |# ))))*(?<lasttoken>[\\w\\-]+|BREAKING CHANGE)(?<lastseperator>: | #)(?<lastvalue>(?<lastvalueline>.+|.+"+LS+")*))";
+    	Pattern p = Pattern.compile(fullCommitRegex, Pattern.MULTILINE);
+    	java.util.regex.Matcher m = p.matcher(rawCommitMessage);
+    	
+    	if (m.matches()) {
+    		// Construct commit objects from raw strings
+        	CommitMessage commitMessage;
+        	CommitBody commitBody = null; // optional
+        	CommitFooter commitFooter = null; // optional
+        	ConventionalCommit commit;
+        	// Should maybe catch this exception directly in CommitMessage->getType() method
+        	// Problem is passing invalid commit messages, where to catch errors with conventional commit specs?
+        	try {
+        		commitMessage = new CommitMessage(m.group("header"));
+        	} catch (IllegalStateException e) {
+        		throw new IllegalArgumentException("Commit does not meet convnetional commit specification. " + 
+        						   				   "Threw error when attemping to create CommitMessage object: " + e);
+        	}
+        	if (m.group("body") != null) {
+        		String[] rawBodyArray = m.group("body").split(System.lineSeparator());
+        		//rawBody.toArray(rawBodyArray);
+        		commitBody = new CommitBody(rawBodyArray);
+        	}
+        	if (m.group("footer") != null) {
+        		commitFooter = new CommitFooter(m.group("footer"));
+        	}
+        	
+        	// Create new convnetional commit object with raw header, body and footer
+        	if (commitBody == null && commitFooter == null) {
+        		// no body or footer
+        		commit = new ConventionalCommit(commitMessage);
+        	} else if (commitBody == null && commitFooter != null) {
+        		// no body, yes footer
+        		commit = new ConventionalCommit(commitMessage, commitFooter);
+        	} else if (commitBody != null && commitFooter == null) {
+        		// yes body, no footer
+        		commit = new ConventionalCommit(commitMessage, commitBody);
+        	} else {
+        		// yes body and footer
+        		commit = new ConventionalCommit(commitMessage, commitBody, commitFooter);
+        	}
+        	
+        	return commit;
+    	}
+    	// else if no match
+    	throw new IllegalArgumentException("Not a valid conventional commit format.");
+    }
+    
 }
