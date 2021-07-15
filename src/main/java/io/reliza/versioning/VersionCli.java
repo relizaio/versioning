@@ -114,8 +114,12 @@ public class VersionCli {
 				}
 				
 				String actionStr = cmd.getOptionValue("a");
-				if ("bump".equalsIgnoreCase(actionStr) && StringUtils.isNotEmpty(schema) && StringUtils.isNotEmpty(version)) {
-					v = Version.getVersionFromPinAndOldVersion(schema, schema, version, ActionEnum.BUMP);
+				ActionEnum ae = null;
+				try {
+					ae = ActionEnum.valueOf(actionStr);
+				} catch (Exception e) {}
+				if (null != ae && StringUtils.isNotEmpty(schema) && StringUtils.isNotEmpty(version)) {
+					v = Version.getVersionFromPinAndOldVersion(schema, schema, version, ae);
 				} else if (StringUtils.isNotEmpty(actionStr)) {
 					VersionApi.applyActionOnVersion(v, actionStr);
 				}
