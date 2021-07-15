@@ -1,7 +1,11 @@
 package io.reliza.versioning;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reliza.versioning.VersionApi.ActionEnum;
@@ -19,6 +23,8 @@ class VersionApiTest {
 	}
 	
 	@Test
+	@Ignore
+	@Disabled
 	void testApplyActionOnVersionFromCommitVersionString_BreakingChangeFooter() {
 		VersionApiObject vao = VersionApi.createVao("semver");
 		vao.setVersion("1.0.0");
@@ -55,4 +61,32 @@ class VersionApiTest {
 		System.out.println(actualVersion);
 		assertEquals(expectedVersion, actualVersion);
 	}
+	
+	@Test
+    public void testApplyBumpMinorOnCalver() {
+    	String schema = "YYYY.0M.Micro";
+    	String version = "2021." + AppTest.CURRENT_MONTH + ".1";
+		ActionEnum action = ActionEnum.BUMP_MINOR;
+		VersionApiObject vao = VersionApi.createVao(schema);
+		vao.setVersion(version);
+		Version v = VersionApi.initializeVersion(vao);
+		VersionApi.applyActionOnVersion(v, action);
+		String actualV = v.constructVersionString();
+		String expectedV = "2021." + AppTest.CURRENT_MONTH + ".2";
+		assertEquals(expectedV, actualV);
+    }
+	
+//	@Test
+//    public void testApplyBumpMinorOnCalverLastMonth() {
+//    	String schema = "YYYY.0M.Micro";
+//    	String version = "2021.05.1";
+//		ActionEnum action = ActionEnum.BUMP;
+//		VersionApiObject vao = VersionApi.createVao(schema);
+//		vao.setVersion(version);
+//		Version v = VersionApi.initializeVersion(vao);
+//		VersionApi.applyActionOnVersion(v, action);
+//		String actualV = v.constructVersionString();
+//		String expectedV = "2021." + AppTest.CURRENT_MONTH + ".0";
+//		assertEquals(expectedV, actualV);
+//    }
 }

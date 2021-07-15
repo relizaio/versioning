@@ -207,6 +207,12 @@ public class VersionApi {
 	 * @param ae ActionEnum
 	 */
 	public static void applyActionOnVersion (Version v, ActionEnum ae) {
+		if (ae == ActionEnum.BUMP_MAJOR && null == v.getMajor()) {
+			ae = ActionEnum.BUMP_MINOR;
+		}
+		if (ae == ActionEnum.BUMP_MINOR && null == v.getMinor()) {
+			ae = ActionEnum.BUMP;
+		}
 		if (ActionEnum.BUMP == ae) {
 			v.simpleBump();
 		} else if (ActionEnum.BUMP_PATCH == ae) {

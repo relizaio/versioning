@@ -1,6 +1,7 @@
 package io.reliza.changelog;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileReader;
@@ -10,12 +11,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CommitParserUtilTest {
 	private static final String LS = System.lineSeparator();
 
 	@Test
+	@Ignore
+	@Disabled
 	void testParseRawCommit_BreakingChangeFooter() {
 		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
 		ConventionalCommit commit = CommitParserUtil.parseRawCommit(rawCommit);
@@ -38,6 +43,8 @@ class CommitParserUtilTest {
 	}
 	
 	@Test
+	@Ignore
+	@Disabled
 	void customTestCase() {
 		// Used to test specific cases, changes often
 		String rawcommit = "fix: only footer"+"\n"+"\n"+"Fixes #3"+"\n"+"Signed-off-by: Leo"+"\n"+"\n"+"\n"+"";
@@ -53,6 +60,8 @@ class CommitParserUtilTest {
 	}
 	
 	@Test
+	@Ignore
+	@Disabled
 	void testAllCommitMessages() {
 		boolean testSuccess = true;
 		ArrayList<CommitTestCase> commits = new ArrayList<CommitTestCase>();

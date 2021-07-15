@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -377,8 +378,10 @@ public class Version implements Comparable<Version> {
 		if (null == step) {
 			step = 1;
 		}
+	
 		this.minor = minor + step;
 		this.patch = 0;
+		
 	}
 	
 	/**
@@ -624,6 +627,13 @@ public class Version implements Comparable<Version> {
 		}
 		
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		Set<String> veElementCheck = schemaVeList.stream().map(sv -> sv.toString()).collect(Collectors.toSet());
+		if (ae == ActionEnum.BUMP_MAJOR && !veElementCheck.contains("MAJOR")) {
+			ae = ActionEnum.BUMP_MINOR;
+		}
+		if (ae == ActionEnum.BUMP_MINOR && !veElementCheck.contains("MINOR")) {
+			ae = ActionEnum.BUMP;
+		}
 		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
 			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
@@ -643,7 +653,7 @@ public class Version implements Comparable<Version> {
 		} else {
 			v.patch = 0;
 		}
-		v.setCurrentDate();
+		if (ae != ActionEnum.BUMP_PATCH) v.setCurrentDate();
 		if (null != oldV && null != oldV.year) {
 			v.year = oldV.year;
 		}
@@ -720,15 +730,15 @@ public class Version implements Comparable<Version> {
 				case YYYY:
 				case YY:
 				case OY:
-					v.year = date.getYear();
+					if (ae != ActionEnum.BUMP_PATCH && null != v.year) v.year = date.getYear();
 					break;
 				case MM:
 				case OM:
-					v.month = date.getMonth().getValue();
+					if (ae != ActionEnum.BUMP_PATCH && null != v.month) v.month = date.getMonth().getValue();
 					break;
 				case DD:
 				case OD:
-					v.day = date.getDayOfMonth();
+					if (ae != ActionEnum.BUMP_PATCH && null != v.day) v.day = date.getDayOfMonth();
 					break;
 				case BRANCH:
 					v.branch = oldV.branch;
@@ -743,7 +753,9 @@ public class Version implements Comparable<Version> {
 		// normalize years, months and days for comparison
 
 		
-		if (isCalverUpdated(v, oldV)) {
+		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
+			++v.patch;
+		} else if (isCalverUpdated(v, oldV)) {
 			// calver update happened, reset semver
 			v.minor = 0;
 			v.major = 0;

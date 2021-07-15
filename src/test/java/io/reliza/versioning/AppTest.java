@@ -25,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	private static final String CURRENT_MONTH_SINGLE = "6";
-    private static final String CURRENT_MONTH = "06";
+	protected static final String CURRENT_MONTH_SINGLE = "7";
+	protected static final String CURRENT_MONTH = "07";
     
     @Test
     public void testSchemaMatching1() {
@@ -628,5 +628,38 @@ public class AppTest
     	String testVer = "2020.test-branch-go-mymodifier.2";
     	boolean matches = VersionUtils.isVersionMatchingSchema(testSchema, testVer);
     	assertTrue(matches);
+    }
+    
+	@Test
+    public void testApplyBumpMinorOnCalver() {
+    	String schema = "YYYY.0M.Micro";
+    	String version = "2021." + CURRENT_MONTH + ".1";
+		ActionEnum action = ActionEnum.BUMP_MINOR;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "2021." + CURRENT_MONTH + ".2";
+		assertEquals(expectedV, actualV);
+    }
+	
+	@Test
+    public void testApplyBumpMajorOnCalver() {
+    	String schema = "YYYY.0M.Micro";
+    	String version = "2021." + CURRENT_MONTH + ".1";
+		ActionEnum action = ActionEnum.BUMP_MAJOR;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "2021." + CURRENT_MONTH + ".2";
+		assertEquals(expectedV, actualV);
+    }
+	
+	@Test
+    public void testApplyBumpPatchOnCalver() {
+    	String schema = "YYYY.0M.Micro";
+    	String version = "2021.02.1";
+		ActionEnum action = ActionEnum.BUMP_PATCH;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "2021.02.2";
+		assertEquals(expectedV, actualV);
     }
 }

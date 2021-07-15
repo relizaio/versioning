@@ -1,6 +1,7 @@
 package io.reliza.versioning;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ class VersionUtilsTest {
 	
 	@Test
     public void testParseVersion_BranchWithVersionInName4() {
-    	String version = "branch-name/subbranch-name/test-name-1.2.3.21.06.3.4";
+    	String version = "branch-name/subbranch-name/test-name-1.2.3.21." + AppTest.CURRENT_MONTH + ".3.4";
     	String schema = "Branch.YY.0M.Major.Micro";
     	VersionHelper vh = VersionUtils.parseVersion(version, schema);
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
