@@ -192,7 +192,7 @@ public final class CommitParserUtil {
         						   				   "Threw error when attemping to create CommitMessage object: " + e);
         	}
         	if (m.group("body") != null) {
-        		String[] rawBodyArray = m.group("body").split(System.lineSeparator());
+        		String[] rawBodyArray = m.group("body").split(LINE_SEPARATOR_REGEX);
         		//rawBody.toArray(rawBodyArray);
         		commitBody = new CommitBody(rawBodyArray);
         	}

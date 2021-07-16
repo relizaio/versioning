@@ -22,7 +22,7 @@ public final class CommitFooter implements BreakingChangeItem{
 
     public CommitFooter(String footer) {
     	// Need to check every line of footer for BREAKING-CHANGE or BREAKING CHANGE token
-        String[] footerLines = footer.split(System.lineSeparator());
+        String[] footerLines = footer.split(CommitParserUtil.LINE_SEPARATOR_REGEX);
         boolean breakingChange = false;
         String breakingChangeLine = "";
         for (String line : footerLines) {

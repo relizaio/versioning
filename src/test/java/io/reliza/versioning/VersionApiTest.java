@@ -11,7 +11,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
 import io.reliza.versioning.VersionApi.VersionApiObject;
 
 class VersionApiTest {
-	
+	private static final String LS = System.lineSeparator();
+
 	@Test
 	void testApplyActionOnVersionFromCommitVersionString_SimpleCommitPatchBump() {
 		VersionApiObject vao = VersionApi.createVao("semver");
@@ -26,7 +27,7 @@ class VersionApiTest {
 		VersionApiObject vao = VersionApi.createVao("semver");
 		vao.setVersion("1.0.0");
 		Version v = VersionApi.initializeVersion(vao);
-		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
+		String rawCommit = "fix: simple commit message"+LS+LS+"body"+LS+LS+"Footer: 1"+LS+"BREAKING CHANGE: 2";
 		VersionApi.applyActionOnVersionFromCommit(v, rawCommit);
 		System.out.println(rawCommit);
 		System.out.println(v.constructVersionString());
@@ -38,10 +39,10 @@ class VersionApiTest {
 		VersionApiObject vao = VersionApi.createVao("semver");
 		vao.setVersion("1.0.0");
 		Version v = VersionApi.initializeVersion(vao);
-		String rawCommit = "feat: fix\r\n"
-				+ "\r\n"
-				+ "BREAKING-CHANGE: 3\r\n"
-				+ "\r\n"
+		String rawCommit = "feat: fix" + LS
+				+ LS
+				+ "BREAKING-CHANGE: 3"+LS
+				+ LS
 				+ "";
 		String[] splitCommit = rawCommit.split(System.lineSeparator(), -1);
 		for (String s : splitCommit) {
@@ -59,7 +60,7 @@ class VersionApiTest {
 		vao.setVersion("1.0.0");
 		Version v = VersionApi.initializeVersion(vao);
 		Exception e = assertThrows(IllegalArgumentException.class, () -> {
-			VersionApi.applyActionOnVersionFromCommit(v, "fix: simple commit message" + System.lineSeparator() + "");
+			VersionApi.applyActionOnVersionFromCommit(v, "fix: simple commit message" + LS + "");
 		});
 		String expectedMessage = "Commit message does not";
 		String actualMessage = e.getMessage();

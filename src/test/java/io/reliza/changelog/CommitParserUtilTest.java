@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CommitParserUtilTest {
-	private static final String LS = System.lineSeparator();
+	private static final String LS = System.lineSeparator();//"\n";
 
 	@Test
 	void testParseRawCommit_BreakingChangeFooter() {
@@ -32,10 +32,10 @@ class CommitParserUtilTest {
 	void testParseRawCommitRegex_1() {
 		String rawCommit = "fix: simple commit message"+LS+LS+"body"+LS+LS+"Footer: 1"+LS+"BREAKING CHANGE: 2";
 		ConventionalCommit commit = CommitParserUtil.parseRawCommitRegex(rawCommit);
-		//System.out.println(rawCommit);
-		//System.out.println("message: "+ commit.getMessage());
-		//System.out.println("body: "+commit.getRawBody());
-		//System.out.println("footer: "+commit.getFooter());
+		System.out.println(rawCommit);
+		System.out.println("message: "+ commit.getMessage());
+		System.out.println("body: "+commit.getRawBody());
+		System.out.println("footer: "+commit.getFooter());
 		assertTrue(commit.isBreakingChange());
 	}
 	
