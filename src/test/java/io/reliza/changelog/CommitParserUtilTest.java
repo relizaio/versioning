@@ -18,9 +18,8 @@ class CommitParserUtilTest {
 	private static final String LS = System.lineSeparator();
 
 	@Test
-	@Disabled
 	void testParseRawCommit_BreakingChangeFooter() {
-		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
+		String rawCommit = "fix: simple commit message"+LS+LS+"body"+LS+LS+"Footer: 1"+LS+"BREAKING CHANGE: 2";
 		ConventionalCommit commit = CommitParserUtil.parseRawCommit(rawCommit);
 		//System.out.println("raw" + rawCommit);
 		//System.out.println("message: "+ commit.getMessage());
@@ -41,23 +40,24 @@ class CommitParserUtilTest {
 	}
 	
 	@Test
-	@Disabled
-	void customTestCase() {
-		// Used to test specific cases, changes often
-		String rawcommit = "fix: only footer"+"\n"+"\n"+"Fixes #3"+"\n"+"Signed-off-by: Leo"+"\n"+"\n"+"\n"+"";
+	void testIsCommitValid() {
+		String rawcommit = "feat: fff" + LS
+				+ LS
+				+ "BREAKING-CHANGE: 3";
 		boolean expected_valid = true;
 		boolean actually_valid;
+		ConventionalCommit c = null;
 		try {
-			CommitParserUtil.parseRawCommit(rawcommit);
+			c = CommitParserUtil.parseRawCommit(rawcommit);
 			actually_valid = true;
 		} catch (Exception e) {
 			actually_valid = false;
 		}
 		assertEquals(expected_valid, actually_valid);
+		assertEquals(true, c.isBreakingChange());
 	}
 	
 	@Test
-	@Disabled
 	void testAllCommitMessages() {
 		boolean testSuccess = true;
 		ArrayList<CommitTestCase> commits = new ArrayList<CommitTestCase>();

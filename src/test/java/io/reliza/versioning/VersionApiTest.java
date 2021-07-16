@@ -22,12 +22,31 @@ class VersionApiTest {
 	}
 	
 	@Test
-	@Disabled
 	void testApplyActionOnVersionFromCommitVersionString_BreakingChangeFooter() {
 		VersionApiObject vao = VersionApi.createVao("semver");
 		vao.setVersion("1.0.0");
 		Version v = VersionApi.initializeVersion(vao);
 		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
+		VersionApi.applyActionOnVersionFromCommit(v, rawCommit);
+		System.out.println(rawCommit);
+		System.out.println(v.constructVersionString());
+		assert v.constructVersionString().equals("2.0.0");
+	}
+	
+	@Test
+	void testApplyActionOnVersionFromCommitVersionString_BreakingChangeFooter2() {
+		VersionApiObject vao = VersionApi.createVao("semver");
+		vao.setVersion("1.0.0");
+		Version v = VersionApi.initializeVersion(vao);
+		String rawCommit = "feat: fix\r\n"
+				+ "\r\n"
+				+ "BREAKING-CHANGE: 3\r\n"
+				+ "\r\n"
+				+ "";
+		String[] splitCommit = rawCommit.split(System.lineSeparator(), -1);
+		for (String s : splitCommit) {
+			System.out.println(s);
+		}
 		VersionApi.applyActionOnVersionFromCommit(v, rawCommit);
 		System.out.println(rawCommit);
 		System.out.println(v.constructVersionString());
