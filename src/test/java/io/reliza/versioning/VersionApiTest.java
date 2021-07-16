@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +22,6 @@ class VersionApiTest {
 	}
 	
 	@Test
-	@Ignore
 	@Disabled
 	void testApplyActionOnVersionFromCommitVersionString_BreakingChangeFooter() {
 		VersionApiObject vao = VersionApi.createVao("semver");

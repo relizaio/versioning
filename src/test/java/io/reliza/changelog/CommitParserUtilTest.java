@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +18,6 @@ class CommitParserUtilTest {
 	private static final String LS = System.lineSeparator();
 
 	@Test
-	@Ignore
 	@Disabled
 	void testParseRawCommit_BreakingChangeFooter() {
 		String rawCommit = "fix: simple commit message\r\n\r\nbody\r\n\r\nFooter: 1\r\nBREAKING CHANGE: 2";
@@ -43,7 +41,6 @@ class CommitParserUtilTest {
 	}
 	
 	@Test
-	@Ignore
 	@Disabled
 	void customTestCase() {
 		// Used to test specific cases, changes often
@@ -60,7 +57,6 @@ class CommitParserUtilTest {
 	}
 	
 	@Test
-	@Ignore
 	@Disabled
 	void testAllCommitMessages() {
 		boolean testSuccess = true;
