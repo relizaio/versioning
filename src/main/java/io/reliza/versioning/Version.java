@@ -83,6 +83,7 @@ public class Version implements Comparable<Version> {
 	private Integer major;
 	private Integer minor;
 	private Integer patch;
+	private Integer nano;
 	private String modifier; // in semver this would be identifier, i.e. 1.0.0-alpha
 	private Integer year;
 	private Integer month;
@@ -101,10 +102,10 @@ public class Version implements Comparable<Version> {
 	
 	@Override
 	public String toString() {
-		return String.format("Major = %d, Minor = %d, Patch = %d, Year = %d, Month = %d, Day = %d, "+ 
-							 "Modifier = %s, Metadata = %s, Schema = %s, versionString = %s", this.major, 
-							 this.minor, this.patch, this.year, this.month, this.day, this.modifier, 
-							 this.metadata, this.schema, constructVersionString());
+		return String.format("Major = %d, Minor = %d, Patch = %d, Nano = %d, Year = %d, Month = %d, " +
+							 "Day = %d, "+  "Modifier = %s, Metadata = %s, Schema = %s, versionString = %s",
+							 this.major, this.minor, this.patch, this.nano, this.year, this.month, this.day,
+							 this.modifier, this.metadata, this.schema, constructVersionString());
 	}
 	
 	/**
@@ -137,6 +138,9 @@ public class Version implements Comparable<Version> {
 					break;
 				case PATCH:
 					versionString.append(this.patch.toString());
+					break;
+				case NANO:
+					versionString.append(this.nano.toString());
 					break;
 				case BRANCH:
 					versionString.append(this.branch);
@@ -311,14 +315,19 @@ public class Version implements Comparable<Version> {
 	}
 	
 	/**
-	 * Increments patch element of version by step
-	 * @param step, amount by which to increment version
+	 * Sets the nano element of the version to the nano parameter
+	 * @param nano, value to set nano element to
 	 */
-	public void bumpPatch(Integer step) {
-		if (null == step) {
-			step = 1;
-		}
-		this.patch = patch + step;
+	public void setNano(Integer nano) {
+		this.nano = nano;
+	}
+	
+	/**
+	 * Returns the nano element of the version
+	 * @return nano element (integer)
+	 */
+	public Integer getNano() {
+		return nano;
 	}
 	
 	/**
@@ -370,8 +379,33 @@ public class Version implements Comparable<Version> {
 	}
 	
 	/**
+	 * Increments the nano element of version by step
+	 * @param step, amount by which to increment version
+	 */
+	public void bumpNano(Integer step) {
+		if (null == step) {
+			step = 1;
+		}
+		this.nano = nano + step;
+	}
+	
+	/**
+	 * Increments patch element of version by step
+	 * Resets nano element of version to zero
+	 * @param step, amount by which to increment version
+	 */
+	public void bumpPatch(Integer step) {
+		if (null == step) {
+			step = 1;
+		}
+		this.patch = patch + step;
+		this.nano = 0;
+	}
+	
+	/**
 	 * Increments minor element of version by step
 	 * Resets patch element of version to zero
+	 * Resets nano element of version to zero
 	 * @param step, amount by which to increment minor version
 	 */
 	public void bumpMinor(Integer step) {
@@ -381,13 +415,14 @@ public class Version implements Comparable<Version> {
 	
 		this.minor = minor + step;
 		this.patch = 0;
-		
+		this.nano = 0;
 	}
 	
 	/**
 	 * Increments major element of version by step
 	 * Resets minor element of version to zero
 	 * Resets patch element of version to zero
+	 * Resets nano element of version to zero
 	 * @param step, amount by which to increment major version
 	 */
 	public void bumpMajor(Integer step) {
@@ -397,6 +432,7 @@ public class Version implements Comparable<Version> {
 		this.major = major + step;
 		this.minor = 0;
 		this.patch = 0;
+		this.nano = 0;
 	}
 	
 	/**
@@ -417,15 +453,21 @@ public class Version implements Comparable<Version> {
 	
 	/**
 	 * This method tries to intelligently bump version
-	 * by incrementing patch if present, otherwise minor, 
+	 * by incrementing nano if present, patch if present, otherwise minor, 
 	 * otherwise bumps date to today's if using CalVer
 	 */
 	public void simpleBump () {
 		Set<VersionElement> veList = new HashSet<>(VersionUtils.parseSchema(schema));
-		if (veList.contains(VersionElement.PATCH)) {
+		if (veList.contains(VersionElement.NANO)) { 
+			this.bumpNano(null);
+		} else if (veList.contains(VersionElement.PATCH)) {
 			this.bumpPatch(null);
 		} else if (veList.contains(VersionElement.MINOR)) {
 			this.bumpMinor(null);
+		} else if (veList.contains(VersionElement.YY) || 
+				   veList.contains(VersionElement.YYYY) ||
+				   veList.contains(VersionElement.OY)) {
+			this.setCurrentDate();
 		}
 	}
 	
@@ -507,14 +549,22 @@ public class Version implements Comparable<Version> {
 			v.minor = 1;
 			v.major = 0;
 			v.patch = 0;
+			v.nano = 0;
 		} else if (schemaVeList.contains(VersionElement.MAJOR)) {
 			v.minor = 0;
 			v.major = 1;
 			v.patch = 0;
+			v.nano = 0;
 		} else if (schemaVeList.contains(VersionElement.PATCH)) {
 			v.minor = 0;
 			v.major = 0;
 			v.patch = 0;
+			v.nano = 0;
+		} else if (schemaVeList.contains(VersionElement.NANO)) {
+			v.minor = 0;
+			v.major = 0;
+			v.patch = 0;
+			v.nano = 0;
 		}
 		if (schemaVeList.contains(VersionElement.CALVER_MODIFIER)) {
 			v.modifier = Constants.BASE_MODIFIER;
@@ -554,6 +604,9 @@ public class Version implements Comparable<Version> {
 				break;
 			case PATCH:
 				v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
+				break;
+			case NANO:
+				v.nano = Integer.parseInt(vh.getVersionComponents().get(i));
 				break;
 			case SEMVER_MODIFIER:
 			case CALVER_MODIFIER:
@@ -653,7 +706,14 @@ public class Version implements Comparable<Version> {
 		} else {
 			v.patch = 0;
 		}
-		if (ae != ActionEnum.BUMP_PATCH) v.setCurrentDate();
+		if (null != oldV && null != oldV.getNano()) {
+			v.nano = oldV.getNano();
+		} else {
+			v.nano = 0;
+		}
+		if (ae != ActionEnum.BUMP_PATCH /*TODO|| ae != ActionEnum.BUMP_NANO*/) {
+			v.setCurrentDate();
+		}
 		if (null != oldV && null != oldV.year) {
 			v.year = oldV.year;
 		}
@@ -688,6 +748,10 @@ public class Version implements Comparable<Version> {
 				case PATCH:
 					v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
 					elsProtectedByPin.add(VersionElement.PATCH);
+					break;
+				case NANO:
+					v.nano = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(VersionElement.NANO);
 					break;
 				case SEMVER_MODIFIER:
 				case CALVER_MODIFIER:
@@ -753,22 +817,30 @@ public class Version implements Comparable<Version> {
 		// normalize years, months and days for comparison
 
 		
+		// TODO put NANO bump precedence before or after calver?
+		// if ActionEnum.BUMP_NANO && !elsProtectedByPin.contains(VersionElement.NANO)) {
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
+			v.nano = 0;
 		} else if (isCalverUpdated(v, oldV)) {
 			// calver update happened, reset semver
 			v.minor = 0;
 			v.major = 0;
 			v.patch = 0;
+			v.nano = 0;
 		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
 			++v.major;
 			v.minor = 0;
 			v.patch = 0;
+			v.nano = 0;
 		} else if (ae == ActionEnum.BUMP_MINOR && !elsProtectedByPin.contains(VersionElement.MINOR)) {
 			++v.minor;
 			v.patch = 0;
+			v.nano = 0;
 		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
+			// TODO change default (if ae == null) to nano increment?
 			++v.patch;
+			v.nano = 0;
 		}
 		return v;
 	}
@@ -826,6 +898,9 @@ public class Version implements Comparable<Version> {
 		}
 		if (null != patch) {
 			sb.append(patch.toString());
+		}
+		if (null != nano) {
+			sb.append(nano.toString());
 		}
 		if (null != modifier) {
 			sb.append(modifier);
@@ -885,6 +960,9 @@ public class Version implements Comparable<Version> {
 		}
 		if (0 == comparison) {
 			comparison = compareVersionIntegers(patch, otherV.patch);
+		}
+		if (0 == comparison) {
+			comparison = compareVersionIntegers(nano, otherV.nano);
 		}
 		if (0 == comparison && StringUtils.isNotEmpty(buildid) && StringUtils.isNotEmpty(otherV.buildid)) {
 			try {

@@ -23,6 +23,7 @@ public enum VersionElement {
 	MAJOR(new HashSet<String>(Arrays.asList(new String[] {"major"})), "^\\d+$"),
 	MINOR(new HashSet<String>(Arrays.asList(new String[] {"minor"})), "^\\d+$"),
 	PATCH(new HashSet<String>(Arrays.asList(new String[] {"micro", "patch"})), "^\\d+$"),
+	NANO(new HashSet<String>(Arrays.asList(new String[] {"nano"})), "^\\d+$"),
 	SEMVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"modifier", "identifier", "mod", "ident", "id"})), "^[a-zA-Z0-9]+$"),
 	CALVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"calvermodifier", "calvermod", "calverid"})), "^[a-zA-Z0-9]+$"),
 	METADATA(new HashSet<String>(Arrays.asList(new String[] {"meta", "metadata"})), "^[a-zA-Z0-9]+$"),

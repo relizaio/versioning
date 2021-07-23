@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reliza.versioning.Version.VersionStringComparator;
@@ -27,7 +28,7 @@ public class AppTest
 {
 	protected static final String CURRENT_MONTH_SINGLE = "7";
 	protected static final String CURRENT_MONTH = "07";
-    
+	
     @Test
     public void testSchemaMatching1() {
     	String testSchema = "Major.Minor.Patch";
@@ -662,4 +663,77 @@ public class AppTest
 		String expectedV = "2021.02.2";
 		assertEquals(expectedV, actualV);
     }
+	
+	@Test
+	public void nanoMatchSchema() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String testVersion = "2.3.4.5";
+		assertTrue(VersionUtils.isVersionMatchingSchema(testSchema, testVersion));
+	}
+	
+	@Test
+	public void nanoCalverMatchingSchema() {
+		String testSchema = "YYYY.0M.Patch.Nano";
+		String testVersion = "2021.05.3.4";
+		assertTrue(VersionUtils.isVersionMatchingSchema(testSchema, testVersion));
+	}
+	
+	@Test
+	public void nanoConstructVersionString() {
+		String schema = "YYYY.Patch.Nano";
+		Version v = Version.getVersion(schema);
+		assertEquals("2021.0.0", v.constructVersionString());
+	}
+	
+	@Test
+	public void bumpPatchWithNano() {
+		Version v = Version.getVersion("2021.3.3","YYYY.Patch.nano");
+		v.bumpPatch(null);
+		assertEquals("2021.4.0", v.constructVersionString());
+	}
+	
+	@Test
+	public void bumpMajorWithNano() {
+		Version v = Version.getVersion("4.3.3","Major.Patch.nano");
+		v.bumpMajor(null);
+		assertEquals("5.0.0", v.constructVersionString());
+	}
+	
+	@Test
+	public void nanoSimpleBump() {
+		Version v = Version.getVersion("4.3.2.1", "Major.minor.patch.nano");
+		v.simpleBump();
+		assertEquals("4.3.2.2", v.constructVersionString());
+	}
+	
+	@Disabled
+	@Test
+	public void compareVersions() {
+		Version v1 = Version.getVersion("4.2", "Minor.Patch");
+		Version v2 = Version.getVersion("4.3", "Minor.Patch");
+		// v2 greater than v1, so compareTo should return +1?
+		assertEquals("1", v2.compareTo(v1));
+	}
+	
+	@Disabled
+	@Test
+	public void nanoCompareVersions() {
+		Version v1 = Version.getVersion("4.2", "Minor.Nano");
+		Version v2 = Version.getVersion("4.3", "Minor.Nano");
+		// should return -1 if v2 is less then v1
+		// and +1 if v2 greater than v1
+		assertEquals("1", v2.compareTo(v1));
+	}
+	
+	@Test
+	public void nanoGetVersionFromPinAndOldVersion() {
+		String testSchema = "YYYY.0M.Minor.Patch";
+		String pin = "YYYY.0M.2.Patch";
+		String oldVersion = "2020.01.2.1";
+		ActionEnum ae = ActionEnum.BUMP_MINOR;
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ae);
+		System.out.println(v);
+		// YYYY.0M.Patch schema should match 2020.01.Patch pin
+		assertEquals("2021.07.0.0", v.constructVersionString());
+	}
 }
