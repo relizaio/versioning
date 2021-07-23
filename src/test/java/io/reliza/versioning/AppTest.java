@@ -755,20 +755,31 @@ public class AppTest
 		assertEquals("1.7.4.4", v.constructVersionString());
 	}
 	
-	@Test//correct behaviour? or should be 2.2.0.0?
+	@Test
 	public void nanoSemverBranchPinBumpPatch() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "2.2.Patch.Nano";
 		//String oldVersion = "2.2.2.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, null, null);
 		//System.out.println(v.constructVersionString());
+		assertEquals("2.2.0.0", v.constructVersionString());
+	}
+	
+	// if old version is present but no ae, simple bump?
+	@Test
+	public void nanoSemverBranchPinOldVersion() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "2.2.Patch.Nano";
+		String oldVersion = "2.2.0.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
 		assertEquals("2.2.1.0", v.constructVersionString());
 	}
 	
-	@Test //correct behaviour? or should be 2.2.2.2?
-	public void nanoSemverBranchPinBumpPatchOldVersion() {
+	@Test // or 2.2.2.0?
+	public void nanoSemverPinOldVersion() {
 		String testSchema = "Major.Minor.Patch.Nano";
-		String pin = "2.2.Patch.Nano";
+		String pin = "2.2.2.Nano";
 		String oldVersion = "2.2.2.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
 		//System.out.println(v.constructVersionString());
@@ -785,4 +796,13 @@ public class AppTest
 		assertEquals("2.2.3.0", v.constructVersionString());
 	}
 	
+	@Test
+	public void nanoSemverBranchPinBumpPatchOldVersionBumpPatch2() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "2.2.Patch.Nano";
+		String oldVersion = "2.2.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_MINOR);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2.2.3.0", v.constructVersionString());
+	}
 }
