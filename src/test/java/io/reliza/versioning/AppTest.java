@@ -379,7 +379,7 @@ public class AppTest
     @Test
     public void versionComparison1year() {
     	String version1 = "2020.05.Stable.1";
-    	String version2 = "2019.10.Stable.1";
+    	String version2 = "2019.10.Stable.1"; // should be first after sorting be ascending
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
@@ -387,7 +387,7 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
@@ -401,13 +401,13 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
     public void versionComparison3buildid() {
     	String version1 = "2.3.5.28";
-    	String version2 = "2.3.5.7";
+    	String version2 = "2.3.5.7"; // should be first after sorting be ascending
     	String schema = "major.minor.patch.buildid";
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
@@ -415,33 +415,33 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
     public void versionStringComparator1Semver() {
     	String version1 = "2.3.25";
-    	String version2 = "2.3.7";
+    	String version2 = "2.3.7";// should be first after sorting be ascending
     	String schema = Constants.SEMVER;
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version1.equals(vList.get(0)));
+    	assertTrue(version2.equals(vList.get(0)));
     }
     
     @Test
     public void versionStringComparator2Calver() {
     	String version1 = "2020.03.Stable.1";
     	String version2 = "2019.10.Stable.1";
-    	String version3 = "2019.09.Stable.1";
+    	String version3 = "2019.09.Stable.1"; //1st after ascending sort
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	vList.add(version3);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version1.equals(vList.get(0)));
+    	assertTrue(version3.equals(vList.get(0)));
     }
 
     @Test
@@ -494,14 +494,14 @@ public class AppTest
     public void versionStringComparator3CalverNotMatching() {
     	String version1 = "2020.03.Stable.1";
     	String version2 = "2021.10.15.Stable.1"; // this version doesn't match schema so it will be at the bottom of the list
-    	String version3 = "2019.09.Stable.1";
+    	String version3 = "2019.09.Stable.1"; // should be first after sorting be ascending
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	vList.add(version3);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version1.equals(vList.get(0)));
+    	assertTrue(version3.equals(vList.get(0)));
     }
     
     @Test
@@ -701,39 +701,88 @@ public class AppTest
 	
 	@Test
 	public void nanoSimpleBump() {
-		Version v = Version.getVersion("4.3.2.1", "Major.minor.patch.nano");
+		Version v = Version.getVersion("1.2.3.4", "Major.minor.patch.nano");
 		v.simpleBump();
-		assertEquals("4.3.2.2", v.constructVersionString());
+		assertEquals("1.2.4.0", v.constructVersionString());
 	}
 	
-	@Disabled
+	
 	@Test
-	public void compareVersions() {
-		Version v1 = Version.getVersion("4.2", "Minor.Patch");
-		Version v2 = Version.getVersion("4.3", "Minor.Patch");
+	public void semverCompareVersions() {
+		Version v1 = Version.getVersion("4.4.2", "Major.Minor.Patch");
+		Version v2 = Version.getVersion("4.4.3", "Major.Minor.Patch");
 		// v2 greater than v1, so compareTo should return +1?
-		assertEquals("1", v2.compareTo(v1));
+		assertEquals(1, v2.compareTo(v1));
 	}
 	
-	@Disabled
+	
 	@Test
 	public void nanoCompareVersions() {
 		Version v1 = Version.getVersion("4.2", "Minor.Nano");
 		Version v2 = Version.getVersion("4.3", "Minor.Nano");
 		// should return -1 if v2 is less then v1
 		// and +1 if v2 greater than v1
-		assertEquals("1", v2.compareTo(v1));
+		assertEquals(1, v2.compareTo(v1));
+	}
+	
+	@Test
+	public void calverCompareVersions() {
+		Version v1 = Version.getVersion("2021.04", "YYYY.0M");
+		Version v2 = Version.getVersion("2020.02", "YYYY.0M");
+		// expected: v1 greater than v2
+		assertEquals(1, v1.compareTo(v2));
 	}
 	
 	@Test
 	public void nanoGetVersionFromPinAndOldVersion() {
-		String testSchema = "YYYY.0M.Minor.Patch";
-		String pin = "YYYY.0M.2.Patch";
-		String oldVersion = "2020.01.2.1";
+		String testSchema = "YYYY.0M.Major.Minor.Patch.Nano";
+		String pin = "2021.07.Major.2.Patch.Nano";
+		String oldVersion = "2021.07.3.2.1.0";
 		ActionEnum ae = ActionEnum.BUMP_MINOR;
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ae);
-		System.out.println(v);
+		System.out.println(v.constructVersionString());
 		// YYYY.0M.Patch schema should match 2020.01.Patch pin
-		assertEquals("2021.07.0.0", v.constructVersionString());
+		assertEquals("2021.07.3.2.2.0", v.constructVersionString());
 	}
+	
+	@Test // should bump nano if ae is null?
+	public void nanoSemverBranchPin() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "1.7.4.Nano";
+		String oldVersion = "1.7.4.3";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("1.7.4.4", v.constructVersionString());
+	}
+	
+	@Test//correct behaviour? or should be 2.2.0.0?
+	public void nanoSemverBranchPinBumpPatch() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "2.2.Patch.Nano";
+		//String oldVersion = "2.2.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, null, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2.2.1.0", v.constructVersionString());
+	}
+	
+	@Test //correct behaviour? or should be 2.2.2.2?
+	public void nanoSemverBranchPinBumpPatchOldVersion() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "2.2.Patch.Nano";
+		String oldVersion = "2.2.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2.2.2.1", v.constructVersionString());
+	}
+	
+	@Test
+	public void nanoSemverBranchPinBumpPatchOldVersionBumpPatch() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "2.2.Patch.Nano";
+		String oldVersion = "2.2.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_PATCH);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2.2.3.0", v.constructVersionString());
+	}
+	
 }

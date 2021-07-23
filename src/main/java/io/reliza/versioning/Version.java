@@ -453,14 +453,12 @@ public class Version implements Comparable<Version> {
 	
 	/**
 	 * This method tries to intelligently bump version
-	 * by incrementing nano if present, patch if present, otherwise minor, 
+	 * by incrementing patch if present, otherwise minor, 
 	 * otherwise bumps date to today's if using CalVer
 	 */
 	public void simpleBump () {
 		Set<VersionElement> veList = new HashSet<>(VersionUtils.parseSchema(schema));
-		if (veList.contains(VersionElement.NANO)) { 
-			this.bumpNano(null);
-		} else if (veList.contains(VersionElement.PATCH)) {
+		if (veList.contains(VersionElement.PATCH)) {
 			this.bumpPatch(null);
 		} else if (veList.contains(VersionElement.MINOR)) {
 			this.bumpMinor(null);
@@ -711,7 +709,7 @@ public class Version implements Comparable<Version> {
 		} else {
 			v.nano = 0;
 		}
-		if (ae != ActionEnum.BUMP_PATCH /*TODO|| ae != ActionEnum.BUMP_NANO*/) {
+		if (ae != ActionEnum.BUMP_PATCH) {
 			v.setCurrentDate();
 		}
 		if (null != oldV && null != oldV.year) {
@@ -817,8 +815,6 @@ public class Version implements Comparable<Version> {
 		// normalize years, months and days for comparison
 
 		
-		// TODO put NANO bump precedence before or after calver?
-		// if ActionEnum.BUMP_NANO && !elsProtectedByPin.contains(VersionElement.NANO)) {
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
@@ -838,7 +834,6 @@ public class Version implements Comparable<Version> {
 			v.patch = 0;
 			v.nano = 0;
 		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
-			// TODO change default (if ae == null) to nano increment?
 			++v.patch;
 			v.nano = 0;
 		}
@@ -871,17 +866,17 @@ public class Version implements Comparable<Version> {
 	 * Used to generalize comparisons for compareTo method
 	 * @param i1 Integer
 	 * @param i2 Integer
-	 * @return -1 if i1 is larger, 1 if i2 is larger or 0 if both are null or equal
+	 * @return 1 if i1 is larger or i2 is null, -1 if i2 is larger or i1 is null, or 0 if both are null or equal
 	 */
 	private int compareVersionIntegers (Integer i1, Integer i2) {
 		if (null != i1 && null == i2) {
-			return -1;
+			return 1;
 		} else if (null == i1 && null != i2) {
-			return 1;
-		} else if (null != i1 && i1 > i2) {
 			return -1;
-		} else if (null != i1 && i1 < i2) {
+		} else if (null != i1 && i1 > i2) {
 			return 1;
+		} else if (null != i1 && i2 > i1) {
+			return -1;
 		} else {
 			return 0;
 		}
@@ -981,6 +976,11 @@ public class Version implements Comparable<Version> {
 
 		private String schema;
 		
+		/**
+		 * Can be used to sort a collection in acending order. Versions that do not
+		 * match the specified schema will be moved to the bottom/end of the collection.
+		 * @param schema {@code String} Versions must match this schema to be sorted
+		 */
 		public VersionStringComparator(String schema) {
 			this.schema = schema;
 		}
