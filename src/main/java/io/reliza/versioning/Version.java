@@ -8,7 +8,9 @@ package io.reliza.versioning;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -729,8 +731,8 @@ public class Version implements Comparable<Version> {
 		v.isSnapshot = vh.isSnapshot();
 
 		// this would be set of unmodifiable elements since they are set by pin
-		Set<VersionElement> elsProtectedByPin = new HashSet<>(); // skipping dates since we are not bumping dates below
-		
+		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
+		// even thought dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<schemaVeList.size(); i++) {
 			VersionElement parsedVe = VersionElement.getVersionElement(vh.getVersionComponents().get(i));
 			if (parsedVe != schemaVeList.get(i)) {
@@ -762,14 +764,17 @@ public class Version implements Comparable<Version> {
 				case YY:
 				case OY:
 					v.year = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(schemaVeList.get(i));
 					break;
 				case MM:
 				case OM:
 					v.month = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(schemaVeList.get(i));
 					break;
 				case DD:
 				case OD:
 					v.day = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(schemaVeList.get(i));
 					break;
 				case BRANCH:
 					v.branch = vh.getVersionComponents().get(i);
@@ -836,6 +841,17 @@ public class Version implements Comparable<Version> {
 		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
+		} else if ( (ae == null || ae == ActionEnum.BUMP) && oldV != null ) {
+			// if everything is pinned but nano, bump nano, else do simple bump if old version present
+			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
+			schemaSetWithoutNano.addAll(schemaVeList);
+			schemaSetWithoutNano.remove(VersionElement.NANO);
+			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
+					 && schemaVeList.contains(VersionElement.NANO)) {
+				++v.nano;
+			} else {
+				v.simpleBump();
+			}
 		}
 		return v;
 	}

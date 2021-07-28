@@ -745,7 +745,7 @@ public class AppTest
 		assertEquals("2021.07.3.2.2.0", v.constructVersionString());
 	}
 	
-	@Test // should bump nano if ae is null?
+	@Test // this is one scenario where we bump nano
 	public void nanoSemverBranchPin() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "1.7.4.Nano";
@@ -755,7 +755,7 @@ public class AppTest
 		assertEquals("1.7.4.4", v.constructVersionString());
 	}
 	
-	@Test
+	@Test // no old version so just initialize to starting version
 	public void nanoSemverBranchPinBumpPatch() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "2.2.Patch.Nano";
@@ -765,7 +765,7 @@ public class AppTest
 		assertEquals("2.2.0.0", v.constructVersionString());
 	}
 	
-	// if old version is present but no ae, simple bump?
+	// no action enum input present, default to BUMP (simple bump)
 	@Test
 	public void nanoSemverBranchPinOldVersion() {
 		String testSchema = "Major.Minor.Patch.Nano";
@@ -776,17 +776,17 @@ public class AppTest
 		assertEquals("2.2.1.0", v.constructVersionString());
 	}
 	
-	@Test // or 2.2.2.0?
+	@Test // bump nano scenario
 	public void nanoSemverPinOldVersion() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "2.2.2.Nano";
 		String oldVersion = "2.2.2.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
 		//System.out.println(v.constructVersionString());
-		assertEquals("2.2.2.1", v.constructVersionString());
+		assertEquals("2.2.2.2", v.constructVersionString());
 	}
 	
-	@Test
+	@Test // Bump Patch with old version
 	public void nanoSemverBranchPinBumpPatchOldVersionBumpPatch() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "2.2.Patch.Nano";
@@ -796,7 +796,7 @@ public class AppTest
 		assertEquals("2.2.3.0", v.constructVersionString());
 	}
 	
-	@Test
+	@Test //basically same as above, if AE=Bump_Minor but Minor is pinned, will attempt to bump patch instead
 	public void nanoSemverBranchPinBumpPatchOldVersionBumpPatch2() {
 		String testSchema = "Major.Minor.Patch.Nano";
 		String pin = "2.2.Patch.Nano";
@@ -804,5 +804,56 @@ public class AppTest
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_MINOR);
 		//System.out.println(v.constructVersionString());
 		assertEquals("2.2.3.0", v.constructVersionString());
+	}
+	
+	@Test // bump nano scenario
+	public void nanoSemverPinOldVersion2() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "5.0.5.Nano";
+		String oldVersion = "5.0.5.4";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("5.0.5.5", v.constructVersionString());
+	}
+	
+	
+	@Test // bump patch because minor is not pinned
+	public void nanoSemverPinOldVersion3() {
+		String testSchema = "Major.Minor.Patch.Nano";
+		String pin = "3.2.Patch.Nano";
+		String oldVersion = "3.2.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("3.2.3.0", v.constructVersionString());
+	}
+	
+	@Test // simple bump with patch and nano not pinned (so bump patch)
+	public void nanoSemverPinOldVersionCalver() {
+		String testSchema = "YYYY.Major.Minor.Patch.Nano";
+		String pin = "2021.4.3.Patch.Nano";
+		String oldVersion = "2021.4.3.2.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2021.4.3.3.0", v.constructVersionString());
+	}
+	
+	@Test // don't think we bump nano here
+	public void nanoSemverPinOldVersionBumpDate1() {
+		String testSchema = "YYYY.0M.Major.Minor.Patch.Nano";
+		String pin = "2021.0M.3.3.3.Nano";
+		String oldVersion = "2021.04.3.3.3.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_DATE);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2021."+CURRENT_MONTH+".0.0.0.0", v.constructVersionString());
+	}
+	
+	@Test // everything else pinned so bump nano
+	public void nanoSemverPinOldVersionBumpDate2() {
+		String testSchema = "YYYY.0M.Major.Minor.Patch.Nano";
+		String pin = "2021.04.3.3.3.Nano";
+		String oldVersion = "2021.04.3.3.3.1";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, null);
+		//System.out.println(v.constructVersionString());
+		assertEquals("2021.04.3.3.3.2", v.constructVersionString());
 	}
 }
