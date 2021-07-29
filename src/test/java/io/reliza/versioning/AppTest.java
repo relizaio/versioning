@@ -379,7 +379,7 @@ public class AppTest
     @Test
     public void versionComparison1year() {
     	String version1 = "2020.05.Stable.1";
-    	String version2 = "2019.10.Stable.1"; // should be first after sorting be ascending
+    	String version2 = "2019.10.Stable.1";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
@@ -387,7 +387,7 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
@@ -401,13 +401,13 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
     public void versionComparison3buildid() {
     	String version1 = "2.3.5.28";
-    	String version2 = "2.3.5.7"; // should be first after sorting be ascending
+    	String version2 = "2.3.5.7";
     	String schema = "major.minor.patch.buildid";
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
@@ -415,33 +415,33 @@ public class AppTest
     	vList.add(v2);
     	vList.add(v1);
     	Collections.sort(vList);
-    	assertTrue(version2.equals(vList.get(0).constructVersionString()));
+    	assertTrue(version1.equals(vList.get(0).constructVersionString()));
     }
     
     @Test
     public void versionStringComparator1Semver() {
     	String version1 = "2.3.25";
-    	String version2 = "2.3.7";// should be first after sorting be ascending
+    	String version2 = "2.3.7";
     	String schema = Constants.SEMVER;
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version2.equals(vList.get(0)));
+    	assertTrue(version1.equals(vList.get(0)));
     }
     
     @Test
     public void versionStringComparator2Calver() {
     	String version1 = "2020.03.Stable.1";
     	String version2 = "2019.10.Stable.1";
-    	String version3 = "2019.09.Stable.1"; //1st after ascending sort
+    	String version3 = "2019.09.Stable.1";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	vList.add(version3);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version3.equals(vList.get(0)));
+    	assertTrue(version1.equals(vList.get(0)));
     }
 
     @Test
@@ -494,14 +494,14 @@ public class AppTest
     public void versionStringComparator3CalverNotMatching() {
     	String version1 = "2020.03.Stable.1";
     	String version2 = "2021.10.15.Stable.1"; // this version doesn't match schema so it will be at the bottom of the list
-    	String version3 = "2019.09.Stable.1"; // should be first after sorting be ascending
+    	String version3 = "2019.09.Stable.1";
     	String schema = VersionType.CALVER_RELIZA.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
     	vList.add(version3);
     	Collections.sort(vList, new VersionStringComparator(schema));
-    	assertTrue(version3.equals(vList.get(0)));
+    	assertTrue(version1.equals(vList.get(0)));
     }
     
     @Test
@@ -711,8 +711,8 @@ public class AppTest
 	public void semverCompareVersions() {
 		Version v1 = Version.getVersion("4.4.2", "Major.Minor.Patch");
 		Version v2 = Version.getVersion("4.4.3", "Major.Minor.Patch");
-		// v2 greater than v1, so compareTo should return +1?
-		assertEquals(1, v2.compareTo(v1));
+		// expected: v1 less than v2
+		assertEquals(1, v1.compareTo(v2));
 	}
 	
 	
@@ -720,9 +720,8 @@ public class AppTest
 	public void nanoCompareVersions() {
 		Version v1 = Version.getVersion("4.2", "Minor.Nano");
 		Version v2 = Version.getVersion("4.3", "Minor.Nano");
-		// should return -1 if v2 is less then v1
-		// and +1 if v2 greater than v1
-		assertEquals(1, v2.compareTo(v1));
+		// expected, v1 less then v2
+		assertEquals(1, v1.compareTo(v2));
 	}
 	
 	@Test
@@ -730,7 +729,7 @@ public class AppTest
 		Version v1 = Version.getVersion("2021.04", "YYYY.0M");
 		Version v2 = Version.getVersion("2020.02", "YYYY.0M");
 		// expected: v1 greater than v2
-		assertEquals(1, v1.compareTo(v2));
+		assertEquals(-1, v1.compareTo(v2));
 	}
 	
 	@Test

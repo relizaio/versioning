@@ -954,6 +954,11 @@ public class Version implements Comparable<Version> {
 		}
 	}
 	
+	/**
+	 * Opposite behaviour to most compareTo functions.
+	 * @param otherV other version to compare to {@code this} version
+	 * @return a negative integer, zero, or a positive integer as this object is greater than, equal to, or less than the specified object.
+	 */
 	@Override
 	public int compareTo(Version otherV) {
 		int comparison = compareVersionIntegers(year, otherV.year);
@@ -980,7 +985,7 @@ public class Version implements Comparable<Version> {
 				comparison = compareVersionIntegers(Integer.parseInt(buildid), Integer.parseInt(otherV.buildid));
 			} catch (NumberFormatException nfe) {}
 		}
-		return comparison;
+		return -comparison;
 	}
 	
 	/**
@@ -993,8 +998,10 @@ public class Version implements Comparable<Version> {
 		private String schema;
 		
 		/**
-		 * Can be used to sort a collection in acending order. Versions that do not
-		 * match the specified schema will be moved to the bottom/end of the collection.
+		 * Can be used to sort a collection in descending order. Latest version will
+		 * be first/beginning of list. Versions that do not match the specified schema
+		 * will be moved to the bottom/end of the collection.
+		 * 
 		 * @param schema {@code String} Versions must match this schema to be sorted
 		 */
 		public VersionStringComparator(String schema) {
