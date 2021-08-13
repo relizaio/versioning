@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -360,5 +361,80 @@ public class VersionUtils {
 			isCalver = true;
 		}
 		return isCalver;
+	}
+	
+	/**
+	 * <p>This method returns a VersionElement representing the largest version component that has changes between two versions.
+	 * Largest version component is defined as first version component, reading from left to right.</p>
+	 * <ul>
+	 * <li>Example: oldVersion = 1.0.0, newVersion = 1.0.1, returns VersionElement.Patch</li>
+	 * <li>Example: oldVersion = 1.0.0, newVersion = 1.1.1, returns VersionElement.Minor</li>
+	 * <li>Example: oldVersion = 2021.1.0, newVersion = 2022.2.0 returns VersionElement.YYYY</li>
+	 * <li>Example: oldVersion = 1.2021.1.0, newVersion = 0.2022.1.0 returns VersionElement.Major</li>
+	 * </ul>
+	 * @param oldVersion String
+	 * @param newVersion String
+	 * @param schema String Both versions must match the specified schema otherwise null will be returned.
+	 * @return VersionElement representing the largest difference between the two versions. Returns null if versions are equal or either does not match schema.
+	 */
+	public static VersionElement getLargestVersionElementDifference(String oldVersion, String newVersion, String schema) {
+		Objects.requireNonNull(oldVersion, "Old version must not be null");
+		Objects.requireNonNull(newVersion, "New version must not be null");
+		Objects.requireNonNull(schema, "Schema must not be null");
+		VersionElement returnVe = null;
+		VersionHelper oldVh = parseVersion(oldVersion);
+		VersionHelper newVh = parseVersion(newVersion);
+		if (isVersionMatchingSchema(schema, oldVersion)
+				&& isVersionMatchingSchema(schema, newVersion)) {
+			// parse schema
+			List<VersionElement> schemaVeList = parseSchema(schema);
+			int minVersionLength = Math.min(oldVh.getVersionComponents().size(), newVh.getVersionComponents().size());
+			// use old for loop so we can reference both version component lists
+			for (int i = 0; i < minVersionLength && returnVe == null; i++) {
+				if (!oldVh.getVersionComponents().get(i).equals(newVh.getVersionComponents().get(i))) {
+					// if version components do not have same value, return the corresponding version element from schema list
+					returnVe = schemaVeList.get(i);
+				}
+			}
+		}
+		return returnVe;
+	}
+	
+	/**
+	 * <p>Similar to getLargestVersionElementDifference() method. Only difference is this method only
+	 * considers differences between Semver version components. i.e. Major, Minor or Patch/Micro.</p>
+	 * <p>This method works with versions that contain version elements other than Semver elements,
+	 * however if the versions contain only non Semver elements, or are only differing in non Semver
+	 * elements, then the method returns null.</p>
+	 * @param oldVersion String
+	 * @param newVersion String
+	 * @param schema String Does not have to be strictly Semver. Must match both versions
+	 * @return VersionElement representing the largest differing semver version component between the two versions, or null if either version does match schema.
+	 */
+	public static VersionElement getLargestSemverVersionElementDifference(String oldVersion, String newVersion, String schema) {
+		Objects.requireNonNull(oldVersion, "Old version must not be null");
+		Objects.requireNonNull(newVersion, "New version must not be null");
+		Objects.requireNonNull(schema, "Schema must not be null");
+		VersionElement returnVe = null;
+		VersionHelper oldVh = parseVersion(oldVersion);
+		VersionHelper newVh = parseVersion(newVersion);
+		if (isVersionMatchingSchema(schema, oldVersion)
+				&& isVersionMatchingSchema(schema, newVersion)) {
+			// parse schema
+			List<VersionElement> schemaVeList = parseSchema(schema);
+			int minVersionLength = Math.min(oldVh.getVersionComponents().size(), newVh.getVersionComponents().size());
+			// use old for loop so we can reference both version component lists
+			for (int i = 0; i < minVersionLength && returnVe == null; i++) {
+				if (!oldVh.getVersionComponents().get(i).equals(newVh.getVersionComponents().get(i))) {
+					// make sure corresponding element is a Semver element before returning
+					if (schemaVeList.get(i) == VersionElement.MAJOR
+							|| schemaVeList.get(i) == VersionElement.MINOR
+							|| schemaVeList.get(i) == VersionElement.PATCH) {
+						returnVe = schemaVeList.get(i);
+					}
+				}
+			}
+		}
+		return returnVe;
 	}
 }

@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -261,16 +262,17 @@ public class VersionApi {
 	 * @return ActionEnum value, null if no action is required.
 	 */
 	public static ActionEnum getActionFromConventionalCommit(ConventionalCommit commit) {
+		ActionEnum returnAction = null;
 		if (commit != null) {
 			if (commit.isBreakingChange()) {
-				return ActionEnum.BUMP_MAJOR;
+				returnAction = ActionEnum.BUMP_MAJOR;
 			} else if (commit.getType() == CommitType.FEAT) {
-				return ActionEnum.BUMP_MINOR;
+				returnAction = ActionEnum.BUMP_MINOR;
 			} else if (commit.getType() == CommitType.BUG_FIX) {
-				return ActionEnum.BUMP_PATCH;
+				returnAction = ActionEnum.BUMP_PATCH;
 			}
 		}
-		return null;
+		return returnAction;
 	}
 	
 	/**
@@ -305,6 +307,41 @@ public class VersionApi {
 	public static void applyActionOnVersionFromCommit(Version v, String rawCommit) {
 		ConventionalCommit parsedCommit = CommitParserUtil.parseRawCommit(rawCommit);
 		VersionApi.applyActionOnVersionFromCommit(v, parsedCommit);
+	}
+	
+	/**
+	 * This method compares two versions based on the supplied schema and returns the largest
+	 * version Action applicable between the two versions. Versions must both be matching specified
+	 * schema, else null will be returned. Only applies to Major, Minor, and Micro/Patch version
+	 * components. If those components have not changed, even if other components such as YYYY have,
+	 * then null will be returned.
+	 * @param oldVersion String
+	 * @param newVersion String
+	 * @param schema The schema of both versions. Versions must both match the same schema.
+	 * @return ActionEnum the largest applicable version action between the two versions. Returns null if either version not matching schema, or if schema has no Semver elements, or if Semver elements are equal between versions.
+	 */
+	public static ActionEnum getBumpActionBetweenVersions(String oldVersion, String newVersion, String schema) {
+		Objects.requireNonNull(oldVersion, "Old version must not be null");
+		Objects.requireNonNull(newVersion, "New version must not be null");
+		Objects.requireNonNull(schema, "Schema must not be null");
+		VersionElement largestDifferingSemverElement = VersionUtils.getLargestSemverVersionElementDifference(oldVersion, newVersion, schema);
+		ActionEnum returnAction = null;
+		if (largestDifferingSemverElement != null) {
+			switch (largestDifferingSemverElement) {
+			case MAJOR:
+				returnAction = ActionEnum.BUMP_MAJOR;
+				break;
+			case MINOR:
+				returnAction = ActionEnum.BUMP_MINOR;
+				break;
+			case PATCH:
+				returnAction = ActionEnum.BUMP_PATCH;
+				break;
+			default:
+				break;
+			}
+		}
+		return returnAction;
 	}
 	
 	/**

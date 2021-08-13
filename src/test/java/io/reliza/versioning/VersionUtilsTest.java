@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -127,4 +128,98 @@ class VersionUtilsTest {
 		assertEquals(expectedVersion, actualVersion);
 	}
 
+	@Test
+	void versionsMatchingSchemas() {
+		// test if two versions have the same schema
+		String schema1 = "Major.Minor.Patch";
+		String schema2 = "MAJOR.MINOR.MICRO";
+		// schemas are functionally equal
+		List<VersionElement> vel1 = VersionUtils.parseSchema(schema1);
+		List<VersionElement> vel2 = VersionUtils.parseSchema(schema2);
+		assertEquals(vel1, vel2);
+	}
+	
+	@Test
+	void differenceBetweenTwoVersions_MismatchVersionsAndSchema() {
+		String oldV = "0.0.4";
+		String newV = "0.3.4";
+		String schema = "MM.Major";
+		VersionElement expectedElement = null; //expecting null because versions don't match schema
+		VersionElement actualElement = VersionUtils.getLargestVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void differenceBetweenTwoVersions_1() {
+		// Largest differing element is minor
+		String oldV = "0.0.4";
+		String newV = "0.3.4";
+		String schema = "Semver";
+		VersionElement expectedElement = VersionElement.MINOR;
+		VersionElement actualElement = VersionUtils.getLargestVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void differenceBetweenTwoVersions_2() {
+		String oldV = "2019.0.4";
+		String newV = "2021.3.4";
+		String schema = "YYYY.Major.Minor";
+		VersionElement expectedElement = VersionElement.YYYY;
+		VersionElement actualElement = VersionUtils.getLargestVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void semverDifferenceBetweenTwoVersions_1() {
+		// expecting MAJOR because only considering semver version elements
+		String oldV = "2019.0.4";
+		String newV = "2021.3.4";
+		String schema = "YYYY.Major.Minor";
+		VersionElement expectedElement = VersionElement.MAJOR;
+		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void semverDifferenceBetweenTwoVersions_2() {
+		// expecting PATCH because only considering semver version elements
+		String oldV = "2019.3.4.3";
+		String newV = "2021.3.4.5";
+		String schema = "YYYY.Major.Minor.Patch";
+		VersionElement expectedElement = VersionElement.PATCH;
+		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void semverDifferenceBetweenTwoVersions_3() {
+		String oldV = "2019.3.4.7";
+		String newV = "2021.3.4.5";
+		String schema = "YYYY.Major.Minor.Patch";
+		VersionElement expectedElement = VersionElement.PATCH;
+		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void semverDifferenceBetweenTwoVersions_NoDifference() {
+		String oldV = "3.4.7";
+		String newV = "3.4.7";
+		String schema = "Semver";
+		VersionElement expectedElement = null;
+		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void semverDifferenceBetweenTwoVersions_largestDifference() {
+		// make sure largest differnece is returned
+		String oldV = "3.4.5";
+		String newV = "6.7.8";
+		String schema = "Semver";
+		VersionElement expectedElement = VersionElement.MAJOR;
+		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
+		assertEquals(expectedElement, actualElement);
+	}
 }

@@ -955,9 +955,9 @@ public class Version implements Comparable<Version> {
 	}
 	
 	/**
-	 * Opposite behaviour to most compareTo functions.
+	 * Compares two version objects numerically by version component.
 	 * @param otherV other version to compare to {@code this} version
-	 * @return a negative integer, zero, or a positive integer as this object is greater than, equal to, or less than the specified object.
+	 * @return a negative integer, zero, or a positive integer as this Version is greater than, equal to, or less than the specified Version.
 	 */
 	@Override
 	public int compareTo(Version otherV) {
