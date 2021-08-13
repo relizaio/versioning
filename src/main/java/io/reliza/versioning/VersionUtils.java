@@ -348,6 +348,57 @@ public class VersionUtils {
 	}
 	
 	/**
+	 * This method is used to test if the specified version string is a valid SemVer version.
+	 * Reference: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+	 * @param version
+	 * @return true if version is Semver valid format, false otherwise.
+	 */
+	public static boolean isVersionSemver(String version) {
+		String regex = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+		Pattern p = Pattern.compile(regex);
+		Matcher semverMatcher = p.matcher(version);
+		return semverMatcher.matches();
+	}
+	
+	/**
+	 * This method is used to test if the specified schema string is Semver style schema or not.
+	 * Valid Semver: Major.Minor.Patch with optional +modifer and -metadata
+	 * @param schema
+	 * @return true if schema is semver format, false otherwise
+	 */
+	public static boolean isSchemaSemver(String schema) {
+		Objects.requireNonNull(schema);
+		boolean isSemver = false;
+		List<VersionElement> schemaVeList = parseSchema(schema);
+		if (schemaVeList.size() > 2) {
+			for (int i = 0; i < schemaVeList.size(); i++) {
+				VersionElement ve = schemaVeList.get(i);
+				switch (i) {
+				case 0:
+					isSemver = ve.equals(VersionElement.MAJOR);
+					break;
+				case 1:
+					isSemver = ve.equals(VersionElement.MINOR);
+					break;
+				case 2:
+					isSemver = ve.equals(VersionElement.PATCH);
+					break;
+				case 3:
+					isSemver = ve.equals(VersionElement.SEMVER_MODIFIER);
+					break;
+				case 4:
+					isSemver = ve.equals(VersionElement.METADATA);
+					break;
+				default:
+					// any more than 5 elements and it is not semver
+					isSemver = false;
+				}
+			}
+		}
+		return isSemver;
+	}
+	
+	/**
 	 * This method returns true if schema contains a year element (it is calver)
 	 * @param schema String
 	 * @return true if schema contains a year element

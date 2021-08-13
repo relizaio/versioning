@@ -1,6 +1,7 @@
 package io.reliza.versioning;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -221,5 +222,54 @@ class VersionUtilsTest {
 		VersionElement expectedElement = VersionElement.MAJOR;
 		VersionElement actualElement = VersionUtils.getLargestSemverVersionElementDifference(oldV, newV, schema);
 		assertEquals(expectedElement, actualElement);
+	}
+	
+	@Test
+	void testIsSchemaSemver_isSemver() {
+		String schema = "Semver";
+		boolean isSemver = VersionUtils.isSchemaSemver(schema);
+		assertTrue(isSemver);
+	}
+	
+	@Test
+	void testIsSchemaSemver_notSemver() {
+		String schema = "YYYY.Major.Minor";
+		assertFalse(VersionUtils.isSchemaSemver(schema));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_isValid() {
+		String version = "1.2.3";
+		assertTrue(VersionUtils.isVersionSemver(version));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_isNotValid() {
+		String version = "0M.1.2.3";
+		assertFalse(VersionUtils.isVersionSemver(version));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_isValid2() {
+		String version = "1.1.2+meta-valid";
+		assertTrue(VersionUtils.isVersionSemver(version));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_isNotValid2() {
+		String version = "1.1.2+meta-valid%";
+		assertFalse(VersionUtils.isVersionSemver(version));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_isValid3() {
+		String version = "1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay";
+		assertTrue(VersionUtils.isVersionSemver(version));
+	}
+	
+	@Test
+	void testIfVersionIsSemver_inValidCharacterInBuild() {
+		String version = "1.0.0-rc.1+build.1%";
+		assertFalse(VersionUtils.isVersionSemver(version));
 	}
 }
