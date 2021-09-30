@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reliza.versioning.Version.VersionStringComparator;
@@ -26,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	protected static final String CURRENT_MONTH_SINGLE = "8";
-	protected static final String CURRENT_MONTH = "08";
+	protected static final String CURRENT_MONTH_SINGLE = "9";
+	protected static final String CURRENT_MONTH = "09";
 	
     @Test
     public void testSchemaMatching1() {
