@@ -16,7 +16,6 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 import io.reliza.changelog.CommitParserUtil;
-import io.reliza.changelog.CommitType;
 import io.reliza.changelog.ConventionalCommit;
 
 /**
@@ -266,10 +265,15 @@ public class VersionApi {
 		if (commit != null) {
 			if (commit.isBreakingChange()) {
 				returnAction = ActionEnum.BUMP_MAJOR;
-			} else if (commit.getType() == CommitType.FEAT) {
-				returnAction = ActionEnum.BUMP_MINOR;
-			} else if (commit.getType() == CommitType.BUG_FIX) {
-				returnAction = ActionEnum.BUMP_PATCH;
+			} else if (null != commit.getType()){
+				switch (commit.getType()) {
+					case FEAT:
+					case REFACTOR:
+						returnAction = ActionEnum.BUMP_MINOR;
+					case BUG_FIX:
+					default:
+						returnAction = ActionEnum.BUMP_PATCH;
+				}
 			}
 		}
 		return returnAction;
