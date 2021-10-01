@@ -8,9 +8,7 @@ package io.reliza.versioning;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -687,6 +685,10 @@ public class Version implements Comparable<Version> {
 		if (ae == ActionEnum.BUMP_MINOR && !veElementCheck.contains("MINOR")) {
 			ae = ActionEnum.BUMP;
 		}
+		if (ae == ActionEnum.BUMP_PATCH && !veElementCheck.contains("MICRO") && !veElementCheck.contains("PATCH")) {
+			ae = ActionEnum.BUMP;
+		}
+		
 		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
 			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}

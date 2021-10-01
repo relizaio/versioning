@@ -25,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	protected static final String CURRENT_MONTH_SINGLE = "9";
-	protected static final String CURRENT_MONTH = "09";
+	public static final String CURRENT_MONTH_SINGLE = "10";
+	public static final String CURRENT_MONTH = "10";
 	
     @Test
     public void testSchemaMatching1() {
@@ -660,6 +660,17 @@ public class AppTest
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
 		String expectedV = "2021.02.2";
+		assertEquals(expectedV, actualV);
+    }
+	
+	@Test
+    public void testApplyBumpPatchOnFullCalver() {
+    	String schema = "YYYY.0M.DD";
+    	String version = "2021.08.1";
+		ActionEnum action = ActionEnum.BUMP_PATCH;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "2021.10.1";
 		assertEquals(expectedV, actualV);
     }
 	

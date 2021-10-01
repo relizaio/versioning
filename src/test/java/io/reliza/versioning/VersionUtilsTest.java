@@ -90,7 +90,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
 		String year = Integer.toString(LocalDate.now().getYear());
 		year = year.substring(2, 4);
-		String month = Integer.toString(LocalDate.now().getMonthValue());
+		String month = AppTest.CURRENT_MONTH_SINGLE;
 		month = month.length() == 1 ? "0" + month : month;
 		versionComponentsExpected.add(year);
 		versionComponentsExpected.add(month);
