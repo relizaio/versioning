@@ -270,9 +270,11 @@ public class VersionApi {
 					case FEAT:
 					case REFACTOR:
 						returnAction = ActionEnum.BUMP_MINOR;
+						break;
 					case BUG_FIX:
 					default:
 						returnAction = ActionEnum.BUMP_PATCH;
+						break;
 				}
 			}
 		}
