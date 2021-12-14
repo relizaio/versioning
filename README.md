@@ -1,6 +1,6 @@
 # Reliza Versioning
 
-This tool allows for automatic generation and bumping of [CalVer](https://calver.org/) or [SemVer](https://semver.org/) or custom version schemas.
+This tool allows for automatic generation and bumping of [CalVer](https://calver.org/) or [SemVer](https://semver.org/) or custom version schemas. Motivational article: https://worklifenotes.com/2020/02/27/automatic-version-increments-with-reliza-hub-2-strategies/
 
 
 <p align="center"><img src="/img/terminal_demo.gif?raw=true"/></p>
