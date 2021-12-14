@@ -408,7 +408,9 @@ public class VersionUtils {
 		Set<VersionElement> veSet = new HashSet<>(parseSchema(schema));
 		if (veSet.contains(VersionElement.OY) || 
 				veSet.contains(VersionElement.YY) || 
-				veSet.contains(VersionElement.YYYY)) {
+				veSet.contains(VersionElement.YYYY) ||
+				veSet.contains(VersionElement.YYYYOM) ||
+				veSet.contains(VersionElement.YYOM)) {
 			isCalver = true;
 		}
 		return isCalver;

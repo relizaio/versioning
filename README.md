@@ -62,6 +62,8 @@ Reliza Versioning understands following elements of versioning schema (case inse
 - **Year** (or YYYY) - 4-digit year presentation
 - **YY** - 2-digit year presentation, if 1st digit is 0, only second digit is shown
 - **OY** - 2 digit year presentation, if 1st digit is 0, it's still displayed as 0
+- **YYOM** - 2-digit year presentation with month, i.e. 2103 is March, 2021
+- **YYYYOM** - 4-digit year presentation with month, i.e. 202103 is March, 2021
 - **MM** - 2-digit month presentation, if 1st digit is 0, only second digit is shown
 - **OM** - 2-digit month presentation, if 1st digit is 0, it's still displayed as 0
 - **DD** - 2-digit day presentation, if 1st digit is 0, only second digit is shown

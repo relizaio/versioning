@@ -243,6 +243,33 @@ public class Version implements Comparable<Version> {
 					}
 					versionString.append(this.month.toString());
 					break;
+				case YYOM:
+					yearStr = this.year.toString();
+					if (yearStr.length() > 2) {
+						yearStr = "" + yearStr.charAt(yearStr.length() - 2) + yearStr.charAt(yearStr.length() - 1);
+						yearStr = Integer.valueOf(Integer
+															.parseInt(yearStr))
+															.toString();
+					}
+					versionString.append(yearStr);
+					if (this.month < 10) {
+						versionString.append("0");
+					}
+					versionString.append(this.month.toString());
+					break;
+				case YYYYOM:
+					yearStr = this.year.toString();
+					if (yearStr.length() == 2) {
+						yearStr = "20" + yearStr;
+					} else if (yearStr.length() == 3) {
+						yearStr = "2" + yearStr;
+					}
+					versionString.append(yearStr);
+					if (this.month < 10) {
+						versionString.append("0");
+					}
+					versionString.append(this.month.toString());
+					break;
 				case DD:
 					versionString.append(this.day.toString());
 					break;
@@ -464,6 +491,8 @@ public class Version implements Comparable<Version> {
 			this.bumpMinor(null);
 		} else if (veList.contains(VersionElement.YY) || 
 				   veList.contains(VersionElement.YYYY) ||
+				   veList.contains(VersionElement.YYOM) ||
+				   veList.contains(VersionElement.YYYYOM) ||
 				   veList.contains(VersionElement.OY)) {
 			this.setCurrentDate();
 		}
@@ -625,6 +654,20 @@ public class Version implements Comparable<Version> {
 			case OM:
 				v.month = Integer.parseInt(vh.getVersionComponents().get(i));
 				break;
+			case YYOM:
+				String compToParse = vh.getVersionComponents().get(i);
+				String yearPart = compToParse.substring(0, 2);
+				String monthPart = compToParse.substring(2);
+				v.year = Integer.parseInt(yearPart);
+				v.month = Integer.parseInt(monthPart);
+				break;
+			case YYYYOM:
+				compToParse = vh.getVersionComponents().get(i);
+				yearPart = compToParse.substring(0, 4);
+				monthPart = compToParse.substring(4);
+				v.year = Integer.parseInt(yearPart);
+				v.month = Integer.parseInt(monthPart);
+				break;
 			case DD:
 			case OD:
 				v.day = Integer.parseInt(vh.getVersionComponents().get(i));
@@ -771,6 +814,20 @@ public class Version implements Comparable<Version> {
 				case MM:
 				case OM:
 					v.month = Integer.parseInt(vh.getVersionComponents().get(i));
+					elsProtectedByPin.add(schemaVeList.get(i));
+					break;
+				case YYOM:
+					String yearPart = vh.getVersionComponents().get(i).substring(0,2);
+					String monthPart = vh.getVersionComponents().get(i).substring(2);
+					v.year = Integer.parseInt(yearPart);
+					v.month = Integer.parseInt(monthPart);
+					elsProtectedByPin.add(schemaVeList.get(i));
+					break;
+				case YYYYOM:
+					yearPart = vh.getVersionComponents().get(i).substring(0,4);
+					monthPart = vh.getVersionComponents().get(i).substring(4);
+					v.year = Integer.parseInt(yearPart);
+					v.month = Integer.parseInt(monthPart);
 					elsProtectedByPin.add(schemaVeList.get(i));
 					break;
 				case DD:

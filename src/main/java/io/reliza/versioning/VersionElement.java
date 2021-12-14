@@ -28,6 +28,8 @@ public enum VersionElement {
 	CALVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"calvermodifier", "calvermod", "calverid"})), "^[a-zA-Z0-9]+$"),
 	METADATA(new HashSet<String>(Arrays.asList(new String[] {"meta", "metadata"})), "^[a-zA-Z0-9]+$"),
 	YYYY(new HashSet<String>(Arrays.asList(new String[] {"year", "yyyy"})), "^[12][0-9]{3}$"),
+	YYYYOM(new HashSet<String>(Arrays.asList(new String[] {"yyyy0m", "yyyyom"})), "^[12][0-9]{3}(1[0-2]|0[1-9])$"),
+	YYOM(new HashSet<String>(Arrays.asList(new String[] {"yy0m", "yyom"})), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$"),
 	YY(new HashSet<String>(Arrays.asList(new String[] {"yy"})), "^([1-9][0-9]|[1-9])?[0-9]$"),
 	OY(new HashSet<String>(Arrays.asList(new String[] {"oy", "0y"})), "^([0-9])?[0-9]{2}$"),
 	MM(new HashSet<String>(Arrays.asList(new String[] {"mm", "month"})), "^(1[0-2]|[1-9])$"),

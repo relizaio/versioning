@@ -25,8 +25,8 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	public static final String CURRENT_MONTH_SINGLE = "10";
-	public static final String CURRENT_MONTH = "10";
+	public static final String CURRENT_MONTH_SINGLE = "12";
+	public static final String CURRENT_MONTH = "12";
 	
     @Test
     public void testSchemaMatching1() {
@@ -290,6 +290,22 @@ public class AppTest
         assertTrue ( true );
     }
     
+	@Test
+    public void initializeNewVersion5_YYOMCalver() {
+    	String testSchema = "YY0M.DD";
+    	Version v = Version.getVersion(testSchema);
+    	System.out.println(v.constructVersionString());
+        assertTrue ( true );
+    }
+
+	@Test
+    public void initializeNewVersion6_YYYYOMCalver() {
+    	String testSchema = "YYYY0M.DD";
+    	Version v = Version.getVersion(testSchema);
+    	System.out.println(v.constructVersionString());
+        assertTrue ( true );
+    }
+	
     @Test
     public void initializeVersionFromPin1SemVer() {
     	String testSchema = "semver";
@@ -312,6 +328,22 @@ public class AppTest
     	String testPin = "2020.01.Calvermodifier.Minor.Micro+Metadata";
     	Version v = Version.getVersionFromPin(testSchema, testPin);
         assertEquals("2020.01.Snapshot.0.0+Metadata", v.constructVersionString());
+    }
+    
+    @Test
+    public void initializeVersionFromPin4_YYYYOM_CalVer() {
+    	String testSchema = "YYYY0M.DD.Micro";
+    	String testPin = "202101.1.Micro";
+    	Version v = Version.getVersionFromPin(testSchema, testPin);
+        assertEquals("202101.1.0", v.constructVersionString());
+    }
+    
+    @Test
+    public void initializeVersionFromPin5_YYOM_CalVer() {
+    	String testSchema = "YY0M.DD.Micro";
+    	String testPin = "2101.11.Micro";
+    	Version v = Version.getVersionFromPin(testSchema, testPin);
+        assertEquals("2101.11.0", v.constructVersionString());
     }
     
     @Test
@@ -516,6 +548,18 @@ public class AppTest
     }
     
     @Test
+    public void bumpPatchCalver_YYOM() {
+    	String schema = "YYOM.Micro";
+    	Version v = Version.getVersion(schema);
+    	assertEquals("21" + CURRENT_MONTH + ".0", v.constructVersionString());
+    	v.bumpPatch(null);
+    	assertEquals("21" + CURRENT_MONTH + ".1", v.constructVersionString());
+    	v = Version.getVersion("2112.2", schema);
+    	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
+    	assertEquals("2112.3", v.constructVersionString());
+    }
+    
+    @Test
     public void testSemverWithMetadata() {
     	String schema = "semver";
     	Version v = Version.getVersion(schema);
@@ -670,7 +714,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2021.10.1";
+		String expectedV = "2021.12.14";
 		assertEquals(expectedV, actualV);
     }
 	
