@@ -1,10 +1,10 @@
-FROM maven:3.6.3-openjdk-15 as build-stage
+FROM maven:3.8-openjdk-16 as build-stage
 RUN mkdir /workdir
 WORKDIR /workdir
 COPY ./ .
 RUN mvn clean compile assembly:single
 
-FROM adoptopenjdk:15-jre-openj9
+FROM adoptopenjdk:16-jre-openj9
 ARG VERSION=not_versioned
 RUN mkdir /app
 LABEL version $VERSION
