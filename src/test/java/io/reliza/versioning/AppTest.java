@@ -911,4 +911,14 @@ public class AppTest
 		//System.out.println(v.constructVersionString());
 		assertEquals("2021.04.3.3.3.2", v.constructVersionString());
 	}
+	
+	@Test // Issue #2 on GitHub - https://github.com/relizaio/versioning/issues/2
+	// incorrect view of modifier
+	public void modifierNotResolvedCorrectlyOnBumpWhenSchemaProvided() {
+		String testSchema = "0Y.0M.0D.Micro-Modifier";
+		String oldVersion = "22.03.28.2-dev";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, oldVersion, ActionEnum.BUMP_PATCH);
+		System.out.println(v.constructVersionString());
+		assertEquals("22.03.28.3-dev", v.constructVersionString());
+	}
 }

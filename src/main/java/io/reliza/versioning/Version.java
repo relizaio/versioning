@@ -770,11 +770,19 @@ public class Version implements Comparable<Version> {
 		}
 		// skipping metadata and such - which seems reasonable in this context
 		// now populate whatever we can from pin -> pin overrides old version
-		VersionHelper vh = VersionUtils.parseVersion(pin);
+		VersionHelper vh = null;
+		if (StringUtils.isNotEmpty(oldVersionString)) {
+		    vh = VersionUtils.parseVersion(oldVersionString, schema);
+		} else {
+			vh = VersionUtils.parseVersion(pin);
+		}
 		v.modifier = vh.getModifier();
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
 
+		// reset vh to parse from pin to make sure we can do bump actions properly
+		vh = VersionUtils.parseVersion(pin);
+		
 		// this would be set of unmodifiable elements since they are set by pin
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even thought dates are not bumped below, add them to set to know when to bump nano
@@ -911,19 +919,7 @@ public class Version implements Comparable<Version> {
 			} else {
 				v.simpleBump();
 			}
-		} 
-//		else if ( ae == ActionEnum.BUMP_DATE && oldV != null ) {
-//			// reset any unpinned elements to 0
-//			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
-//			schemaSetWithoutNano.addAll(schemaVeList);
-//			schemaSetWithoutNano.remove(VersionElement.NANO);
-//			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
-//					 && schemaVeList.contains(VersionElement.NANO)) {
-//				++v.nano;
-//			} else {
-//				v.simpleBump();
-//			}
-//		}
+		}
 		return v;
 	}
 	
