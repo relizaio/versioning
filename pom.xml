@@ -5,7 +5,7 @@
 
   <groupId>io.reliza</groupId>
   <artifactId>versioning</artifactId>
-  <version>2022.04.3</version>
+  <version>2022.04.4-SNAPSHOT</version>
 
   <name>versioning</name>
   <url>https://reliza.io</url>
@@ -39,7 +39,7 @@
         <connection>scm:git:git://github.com/relizaio/versioning.git</connection>
         <developerConnection>scm:git:git@github.com:relizaio/versioning.git</developerConnection>
         <url>https://github.com/relizaio/versioning</url>
-        <tag>versioning-2022.04.3</tag>
+        <tag>2020.10.Stable.1</tag>
     </scm>
   
     <distributionManagement>
