@@ -128,6 +128,10 @@ public class VersionCli {
 					VersionApi.applyActionOnVersion(v, actionStr);
 				}
 				
+				// reset modifiers and metadata
+				v.setModifier(modifier);
+				v.setMetadata(metadata);
+				
 				String rawCommitStr = cmd.getOptionValue("c");
 				//System.out.println("Bumped based on parsing of commit:\n" + rawCommitStr + "\n");
 				// Only want to bump from commit, if have not bumped from action yet.
