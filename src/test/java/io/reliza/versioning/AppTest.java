@@ -25,8 +25,10 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	public static final String CURRENT_MONTH_SINGLE = "12";
-	public static final String CURRENT_MONTH = "12";
+	public static final String CURRENT_MONTH_SINGLE = "4";
+	public static final String CURRENT_MONTH = "04";
+	public static final String CURRENT_YEAR_SHORT = "22";
+	public static final String CURRENT_YEAR_LONG = "2022";
 	
     @Test
     public void testSchemaMatching1() {
@@ -503,7 +505,7 @@ public class AppTest
     	String schema = VersionType.FEATURE_BRANCH_CALVER.getSchema();
     	Version v = Version.getVersion(schema);
     	v.setBranch("234-my_feature");
-    	assertEquals("2021." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
     }
     
     @Test
@@ -518,7 +520,7 @@ public class AppTest
     	String schema = VersionType.FEATURE_BRANCH_CALVER.getSchema();
     	String oldVersion = "2020.09.234-my_feature.0";
     	Version v = Version.getVersionFromPinAndOldVersion(schema, schema, oldVersion, ActionEnum.BUMP);
-    	assertEquals("2021." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".234-my_feature.0", v.constructVersionString());
     }
     
     @Test
@@ -539,9 +541,9 @@ public class AppTest
     public void bumpPatchCalver() {
     	String schema = VersionType.CALVER_RELIZA_2020.getSchema();
     	Version v = Version.getVersion(schema);
-    	assertEquals("2021." + CURRENT_MONTH + ".Snapshot.1.0", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".Snapshot.1.0", v.constructVersionString());
     	v.bumpPatch(null);
-    	assertEquals("2021." + CURRENT_MONTH + ".Snapshot.1.1", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".Snapshot.1.1", v.constructVersionString());
     	v = Version.getVersion("2021.01.Snapshot.0.0", schema);
     	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
     	assertEquals("2021.01.Snapshot.0.1", v.constructVersionString());
@@ -551,9 +553,9 @@ public class AppTest
     public void bumpPatchCalver_YYOM() {
     	String schema = "YYOM.Micro";
     	Version v = Version.getVersion(schema);
-    	assertEquals("21" + CURRENT_MONTH + ".0", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_SHORT + CURRENT_MONTH + ".0", v.constructVersionString());
     	v.bumpPatch(null);
-    	assertEquals("21" + CURRENT_MONTH + ".1", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_SHORT + CURRENT_MONTH + ".1", v.constructVersionString());
     	v = Version.getVersion("2112.2", schema);
     	VersionApi.applyActionOnVersion(v, ActionEnum.BUMP_PATCH);
     	assertEquals("2112.3", v.constructVersionString());
@@ -619,16 +621,16 @@ public class AppTest
     	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".0.0-newmodifier", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH_SINGLE + ".0.0-newmodifier", v.constructVersionString());
     }
     
     @Test
     public void bumpCalverVersionWithPin5() {
     	String testSchema = "YY.OM.Micro";
     	String testPin = "YY.OM.Micro";
-    	String testOldVer = "21." + CURRENT_MONTH + ".1";
+    	String testOldVer = CURRENT_YEAR_SHORT + "." + CURRENT_MONTH + ".1";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
-    	assertEquals("21." + CURRENT_MONTH + ".2", v.constructVersionString());
+    	assertEquals(CURRENT_YEAR_SHORT + "." + CURRENT_MONTH + ".2", v.constructVersionString());
     }
     
     @Test
@@ -677,22 +679,22 @@ public class AppTest
 	@Test
     public void testApplyBumpMinorOnCalver() {
     	String schema = "YYYY.0M.Micro";
-    	String version = "2021." + CURRENT_MONTH + ".1";
+    	String version = CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".1";
 		ActionEnum action = ActionEnum.BUMP_MINOR;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2021." + CURRENT_MONTH + ".2";
+		String expectedV = CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".2";
 		assertEquals(expectedV, actualV);
     }
 	
 	@Test
     public void testApplyBumpMajorOnCalver() {
     	String schema = "YYYY.0M.Micro";
-    	String version = "2021." + CURRENT_MONTH + ".1";
+    	String version = CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".1";
 		ActionEnum action = ActionEnum.BUMP_MAJOR;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2021." + CURRENT_MONTH + ".2";
+		String expectedV = CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".2";
 		assertEquals(expectedV, actualV);
     }
 	
@@ -714,7 +716,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2021.12.14";
+		String expectedV = "2022.04.7";
 		assertEquals(expectedV, actualV);
     }
 	
@@ -736,7 +738,7 @@ public class AppTest
 	public void nanoConstructVersionString() {
 		String schema = "YYYY.Patch.Nano";
 		Version v = Version.getVersion(schema);
-		assertEquals("2021.0.0", v.constructVersionString());
+		assertEquals(CURRENT_YEAR_LONG + ".0.0", v.constructVersionString());
 	}
 	
 	@Test
@@ -897,7 +899,7 @@ public class AppTest
 		String oldVersion = "2021.04.3.3.3.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_DATE);
 		//System.out.println(v.constructVersionString());
-		assertEquals("2021."+CURRENT_MONTH+".0.0.0.0", v.constructVersionString());
+		assertEquals("2021." +CURRENT_MONTH+".3.3.3.1", v.constructVersionString());
 	}
 	
 	@Test // everything else pinned so bump nano

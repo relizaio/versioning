@@ -883,11 +883,11 @@ public class Version implements Comparable<Version> {
 			++v.patch;
 			v.nano = 0;
 		} else if (isCalverUpdated(v, oldV)) {
-			// calver update happened, reset semver
-			v.minor = 0;
-			v.major = 0;
-			v.patch = 0;
-			v.nano = 0;
+			// calver update happened, reset semver if not pinned
+			if (!elsProtectedByPin.contains(VersionElement.MINOR)) v.minor = 0;
+			if (!elsProtectedByPin.contains(VersionElement.MAJOR)) v.major = 0;
+			if (!elsProtectedByPin.contains(VersionElement.PATCH)) v.patch = 0;
+			if (!elsProtectedByPin.contains(VersionElement.NANO)) v.nano = 0;
 		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
 			++v.major;
 			v.minor = 0;
@@ -911,7 +911,19 @@ public class Version implements Comparable<Version> {
 			} else {
 				v.simpleBump();
 			}
-		}
+		} 
+//		else if ( ae == ActionEnum.BUMP_DATE && oldV != null ) {
+//			// reset any unpinned elements to 0
+//			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
+//			schemaSetWithoutNano.addAll(schemaVeList);
+//			schemaSetWithoutNano.remove(VersionElement.NANO);
+//			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
+//					 && schemaVeList.contains(VersionElement.NANO)) {
+//				++v.nano;
+//			} else {
+//				v.simpleBump();
+//			}
+//		}
 		return v;
 	}
 	
