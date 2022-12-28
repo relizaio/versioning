@@ -10,78 +10,13 @@ jobs:
       IMAGE_NAMESPACE: ${{ secrets.IMAGE_NAMESPACE }}
       IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
     steps:
-      - name: Record build start
-        run: echo "BUILD_START=$(date -Iseconds)"  >> $GITHUB_ENV
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: RelizaHub Build And Submit Release metadata action
+        uses: relizaio/reliza-docker-action@master
         with:
-          fetch-depth: 50
-      - name: Login to Docker Registry
-        run: echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
-      - name: Extract Last Release Commit And Prepare List Of Commits
-        run: |
-          last_commit=$(docker run --rm relizaio/reliza-cli getlatestrelease -i ${{ secrets.RELIZA_API_ID }} -k ${{ secrets.RELIZA_API_KEY }} --branch $GITHUB_REF | jq -r ".sourceCodeEntryDetails.commit")
-          if [ ! -z "$last_commit" ]
-          then
-            echo -n "--commits $(git log $last_commit..$GITHUB_SHA --date=iso-strict --pretty='%H|||%ad|||%s' | base64 -w 0) " > get_version_command
-          fi
-      - name: Get Version
-        run: |
-          echo -n "-k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b $GITHUB_REF --metadata GitHub \
-            --commit $GITHUB_SHA --commitmessage \"$(git log -1 --pretty='%s')\" --date $(git log -1 --date=iso-strict --pretty='%ad') \
-            --vcstype git --vcsuri github.com/$GITHUB_REPOSITORY " >> get_version_command
-          # debug
-          echo "$(cat get_version_command)"
-          # get version
-          echo -n "docker run --rm relizaio/reliza-cli getversion $(cat get_version_command) " > get_version_exec
-          reliza_ver=$(eval "$(cat get_version_exec)")
-          echo "completed getting ver"
-          echo $reliza_ver
-          echo "RLZ_VER_JSON=$reliza_ver" >> $GITHUB_ENV
-      - name: Extract Actual Version From JSON
-        run: |
-          full_ver=$(echo $RLZ_VER_JSON | jq -r ".version")
-          # version without meta for docker registry, since plus sign is not allowed there
-          short_ver=$(echo $RLZ_VER_JSON | jq -r ".dockerTagSafeVersion")
-          echo "RLZ_FULL_VER=$full_ver" >> $GITHUB_ENV
-          echo "RLZ_SHORT_VER=$short_ver" >> $GITHUB_ENV
-      - name: Instantiate Reliza status as Rejected to handle possible build failure
-        run: echo "--status rejected " > reliza_command
-      - name: Build and push docker container to Docker Hub
-        continue-on-error: true
-        run: |
-          docker build -t $IMAGE_NAMESPACE/$IMAGE_NAME:$RLZ_SHORT_VER -t $IMAGE_NAMESPACE/$IMAGE_NAME:latest --build-arg VERSION=$RLZ_FULL_VER  \
-            --build-arg CI_ENV=github$GITHUB_SHA --build-arg GIT_COMMIT=$GITHUB_SHA --build-arg GIT_BRANCH=$GITHUB_REF .
-          docker_sha_256=$(docker push $IMAGE_NAMESPACE/$IMAGE_NAME:$RLZ_SHORT_VER | grep sha256 | cut -f 3 -d ' ')
-          # push latest also
-          docker push $IMAGE_NAMESPACE/$IMAGE_NAME:latest
-          # save sha256 to env var
-          echo "DOCKER_SHA_256=$docker_sha_256" >> $GITHUB_ENV
-          echo "--status complete " > reliza_command
-      - name: Submit metadata to Reliza Hub
-        run: |
-          echo -n "-b $GITHUB_REF -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -v $RLZ_FULL_VER " >> reliza_command
-          echo -n "--artid $IMAGE_NAMESPACE/$IMAGE_NAME " >> reliza_command
-          echo -n "--artbuildid github$GITHUB_ACTION$GITHUB_SHA " >> reliza_command
-          echo -n "--artbuilduri https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID " >> reliza_command
-          echo -n "--artcimeta GitHub Actions " >> reliza_command
-          echo -n "--arttype Docker " >> reliza_command
-          if [ $DOCKER_SHA_256 != "" ]
-          then
-            echo -n "--artdigests $DOCKER_SHA_256 " >> reliza_command
-          fi
-          echo -n "--datestart $BUILD_START " >> reliza_command
-          echo -n "--dateend $(date -Iseconds) " >> reliza_command
-          # debug
-          cat reliza_command
-          # send data
-          echo docker run --rm relizaio/reliza-cli addrelease $(cat reliza_command) > rlz_cmd_exec
-          eval $(cat rlz_cmd_exec)
-      - name: Fail build if reliza status is rejected
-        run: |
-          status_rejected_check=$(grep 'status rejected' reliza_command | wc -l)
-          if [ $status_rejected_check -gt 0 ]
-          then
-            echo "Failing build since Reliza build Status is rejected"
-            exit 1
-          fi
+          registry_username: ${{ secrets.DOCKER_LOGIN }}
+          registry_password: ${{ secrets.DOCKER_TOKEN }}
+          image_namespace: $IMAGE_NAMESPACE
+          image_name: $IMAGE_NAME
+          reliza_api_id: ${{ secrets.RELIZA_API_ID }}
+          reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
+      
