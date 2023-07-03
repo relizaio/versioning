@@ -40,13 +40,23 @@ public class VersionUtils {
 		}
 		List<VersionElement> retList = new ArrayList<>();
 		// split schema to elements
-		String[] strElements = schema.split("(\\+|-|_|\\.)");
+		String[] strElements = schema.split("(?=\\+|-|_|\\.)");
+		int i = 0;
 		for (String el : strElements) {
+			String separator = "";
+			if(i>0){
+				separator = el.substring(0, 1);
+				el = el.substring(1);
+			}
 			VersionElement ve = VersionElement.getVersionElement(el);
+			
 			if (null == ve) {
 				throw new RuntimeException("Cannot find version element for the schema part = " + el);
 			}
+
+			ve.setSeparator(separator);
 			retList.add(ve);
+			i++;
 		}
 		return retList;
 	}
@@ -84,6 +94,7 @@ public class VersionUtils {
 	 */
 	public static VersionHelper parseVersion (String version, String schema) {
 		boolean handleBranchInVersion = StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase());
+		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") && schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
 		// check special case for Maven-style Snapshot
 		boolean isSnapshot = false;
 		if (version.endsWith(Constants.MAVEN_STYLE_SNAPSHOT)) {
@@ -115,24 +126,25 @@ public class VersionUtils {
 
 		String[] dashelHelper = null;
 		String[] dashel = null;
-		if (version.contains("-") && !handleBranchInVersion) {
-		    dashelHelper = version.split("-");
-		    // if more than one dash raise an error
-		    if (dashelHelper.length > 2) {
-			// if there are no dots, then only split on the last dash
-			if (dashelHelper[dashelHelper.length - 1].contains(".")) {
-			    // if there are dots after dashes then dashes are just part of the version - do nothing
+		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
+			dashelHelper = version.split("-");
+			// if more than one dash raise an error
+			if (dashelHelper.length > 2) {
+				// if there are no dots, then only split on the last dash
+				if (dashelHelper[dashelHelper.length - 1].contains(".")) {
+					// if there are dots after dashes then dashes are just part of the version - do
+					// nothing
+				} else {
+					// just take the latest dash and split on that
+					dashel = new String[2];
+					dashel[1] = dashelHelper[dashelHelper.length - 1];
+					dashel[0] = version.replaceFirst("-" + dashel[1], "");
+				}
 			} else {
-			    // just take the latest dash and split on that
-			    dashel = new String[2];
-			    dashel[1] = dashelHelper[dashelHelper.length - 1];
-			    dashel[0] = version.replaceFirst("-" + dashel[1], "");
+				// only one dash
+				dashel = dashelHelper;
+				version = dashel[0];
 			}
-		    } else {
-			// only one dash
-			dashel = dashelHelper;
-			version = dashel[0];
-		    }
 		}
 		
 		String splitRegex = "\\.";
@@ -152,7 +164,7 @@ public class VersionUtils {
 			if (splitRegex.startsWith("(")) {
 				splitRegex = splitRegex.replace("(", "(?:");
 			}
-			
+			String separator = splitRegex;
 			for (VersionElement ve : veList) {
 				// Remove first and last characters from regex patter string (^ and $)
 				String veRegex = ve.getRegexPattern().pattern().substring(1, ve.getRegexPattern().pattern().length()-1);
@@ -164,7 +176,8 @@ public class VersionUtils {
 				if (schemaRegex.equals("")) { // first
 					schemaRegex += "(" + veRegex + ")";
 				} else {
-					schemaRegex += splitRegex + "(?=" + veRegex + ")(" + veRegex + ")";
+					separator = ve.getSeparator()=="" ? splitRegex : "(?:\\" + ve.getSeparator() + ")";
+					schemaRegex += separator + "(?=" + veRegex + ")(" + veRegex + ")";
 				}
 			}
 			// Deconstruct version string using regex
@@ -206,16 +219,21 @@ public class VersionUtils {
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
 		List<VersionElement> veList = parseSchema(schema);
-		
-		if (veList.size() != vh.getVersionComponents().size()) {
+		List<String> versionComponents = vh.getVersionComponents();
+		String modifier = vh.getModifier();
+		if(modifier != null && modifier != "" && versionComponents.contains(modifier)){
+			versionComponents.remove(modifier);
+		}
+
+		if (veList.size() != versionComponents.size()) {
 			matching = false;
 		}
-		for (int i=0; matching && i<vh.getVersionComponents().size(); i++) {
+		for (int i=0; matching && i<versionComponents.size(); i++) {
 			Pattern p = veList
 							.get(i)
 							.getRegexPattern();
 			matching = p
-						.matcher(vh.getVersionComponents().get(i))
+						.matcher(versionComponents.get(i))
 						.matches();
 		}
 		return matching;

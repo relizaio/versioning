@@ -43,6 +43,7 @@ public enum VersionElement {
 	
 	private Set<String> namingInSchema;
 	private Pattern regex;
+	private String separator;
 	
 	private static final Map<String, VersionElement> veLookupMap;
 	
@@ -91,5 +92,13 @@ public enum VersionElement {
 	 */
 	public Pattern getRegexPattern () {
 		return this.regex;
+	}
+
+	public String getSeparator(){
+		return this.separator;
+	}
+
+	public void setSeparator(String separator){
+		this.separator = separator;
 	}
 }
