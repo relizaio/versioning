@@ -25,10 +25,10 @@ public enum VersionElement {
 	PATCH(new HashSet<String>(Arrays.asList(new String[] {"micro", "patch"})), "^\\d+$"),
 	NANO(new HashSet<String>(Arrays.asList(new String[] {"nano"})), "^\\d+$"),
 	SEMVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"modifier", "identifier", "mod", "ident", "id"})), "^[a-zA-Z0-9]+$"),
-	CALVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"calvermodifier", "calvermod", "calverid"})), "^[a-zA-Z0-9]+$"),
+	CALVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"calvermodifier", "calvermod", "calverid", "stable"})), "^[a-zA-Z0-9]+$"),
 	METADATA(new HashSet<String>(Arrays.asList(new String[] {"meta", "metadata"})), "^[a-zA-Z0-9]+$"),
 	YYYY(new HashSet<String>(Arrays.asList(new String[] {"year", "yyyy"})), "^[12][0-9]{3}$"),
-	YYYYOM(new HashSet<String>(Arrays.asList(new String[] {"yyyy0m", "yyyyom"})), "^[12][0-9]{3}(1[0-2]|0[1-9])$"),
+	YYYYOM(new HashSet<String>(Arrays.asList(new String[] {"yyyy0m", "yyyyom"})), "^[12][0-9]{3}(?:1[0-2]|0[1-9])$"),
 	YYOM(new HashSet<String>(Arrays.asList(new String[] {"yy0m", "yyom"})), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$"),
 	YY(new HashSet<String>(Arrays.asList(new String[] {"yy"})), "^([1-9][0-9]|[1-9])?[0-9]$"),
 	OY(new HashSet<String>(Arrays.asList(new String[] {"oy", "0y"})), "^([0-9])?[0-9]{2}$"),
@@ -69,7 +69,7 @@ public enum VersionElement {
 	 * Gets string set of names how the element may be used in schema
 	 * @return namingInSchema set
 	 */
-	private Set<String> getNamingInSchema () {
+	public Set<String> getNamingInSchema () {
 		return this.namingInSchema;
 	}
 	

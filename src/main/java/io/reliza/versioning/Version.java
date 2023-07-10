@@ -781,7 +781,7 @@ public class Version implements Comparable<Version> {
 		v.isSnapshot = vh.isSnapshot();
 
 		// reset vh to parse from pin to make sure we can do bump actions properly
-		vh = VersionUtils.parseVersion(pin);
+		vh = VersionUtils.parseVersion(pin, schema);
 		
 		// this would be set of unmodifiable elements since they are set by pin
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 

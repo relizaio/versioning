@@ -60,6 +60,37 @@ public class VersionUtils {
 		}
 		return retList;
 	}
+	/**
+	 * This method parses supplied schema to version elements
+	 * @param schema String
+	 * @return list of VersionElement
+	 */
+	public static List<VersionElement> parsePin (String pin) {
+		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
+			pin = VersionType.SEMVER_FULL_NOTATION.getSchema();
+		}
+		List<VersionElement> retList = new ArrayList<>();
+		// split schema to elements
+		String[] strElements = pin.split("(?=\\+|-|_|\\.)");
+		int i = 0;
+		for (String el : strElements) {
+			String separator = "";
+			if(i>0){
+				separator = el.substring(0, 1);
+				el = el.substring(1);
+			}
+			VersionElement ve = VersionElement.getVersionElement(el);
+			
+			if (null == ve) {
+				throw new RuntimeException("Cannot find version element for the schema part = " + el);
+			}
+
+			ve.setSeparator(separator);
+			retList.add(ve);
+			i++;
+		}
+		return retList;
+	}
 	
 	/**
 	 * This method extracts separators from schema
@@ -84,7 +115,7 @@ public class VersionUtils {
 	public static VersionHelper parseVersion (String version) {
 		return parseVersion(version, null);
 	}
-	
+
 	/**
 	 * This method parses version string into VersionHelper based on provided schema
 	 * The need for schema arises where version elements need to include special characters themselves, such as dashes, periods or underscores
@@ -167,7 +198,11 @@ public class VersionUtils {
 			String separator = splitRegex;
 			for (VersionElement ve : veList) {
 				// Remove first and last characters from regex patter string (^ and $)
+				
 				String veRegex = ve.getRegexPattern().pattern().substring(1, ve.getRegexPattern().pattern().length()-1);
+				Set<String> pinElement = ve.getNamingInSchema();
+				String pinRegex = pinElement.stream().reduce("", (partialString, element) -> partialString + "|" + element);
+				veRegex = veRegex + pinRegex;
 				// If version element regex has capturing groups -> make non capture groups so they do not interfere
 				if (veRegex.startsWith("(")) {
 					veRegex = veRegex.replace("(", "(?:");
@@ -182,13 +217,18 @@ public class VersionUtils {
 			}
 			// Deconstruct version string using regex
 			Pattern pattern = Pattern.compile(schemaRegex);
-			Matcher matcher = pattern.matcher(version);
+			Matcher matcher = pattern.matcher(version.toLowerCase());
 			// Extract groups from regex result and add to new version components collection
 			if (matcher.matches()) {
+				List<String> splitVersionComponents = versionComponents;
 				versionComponents = new ArrayList<String>();
 				// get elements of version from results to versionComponents.
 				for (int i = 1; i <= matcher.groupCount(); i++) {
-					versionComponents.add(matcher.group(i));
+					
+					if(splitVersionComponents.size() >= i && splitVersionComponents.get(i-1).toLowerCase().equals(matcher.group(i)))
+						versionComponents.add(splitVersionComponents.get(i-1));
+					else
+						versionComponents.add(matcher.group(i));
 				}
 			} else {
 				// No match, do not replace versionComponents.
@@ -258,7 +298,7 @@ public class VersionUtils {
 			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		}
 		
-		VersionHelper vh = parseVersion(pin);
+		VersionHelper vh = parseVersion(pin, schema);
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
@@ -300,7 +340,7 @@ public class VersionUtils {
 				pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 			}
 			
-			VersionHelper vhPin = parseVersion(pin);
+			VersionHelper vhPin = parseVersion(pin, schema);
 			VersionHelper vhVersion = parseVersion(version, schema);
 			
 			// remove -modifier and +metadata from schema as it's irrelevant

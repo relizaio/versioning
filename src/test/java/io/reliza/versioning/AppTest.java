@@ -80,6 +80,27 @@ public class AppTest
     }
     
     @Test
+    public void testBumpYYMMMicrohyphenBranchWithPin() {
+
+    	String testSchema = "YY.0M.Micro-Branch";
+    	
+		String testVersion = "23.06.0-newbr";
+    	String testPin = "23.06.micro-Branch";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testVersion, ActionEnum.BUMP);
+		assertEquals("23.06.1-newbr", v.constructVersionString());
+    }
+
+    @Test
+    public void testBumpYYMMMicrohyphenBranchWithPinSameAsSchema() {
+
+    	String testSchema = "YY.0M.Micro-Branch";
+    	
+		String testVersion = "23.07.0-newbr";
+		Version v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, testVersion, ActionEnum.BUMP);
+		assertEquals("23.07.1-newbr", v.constructVersionString());
+    }
+    
+    @Test
     public void testPinMatching1Semver() {
     	String testSchema = "major.minor.patch-modifier";
     	String testPin = "1.3.patch";
@@ -111,6 +132,13 @@ public class AppTest
     public void testPinMatching5SuccessCalver() {
     	String testSchema = "Year.Month.minor.patch-modifier";
     	String testPin = "2020.2.minor.patch-modifier";
+        assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+
+	 @Test
+    public void testPinMatchin6SuccessYY0MMicrohyphenBranch() {
+    	String testSchema = "YY.0M.Micro-Branch";
+    	String testPin = "23.06.micro-Branch";
         assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
     }
     
@@ -723,7 +751,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2023.07.3";
+		String expectedV = "2023.07.10";
 		assertEquals(expectedV, actualV);
     }
 	
