@@ -78,6 +78,17 @@ public class AppTest
     	String testVersion = "23.06.0-newbr";
         assertTrue( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
     }
+
+    @Test
+    public void getVersionForYYMMMicrohyphenBranch() {
+    	String testSchema = "YY.0M.Micro-Branch";
+    	String testVersion = "23.07.0-newbr";
+		Version v = Version.getVersion(testSchema);
+    	System.out.println(v.constructVersionString());
+		v.setBranch("newbr");
+        assertEquals (testVersion, v.constructVersionString());
+        
+    }
     
     @Test
     public void testBumpYYMMMicrohyphenBranchWithPin() {
