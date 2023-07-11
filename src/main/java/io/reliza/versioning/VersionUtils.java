@@ -124,7 +124,7 @@ public class VersionUtils {
 	 * @return VersionHelper
 	 */
 	public static VersionHelper parseVersion (String version, String schema) {
-		boolean handleBranchInVersion = StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase());
+		boolean handleBranchInVersion = (StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase())) || (StringUtils.isNotEmpty(version) && version.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase()));
 		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") && schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
 		// check special case for Maven-style Snapshot
 		boolean isSnapshot = false;

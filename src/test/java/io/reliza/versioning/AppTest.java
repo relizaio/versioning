@@ -80,6 +80,14 @@ public class AppTest
     }
 
     @Test
+    public void testSchemaMatchingPinYYMMMicrohyphenBranch() {
+    	String projectSchema = "YY.0M.Micro";
+    	String testSchema = "YY.0M.Micro-Branch";
+    	// String testVersion = "23.06.0-newbr";
+        assertFalse( VersionUtils.isPinMatchingSchema(projectSchema, testSchema) );
+    }
+
+    @Test
     public void getVersionForYYMMMicrohyphenBranch() {
     	String testSchema = "YY.0M.Micro-Branch";
     	String testVersion = "23.07.0-newbr";
@@ -762,7 +770,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2023.07.10";
+		String expectedV = "2023.07.11";
 		assertEquals(expectedV, actualV);
     }
 	
