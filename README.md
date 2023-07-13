@@ -121,14 +121,24 @@ from the project directory run
 mvn clean package
 ```
 
+Using Gradle: publish to maven local repository:
+```
+gradle publisToMavenLocal
+```
+
 And include resulting .jar file from the target directory in your project. Then use io.reliza.versioning.VersionApi class for most common operations. More documentation coming soon.
 
 ## Running the tests (requires Java 8+ and maven)
 From the project directory run
+Using maven:
 ```
 mvn clean test
 ```
 
+Using gralde:
+```
+gradle test
+```
 ## 4. Usage as Java Library
 Use methods exposed in the VersionApi class to create vresions. More documentation is coming soon.
 
