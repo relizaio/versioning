@@ -3,3 +3,7 @@
 .project
 /.settings/
 *.class
+.gradle/
+.vscode
+.mvn
+build
