@@ -770,7 +770,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2023.07.13";
+		String expectedV = "2023.07.17";
 		assertEquals(expectedV, actualV);
     }
 	

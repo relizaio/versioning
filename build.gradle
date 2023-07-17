@@ -3,9 +3,11 @@
  */
 
 plugins {
+	id 'application'
     id 'java-library'
     id 'maven-publish'
     id 'java'
+	id 'org.graalvm.buildtools.native' version '0.9.23'
 }
 
 repositories {
@@ -48,6 +50,17 @@ java {
 	// withJavadocJar()
 	withSourcesJar()
 }
+
+jar {
+	manifest { 
+		attributes "Main-Class": 'io.reliza.versioning.VersionCli'
+	}  
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}
+
 test {
   useJUnitPlatform()
 }
@@ -102,3 +115,30 @@ tasks.withType(JavaCompile) {
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
 }
+
+graalvmNative {
+	binaries.all {
+		resources.autodetect()
+	}
+	testSupport = true
+	toolchainDetection = true
+    binaries {
+        main {
+            // Main options
+			// sharedLibrary = false
+            imageName = 'versioning' // The name of the native image, defaults to the project name
+            mainClass = 'io.reliza.versioning.VersionCli' // The main class to use, defaults to the application.mainClass
+            sharedLibrary = false // Determines if image is a shared library, defaults to false if `java-library` plugin isn't included
+        
+        
+            useFatJar = true // Instead of passing each jar individually, builds a fat jar
+			javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(17)
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+			buildArgs.add('--no-fallback') 
+			buildArgs.add('--static') 
+        }
+    }
+}
+
