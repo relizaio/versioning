@@ -10,10 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +28,14 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class AppTest 
 {
-	public static final String CURRENT_MONTH_SINGLE = "7";
-	public static final String CURRENT_MONTH = "07";
-	public static final String CURRENT_YEAR_SHORT = "23";
-	public static final String CURRENT_YEAR_LONG = "2023";
+	static ZonedDateTime date = ZonedDateTime.now(ZoneId.of("UTC"));
+	public static final String CURRENT_MONTH_SINGLE = String.valueOf(date.getMonthValue());
+	public static final String CURRENT_MONTH = StringUtils.leftPad(CURRENT_MONTH_SINGLE, 2, "0");
+	
+	public static final String CURRENT_YEAR_LONG = String.valueOf(date.getYear());
+	public static final String CURRENT_YEAR_SHORT = CURRENT_YEAR_LONG.substring(2);
+	public static final String CURRENT_DAY = String.valueOf(date.getDayOfMonth());
+	
 	
     @Test
     public void testSchemaMatching1() {
@@ -770,7 +777,7 @@ public class AppTest
 		ActionEnum action = ActionEnum.BUMP_PATCH;
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, schema, version, action);
 		String actualV = newV.constructVersionString();
-		String expectedV = "2023.07.17";
+		String expectedV = CURRENT_YEAR_LONG + "." + CURRENT_MONTH + "." + CURRENT_DAY;
 		assertEquals(expectedV, actualV);
     }
 	
