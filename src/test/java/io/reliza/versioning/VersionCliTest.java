@@ -4,11 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.security.Permission;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,16 +54,6 @@ class VersionCliTest {
 	
 	// Setup //
 
-	@BeforeAll
-	static void setUp() throws Exception{
-        System.setSecurityManager(new NoExitSecurityManager());
-	}
-	
-	@AfterAll
-	static void tearDown() throws Exception {
-		System.setSecurityManager(null); // or save and restore original
-	}
-	
 	@BeforeEach
 	void setUpStreams() {
 	    System.setOut(new PrintStream(outContent));
@@ -92,23 +79,4 @@ class VersionCliTest {
         }
     }
 	
-	// prevents jvm from stopping when system.exit is called
-    private static class NoExitSecurityManager extends SecurityManager {
-        @Override
-        public void checkPermission(Permission perm) 
-        {
-            // allow anything.
-        }
-        @Override
-        public void checkPermission(Permission perm, Object context) 
-        {
-            // allow anything.
-        }
-        @Override
-        public void checkExit(int status) 
-        {
-            super.checkExit(status);
-            throw new ExitException(status);
-        }
-    }
 }
