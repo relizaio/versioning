@@ -24,7 +24,7 @@ dependencies {
 }
 
 group = 'io.reliza'
-version = '2022.04.5-SNAPSHOT'
+version = '2023.07.4'
 description = 'versioning'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
