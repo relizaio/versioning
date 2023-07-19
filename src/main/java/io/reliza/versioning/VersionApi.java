@@ -112,10 +112,31 @@ public class VersionApi {
 	 *
 	 */
 	public enum ActionEnum {
+		
+		/**
+		 * action type bump
+		 */
 		BUMP("bump"),
+		
+		/**
+		 * action type bumppatch
+		 */
 		BUMP_PATCH("bumppatch"),
+		
+		/**
+		 * action type bumpminor
+		 */
+
 		BUMP_MINOR("bumpminor"),
+		
+		/**
+		 * action type bumpmajor
+		 */
 		BUMP_MAJOR("bumpmajor"),
+		
+		/**
+		 * action type bumpdate
+		 */
 		BUMP_DATE("bumpdate")
 		;
 		

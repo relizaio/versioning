@@ -62,7 +62,7 @@ public class VersionUtils {
 	}
 	/**
 	 * This method parses supplied schema to version elements
-	 * @param schema String
+	 * @param pin String
 	 * @return list of VersionElement
 	 */
 	public static List<VersionElement> parsePin (String pin) {
@@ -408,7 +408,7 @@ public class VersionUtils {
 	/**
 	 * This method is used to test if the specified version string is a valid SemVer version.
 	 * Reference: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-	 * @param version
+	 * @param version String
 	 * @return true if version is Semver valid format, false otherwise.
 	 */
 	public static boolean isVersionSemver(String version) {
@@ -421,7 +421,7 @@ public class VersionUtils {
 	/**
 	 * This method is used to test if the specified schema string is Semver style schema or not.
 	 * Valid Semver: Major.Minor.Patch with optional +modifer and -metadata
-	 * @param schema
+	 * @param schema String
 	 * @return true if schema is semver format, false otherwise
 	 */
 	public static boolean isSchemaSemver(String schema) {

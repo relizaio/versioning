@@ -10,6 +10,9 @@ import java.util.regex.Matcher;
 import static io.reliza.changelog.CommitParserUtil.COMMIT_MESSAGE_REGEX;
 //import static io.reliza.common.Utils.getNullable;
 
+/**
+ * CommitMessage class
+ */
 public final class CommitMessage implements BreakingChangeItem{
     private final String rawMessage;
     private final CommitType type;
@@ -17,6 +20,11 @@ public final class CommitMessage implements BreakingChangeItem{
     private final String scope;
     private final boolean isBreakingChange;
   
+
+    /**
+     * Constructs CommitMessage
+     * @param rawMessage String
+     */
     public CommitMessage(String rawMessage) {
         this.rawMessage = rawMessage.trim();
         ConventionalCommitMatcher matcher = new ConventionalCommitMatcher(this.rawMessage);
@@ -26,26 +34,50 @@ public final class CommitMessage implements BreakingChangeItem{
         this.isBreakingChange = matcher.isBreakingChange();
     }
   
+    
+    /** 
+     * @return String
+     */
     public String getRawMessage() {
         return rawMessage;
     }
   
+    
+    /** 
+     * @return CommitType
+     */
     public CommitType getType() {
         return type;
     }
   
+    
+    /** 
+     * @return String
+     */
     public String getMessage() {
         return message;
     }
   
+    
+    /** 
+     * @return String
+     */
     public String getScope() {
         return scope;
     }
   
+    
+    /** 
+     * @return boolean
+     */
     public boolean isBreakingChange() {
         return isBreakingChange;
     }
   
+    
+    /** 
+     * @return String
+     */
     public String getBreakingChangeDescription() {
         return isBreakingChange ? message : "";
     }

@@ -15,11 +15,18 @@ package io.reliza.changelog;
  * {@code "^(?<token>[\w\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>.*?(?=^([\w\-]+|BREAKING CHANGE)(: | #)))"gms }
  */
 public final class CommitFooter implements BreakingChangeItem{
+    /**
+     * initialize empty CommitFooter
+     */
     public static final CommitFooter EMPTY = new CommitFooter("");
     private final boolean isBreakingChange;
     private final String breakingChangeDescription;
     private final String footer;
 
+    /**
+     * Constructs CommitFooter
+     * @param footer String 
+     */
     public CommitFooter(String footer) {
     	// Need to check every line of footer for BREAKING-CHANGE or BREAKING CHANGE token
         String[] footerLines = footer.split(CommitParserUtil.LINE_SEPARATOR_REGEX);
@@ -38,14 +45,26 @@ public final class CommitFooter implements BreakingChangeItem{
     	this.breakingChangeDescription = isBreakingChange ? breakingChangeLine.substring("BREAKING-CHANGE: ".length()).trim() : "";
     }
 
+    
+    /** 
+     * @return String
+     */
     public String getFooter() {
         return footer;
     }
 
+    
+    /** 
+     * @return boolean
+     */
     public boolean isBreakingChange() {
         return isBreakingChange;
     }
 
+    
+    /** 
+     * @return String
+     */
     public String getBreakingChangeDescription() {
         //return isBreakingChange ? footer : "";
     	return this.breakingChangeDescription;

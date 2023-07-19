@@ -19,6 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import io.reliza.versioning.VersionApi.ActionEnum;
 
+/**
+ * class Version
+ */
 public class Version implements Comparable<Version> {
 	
 	/**
@@ -100,6 +103,10 @@ public class Version implements Comparable<Version> {
 	 */
 	private Version () {}
 	
+	
+	/** 
+	 * @return String
+	 */
 	@Override
 	public String toString() {
 		return String.format("Major = %d, Minor = %d, Patch = %d, Nano = %d, Year = %d, Month = %d, " +
@@ -688,6 +695,12 @@ public class Version implements Comparable<Version> {
 		return v;
 	}
 	
+	
+	/** 
+	 * @param schema String  
+	 * @param pin String 
+	 * @return Version
+	 */
 	public static Version getVersionFromPin (String schema, String pin) {
 		return getVersionFromPinAndOldVersion(schema, pin, null, null);
 	}
@@ -923,6 +936,12 @@ public class Version implements Comparable<Version> {
 		return v;
 	}
 	
+	
+	/** 
+	 * @param v
+	 * @param oldV
+	 * @return boolean
+	 */
 	private static boolean isCalverUpdated (final Version v, final Version oldV) {
 		boolean calverUpdated = false;
 		if (null != oldV && null != oldV.year && null != v.year) {
@@ -965,6 +984,10 @@ public class Version implements Comparable<Version> {
 		}
 	}
 	
+	
+	/** 
+	 * @return int
+	 */
 	@Override
 	public int hashCode() {
 		StringBuilder sb = new StringBuilder();
@@ -1012,6 +1035,11 @@ public class Version implements Comparable<Version> {
 		return sb.toString().hashCode();
 	}
 	
+	
+	/** 
+	 * @param other Object
+	 * @return boolean
+	 */
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Version) {

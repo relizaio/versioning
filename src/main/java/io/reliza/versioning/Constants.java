@@ -15,7 +15,18 @@ public class Constants {
 	
 	private Constants () {}
 	
+	/**
+	 * semver
+	 */
 	public static final String SEMVER = "semver";
+
+	/**
+	 * base modifier
+	 */
 	public static final String BASE_MODIFIER = "Snapshot";
+	
+	/**
+	 * maven style snapshot
+	 */	
 	public static final String MAVEN_STYLE_SNAPSHOT = "-SNAPSHOT";
 }

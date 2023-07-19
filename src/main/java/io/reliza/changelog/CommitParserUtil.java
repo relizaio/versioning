@@ -15,16 +15,29 @@ import org.apache.commons.lang3.StringUtils;
 import static java.util.stream.Collectors.joining;
 
 
+/**
+ * CommitParserUtil utility class
+ */
 
 public final class CommitParserUtil {
+	/**
+	 * compile COMMIT REGEX PATTERN
+	 */
     public static final Pattern COMMIT_MESSAGE_REGEX = createRegexPattern();
     //public static final String LINE_SEPARATOR = "\n\n";
+	/**
+	 * initialize line sepreator regex
+	 */
     public static final String LINE_SEPARATOR_REGEX = "(?:\\r\\n|\\n)";
 
     private CommitParserUtil() {
     }
 
-    private static Pattern createRegexPattern() {
+    
+	/** 
+	 * @return Pattern
+	 */
+	private static Pattern createRegexPattern() {
         // i.e. ^(build|test|chore|feat|fix|docs)
         String typePrefix = Arrays.stream(CommitType.values()).map(CommitType::getPrefix).collect(joining("|", "^(", ")"));
         // Make regex case insensitive, so capitlized types can be parsed: ex: "FIX: a commit message" is a valid commit header
@@ -164,9 +177,9 @@ public final class CommitParserUtil {
      * WIP do not use this method. Use parseRawCommit(String rawCommitMessage) instead.
      * This is not guaranteed to parse commits correctly at the moment.
      * 
-     * @param rawCommitMessage
-     * @return
-     * @throws IllegalArgumentException
+     * @param rawCommitMessage String containing the raw commit message.
+     * @return parsed ConventionalCommit object
+     * @throws IllegalArgumentException on empty or null commit message
      */
     public static ConventionalCommit parseRawCommitRegex(String rawCommitMessage) throws IllegalArgumentException {
     	if (rawCommitMessage == null || StringUtils.isBlank(rawCommitMessage)) {
