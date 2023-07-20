@@ -20,24 +20,21 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 50
-      # Install and setup JDK 11
       - name: Setup JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
       - name: Get version
         run: |
-          reliza_ver=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION | jq -r ".version")
+          latest_rlz=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION)
+          reliza_ver=$(echo latest_rlz | jq -r ".version")
+          approved_commit==$(echo latest_rlz | jq -r ".sourceCodeEntryDetails.commit")
           echo $reliza_ver
+          echo $approved_commit
           echo "RLZ_FULL_VER=$reliza_ver" >> $GITHUB_ENV
+          git checkout $approved_commit
       - name: Set build.gradle version
         run: gradle changeVersion -PnewVersion="${RLZ_FULL_VER}"
-      - name: Commit and push
-        run: |
-          git config --global user.name 'reliza-auto'
-          git config --global user.email 'info@reliza.io'
-          git commit -am "chore: update project version to ${RLZ_FULL_VER} for push to maven central [skip ci]"
-          git push
       - name: Run tests
         run: gradle test
       - name: Publish to Central
