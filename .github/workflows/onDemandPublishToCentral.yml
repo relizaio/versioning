@@ -27,8 +27,8 @@ jobs:
       - name: Get version
         run: |
           latest_rlz=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION)
-          reliza_ver=$(echo latest_rlz | jq -r ".version")
-          approved_commit==$(echo latest_rlz | jq -r ".sourceCodeEntryDetails.commit")
+          reliza_ver=$(echo $latest_rlz | jq -r ".version")
+          approved_commit==$(echo $latest_rlz | jq -r ".sourceCodeEntryDetails.commit")
           echo $reliza_ver
           echo $approved_commit
           echo "RLZ_FULL_VER=$reliza_ver" >> $GITHUB_ENV
