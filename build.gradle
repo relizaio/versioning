@@ -67,7 +67,7 @@ test {
 }
 publishing {
 	publications {
-		relizaJavaClient(MavenPublication) {
+		versioning(MavenPublication) {
 			artifactId = 'versioning'
 			from components.java
 			pom {
@@ -117,16 +117,15 @@ tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
 }
 
+tasks.withType(Sign) {
+    onlyIf { gradle.taskGraph.hasTask(":publishAllPublicationsToCentralRepository") }
+}
+
 signing {
-    setRequired {
-        gradle.taskGraph.hasTask("publishAllPublicationsToCentralRepository")
-    }
-    if (gradle.taskGraph.hasTask("publishAllPublicationsToCentralRepository")) {
-        def signingKey = GPG_SIGNING_KEY
-        def signingPassword = GPG_SIGNING_PASSWORD
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.Versioning
-    }
+    def signingKey = GPG_SIGNING_KEY
+    def signingPassword = GPG_SIGNING_PASSWORD
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.versioning
 }
 
 graalvmNative {
