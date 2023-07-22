@@ -34,11 +34,11 @@ docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
 
 #### 2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
 ```
-mvn versions:set -DnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
+gradle changeVersion -PnewVersion="$(java -jar path_to_versioning\versioning.jar -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
 ```
 or with docker:
 ```
-mvn versions:set -DnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
+gradle changeVersion -PnewVersion="$(docker run --rm relizaio/versioning -s yyyy.0m.Calvermodifier.patch -i Stable -t True)"
 ```
 Note that this example is using versions-maven-plugin (that Reliza Versioning is using too).
 
@@ -93,9 +93,8 @@ docker pull relizaio/versioning
 #### 3.1.2. Compile locally (requires Java 8+ and maven) as jar CLI tool
 from the project directory run
 ```
-mvn clean compile assembly:single
+gradle build
 ```
-This will produce .jar file in the target directory that can be run with "java -jar versioning_jar_file--jar-with-dependencies.jar"
 
 ### 3.2. II To use as a java library
 #### 3.2.1. Use as maven dependency from maven central:
@@ -115,10 +114,10 @@ implementation 'io.reliza:versioning:2020.11.Stable.1'
 
 See more options on the [Maven Central page](https://search.maven.org/artifact/io.reliza/versioning/)
 
-#### 3.2.2. Compile locally (requires Java 8+ and maven)
+#### 3.2.2. Compile locally (requires Java 8+ and Gradle)
 from the project directory run
 ```
-mvn clean package
+gradle build
 ```
 
 Using Gradle: publish to maven local repository:
@@ -130,10 +129,6 @@ And include resulting .jar file from the target directory in your project. Then 
 
 ## Running the tests (requires Java 8+ and maven)
 From the project directory run
-Using maven:
-```
-mvn clean test
-```
 
 Using gralde:
 ```
