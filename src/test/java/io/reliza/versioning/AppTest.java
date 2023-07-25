@@ -638,6 +638,14 @@ public class AppTest
     }
     
     @Test
+    public void TestSemverVersionMatchingSemverSchemaWithHyphenMetadata() {
+    	String schema = "semver";
+    	String version = "3.2.1-3";
+    	assertTrue(VersionUtils.isVersionMatchingSchema(schema, version));
+    }
+    
+
+    @Test
     public void TestSemverPinMatchingSemverSchemaVersionMeta() {
     	String schema = "semver";
     	String pin = "semver";

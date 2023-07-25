@@ -261,7 +261,7 @@ public class VersionUtils {
 		List<VersionElement> veList = parseSchema(schema);
 		List<String> versionComponents = vh.getVersionComponents();
 		String modifier = vh.getModifier();
-		if(modifier != null && modifier != "" && versionComponents.contains(modifier)){
+		if(modifier != null && modifier != "" && versionComponents.contains(modifier) && versionComponents.size() > veList.size()){
 			versionComponents.remove(modifier);
 		}
 
