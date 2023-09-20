@@ -97,7 +97,7 @@ public class AppTest
     @Test
     public void getVersionForYYMMMicrohyphenBranch() {
     	String testSchema = "YY.0M.Micro-Branch";
-    	String testVersion = "23.07.0-newbr";
+    	String testVersion = CURRENT_YEAR_SHORT + "." + CURRENT_MONTH + ".0-newbr";
 		Version v = Version.getVersion(testSchema);
     	System.out.println(v.constructVersionString());
 		v.setBranch("newbr");
@@ -121,9 +121,9 @@ public class AppTest
 
     	String testSchema = "YY.0M.Micro-Branch";
     	
-		String testVersion = "23.07.0-newbr";
+		String testVersion = CURRENT_YEAR_SHORT + "." + CURRENT_MONTH + ".0-newbr";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, testVersion, ActionEnum.BUMP);
-		assertEquals("23.07.1-newbr", v.constructVersionString());
+		assertEquals(CURRENT_YEAR_SHORT + "." + CURRENT_MONTH + ".1-newbr", v.constructVersionString());
     }
     
     @Test
