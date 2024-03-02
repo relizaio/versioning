@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.reliza.versioning.Version.VersionHelper;
 import io.reliza.versioning.Version.VersionStringComparator;
 import io.reliza.versioning.VersionApi.ActionEnum;
 
@@ -728,6 +730,18 @@ public class AppTest
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP_MINOR);
     	assertEquals("5.7.0", v.constructVersionString());
     }
+	@Test
+	void testParseVersion_BranchMultipleDashes() {
+		String schema = "Year.Branch-modifier";
+		String version = "2020.test-branch-go-mymodifier";
+		VersionHelper vh = VersionUtils.parseVersion(version, schema);
+		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
+		versionComponentsExpected.add("2020");
+		versionComponentsExpected.add("test-branch-go");
+		versionComponentsExpected.add("mymodifier");
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		assertEquals(versionComponentsExpected, versionComponenetsActual);
+	}
     
     @Test
     public void handleMultipleDashes1() {
@@ -965,7 +979,7 @@ public class AppTest
 	public void nanoSemverPinOldVersionBumpDate1() {
 		String testSchema = "YYYY.0M.Major.Minor.Patch.Nano";
 		String pin = "2021.0M.3.3.3.Nano";
-		String oldVersion = "2021.04.3.3.3.1";
+		String oldVersion = "2021.01.3.3.3.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_DATE);
 		//System.out.println(v.constructVersionString());
 		assertEquals("2021." +CURRENT_MONTH+".3.3.3.0", v.constructVersionString());
@@ -989,5 +1003,95 @@ public class AppTest
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, oldVersion, ActionEnum.BUMP_PATCH);
 		System.out.println(v.constructVersionString());
 		assertEquals("22.03.28.3-dev", v.constructVersionString());
+	}
+
+	// @Test // Issue #2 on GitHub - https://github.com/relizaio/versioning/issues/2
+	// // incorrect view of modifier
+	// public void semverCustomPinWithNano() {
+	// 	String testSchema = "semver";
+	// 	String pin = "5.5.3.Nano";
+	// 	//String oldVersion = "2.2.2.1";
+	// 	Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, null, null);
+	// 	//System.out.println(v.constructVersionString());
+	// 	assertEquals("5.5.3.0", v.constructVersionString());
+	// }
+
+	@Test
+    public void testPinMatchingXXXWithMicro() {
+    	String testSchema = "MAJOR.MINOR.PATCH.NANO";
+    	String testPin = "5.5.3.Nano";
+        assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+    @Test
+    public void testBumpMatchingXXXWithMicro() {
+
+    	String testSchema = "MAJOR.MINOR.PATCH.NANO";
+    	String testPin = "5.5.3.Nano";
+		Version v = Version.getVersionFromPin(testSchema, testPin);
+		String testVersion = "5.5.3.0";
+		assertEquals(testVersion, v.constructVersionString());
+		v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testVersion, ActionEnum.BUMP);
+		assertEquals("5.5.3.1", v.constructVersionString());
+    }
+	@Test
+    public void testPinMatchingBranchHyphenMicro() {
+    	String testSchema = "branch-micro";
+    	String testPin = "branch-1";
+        assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
+    }
+
+	@Test
+    public void testSchemaMatchin6BranchHyphenMicro() {
+    	String testSchema = "branch-micro";
+    	String testVersion = "foo-bar-1";
+        assertTrue( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
+    }
+
+    @Test
+    public void getVersionForBranchHyphenMicro() {
+    	String testSchema = "branch-micro";
+    	String testVersion = "foo-0";
+		Version v = Version.getVersion(testSchema);
+    	System.out.println(v.constructVersionString());
+		v.setBranch("foo");
+        assertEquals (testVersion, v.constructVersionString());
+		v = Version.getVersionFromPinAndOldVersion(testSchema, testVersion, testVersion, ActionEnum.BUMP);
+		assertEquals("foo-1", v.constructVersionString());
+        
+    }
+    @Test
+    public void getVersionForBranchHyphenMicroMulti() {
+    	String testSchema = "branch-micro";
+    	String testVersion = "foo-bar-0";
+		Version v = Version.getVersion(testSchema);
+    	System.out.println(v.constructVersionString());
+		v.setBranch("foo-bar");
+        assertEquals (testVersion, v.constructVersionString());
+		v = Version.getVersionFromPinAndOldVersion(testSchema, testVersion, testVersion, ActionEnum.BUMP);
+		assertEquals("foo-bar-1", v.constructVersionString());
+        
+    }
+
+		@Test
+	void testParseVersion_BranchHyphenMicro() {
+		String version = "foo-1";
+		String schema = "branch-micro";
+		VersionHelper vh = VersionUtils.parseVersion(version, schema);
+		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
+		versionComponentsExpected.add("foo");
+		versionComponentsExpected.add("1");
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		assertEquals(versionComponentsExpected, versionComponenetsActual);
+	}
+		@Test
+	void testParseVersion_BranchHyphenMicroMulti() {
+		String version = "foo-bar-1";
+		String schema = "branch-micro";
+		VersionHelper vh = VersionUtils.parseVersion(version, schema);
+		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
+		versionComponentsExpected.add("foo-bar");
+		versionComponentsExpected.add("1");
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 }
