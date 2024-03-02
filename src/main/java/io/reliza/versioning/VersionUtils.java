@@ -157,6 +157,7 @@ public class VersionUtils {
 
 		String[] dashelHelper = null;
 		String[] dashel = null;
+		String splitRegex = "\\.";
 		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
 			dashelHelper = version.split("-");
 			// if more than one dash raise an error
@@ -171,23 +172,26 @@ public class VersionUtils {
 					dashel[1] = dashelHelper[dashelHelper.length - 1];
 					dashel[0] = version.replaceFirst("-" + dashel[1], "");
 				}
-			} else {
+			} else if (!dashInSchemaAfterBranch){
 				// only one dash
 				dashel = dashelHelper;
 				version = dashel[0];
 			}
 		}
 		
-		String splitRegex = "\\.";
 		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
 			splitRegex = "(\\.|_)";
+		}
+
+		if(version.contains("-") && handleBranchInVersion && dashInSchemaAfterBranch){
+			splitRegex = "(\\.|-)";
 		}
 		
 		List<String> versionComponents = Arrays.asList(version.split(splitRegex));
 		
 		// Alternative way to split version string into components. See
 		// VersionUtilsTest::testParseVersion_BranchWithVersionInName() for example that would fail with just above code
-		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_"))) { // Only works if schema is of form VersionElement.VersoinElement...
+		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_") || (handleBranchInVersion && dashInSchemaAfterBranch))) { // Only works if schema is of form VersionElement.VersoinElement...
 			// Create regex to split version string into parts based on schema
 			String schemaRegex = "";
 			ArrayList<VersionElement> veList = (ArrayList<VersionElement>) parseSchema(schema);
