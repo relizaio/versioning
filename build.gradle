@@ -7,7 +7,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'java'
-    id 'org.graalvm.buildtools.native' version '0.9.23'
+    id 'org.graalvm.buildtools.native' version '0.10.2'
     id 'signing'
 }
 
@@ -19,9 +19,9 @@ repositories {
 }
 
 dependencies {
-    api 'org.apache.commons:commons-lang3:3.12.0'
-    api 'commons-cli:commons-cli:1.5.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    api 'org.apache.commons:commons-lang3:3.14.0'
+    api 'commons-cli:commons-cli:1.8.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 group = 'io.reliza'
