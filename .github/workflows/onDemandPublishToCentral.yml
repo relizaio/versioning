@@ -44,4 +44,4 @@ jobs:
           echo "GPG_SIGNING_KEY=$SIGN_KEY" > gradle.properties
           echo "GPG_SIGNING_PASSWORD=$SIGN_PASS" >> gradle.properties
           # prepare gradle.properties for signing
-          gradle publishAllPublicationsToCentralRepository -PcentralUser=$CENTRAL_USER -PcentralPassword=$CENTRAL_PASS
+          gradle publishAllPublicationsToMavenRepoRepository -PcentralUser=$CENTRAL_USER -PcentralPassword=$CENTRAL_PASS
