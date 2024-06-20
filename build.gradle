@@ -97,7 +97,9 @@ publishing {
 	}
 	
 	repositories {
-		mavenCentral {
+		maven {
+			name = 'central'
+			url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 			credentials {
 				username "$centralUser"
 				password "$centralPassword"
