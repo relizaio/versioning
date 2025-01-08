@@ -19,9 +19,9 @@ repositories {
 }
 
 dependencies {
-    api 'org.apache.commons:commons-lang3:3.14.0'
-    api 'commons-cli:commons-cli:1.8.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    api 'org.apache.commons:commons-lang3:3.17.0'
+    api 'commons-cli:commons-cli:1.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
 }
 
 group = 'io.reliza'
