@@ -982,7 +982,11 @@ public class AppTest
 		String oldVersion = "2021.01.3.3.3.1";
 		Version v = Version.getVersionFromPinAndOldVersion(testSchema, pin, oldVersion, ActionEnum.BUMP_DATE);
 		//System.out.println(v.constructVersionString());
-		assertEquals("2021." +CURRENT_MONTH+".3.3.3.0", v.constructVersionString());
+		String nano = "0";
+		if (CURRENT_MONTH.equals("01")) {
+			nano = "1";
+		}
+		assertEquals("2021." + CURRENT_MONTH +".3.3.3." + nano, v.constructVersionString());
 	}
 	
 	@Test // everything else pinned so bump nano
