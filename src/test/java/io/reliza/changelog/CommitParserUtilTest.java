@@ -94,8 +94,9 @@ class CommitParserUtilTest {
 	// Fills List of CommitTestCase objects which store the commit string to be tested,
 	// as well as if the commit is valid or not and a description of the test case.
 	void loadCommitMessages(String pathname, List<CommitTestCase> commits) {
-		try {
+		try (
 			FileReader fr = new FileReader(new File(pathname));
+		) {
 			String text = "";
 			int c;
 			while ((c = fr.read()) != -1) {
