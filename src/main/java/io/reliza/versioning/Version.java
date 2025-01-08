@@ -706,49 +706,28 @@ public class Version implements Comparable<Version> {
 	}
 	
 	/**
-	 * If oldVersionString is present and we're dealing with calver schema, this effectively does simple bump relative to old version date based on schema and pin
-	 * if it's semver schema and old version present, this will effectively return old version making sure it's matching schema and pin
-	 * if old version is not present, this will do simple bump relative to semver
-	 * @param schema String, required
-	 * @param pin String, required
-	 * @param oldVersionString String, optional
-	 * @param ae ActionEnum
-	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
+	 * This method validates input for get version call and throws exception if not valid
+	 * @param schema
+	 * @param pin
+	 * @param oldVersionString
 	 */
-	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae) {
+	private static void validateGetVersionFromPinAndOldVersionInput(String schema, String pin, String oldVersionString) {
 		if (!VersionUtils.isPinMatchingSchema(schema, pin)) {
 			throw new RuntimeException("Cannot construct Version object, since pin is not matching schema");
 		}
 		if (StringUtils.isNotEmpty(oldVersionString) && !VersionUtils.isVersionMatchingSchemaAndPin(schema, pin, oldVersionString)) {
 			throw new RuntimeException("Cannot construct Version object, since old version is not matching either pin or schema");
 		}
-		Version v = new Version();
-		v.schema = schema;
-		schema = VersionUtils.stripSchemaFromModMeta(schema);
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-		}
-		Version oldV = null;
-		if (StringUtils.isNotEmpty(oldVersionString)) {
-			oldV = Version.getVersion(oldVersionString, schema);
-		}
-		
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
-		Set<String> veElementCheck = schemaVeList.stream().map(sv -> sv.toString()).collect(Collectors.toSet());
-		if (ae == ActionEnum.BUMP_MAJOR && !veElementCheck.contains("MAJOR")) {
-			ae = ActionEnum.BUMP_MINOR;
-		}
-		if (ae == ActionEnum.BUMP_MINOR && !veElementCheck.contains("MINOR")) {
-			ae = ActionEnum.BUMP;
-		}
-		if (ae == ActionEnum.BUMP_PATCH && !veElementCheck.contains("MICRO") && !veElementCheck.contains("PATCH")) {
-			ae = ActionEnum.BUMP;
-		}
-		
-		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
-			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-		}
-		// initialize all elements at zero first or old version values if present
+	}
+
+	/**
+	 * This method initializes all new version elements at zero first or old version values if present.
+	 * It also skips version metadata and modifiers.
+	 * @param v
+	 * @param oldV
+	 * @param ae
+	 */
+	private static void initializeVersionElements (Version v, Version oldV, ActionEnum ae) {
 		if (null != oldV && null != oldV.getMinor()) {
 			v.minor = oldV.getMinor();
 		} else {
@@ -781,8 +760,39 @@ public class Version implements Comparable<Version> {
 		if (null != oldV && null != oldV.day) {
 			v.day = oldV.day;
 		}
-		// skipping metadata and such - which seems reasonable in this context
-		// now populate whatever we can from pin -> pin overrides old version
+	}
+
+	/**
+	 * This method resolves proper new version bump action based on the version structure
+	 * @param schemaVeList
+	 * @param ae
+	 * @return
+	 */
+	private static ActionEnum resolveNewVersionAction (List<VersionElement> schemaVeList, ActionEnum ae) {
+		Set<String> veElementCheck = schemaVeList.stream().map(sv -> sv.toString()).collect(Collectors.toSet());
+		
+		if (ae == ActionEnum.BUMP_MAJOR && !veElementCheck.contains("MAJOR")) {
+			ae = ActionEnum.BUMP_MINOR;
+		}
+		
+		if (ae == ActionEnum.BUMP_MINOR && !veElementCheck.contains("MINOR")) {
+			ae = ActionEnum.BUMP;
+		}
+		
+		if (ae == ActionEnum.BUMP_PATCH && !veElementCheck.contains("MICRO") && !veElementCheck.contains("PATCH")) {
+			ae = ActionEnum.BUMP;
+		}
+		return ae;
+	}
+
+	/**
+	 * This method populates new version from pin -> pin overrides old version
+	 * @param v
+	 * @param oldVersionString
+	 * @param schema
+	 * @param pin
+	 */
+	private static void populateNewVersionFromPin (Version v, String oldVersionString, String schema, String pin) {
 		VersionHelper vh = null;
 		if (StringUtils.isNotEmpty(oldVersionString)) {
 		    vh = VersionUtils.parseVersion(oldVersionString, schema);
@@ -792,82 +802,115 @@ public class Version implements Comparable<Version> {
 		v.modifier = vh.getModifier();
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
+	}
 
-		// reset vh to parse from pin to make sure we can do bump actions properly
-		vh = VersionUtils.parseVersion(pin, schema);
+	private static void constructVersionElementForUpdatedElement (Set<VersionElement> elsProtectedByPin, 
+		Version v, VersionElement schemaElement, String versionHelperElement) {
+		switch (schemaElement) {
+		case MAJOR:
+			v.major = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(VersionElement.MAJOR);
+			break;
+		case MINOR:
+			v.minor = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(VersionElement.MINOR);
+			break;
+		case PATCH:
+			v.patch = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(VersionElement.PATCH);
+			break;
+		case NANO:
+			v.nano = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(VersionElement.NANO);
+			break;
+		case SEMVER_MODIFIER:
+		case CALVER_MODIFIER:
+			v.modifier = versionHelperElement;
+			break;
+		case METADATA:
+			v.metadata = versionHelperElement;
+			break;
+		case YYYY:
+		case YY:
+		case OY:
+			v.year = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(schemaElement);
+			break;
+		case MM:
+		case OM:
+			v.month = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(schemaElement);
+			break;
+		case YYOM:
+			String yearPart = versionHelperElement.substring(0,2);
+			String monthPart = versionHelperElement.substring(2);
+			v.year = Integer.parseInt(yearPart);
+			v.month = Integer.parseInt(monthPart);
+			elsProtectedByPin.add(schemaElement);
+			break;
+		case YYYYOM:
+			yearPart = versionHelperElement.substring(0,4);
+			monthPart = versionHelperElement.substring(4);
+			v.year = Integer.parseInt(yearPart);
+			v.month = Integer.parseInt(monthPart);
+			elsProtectedByPin.add(schemaElement);
+			break;
+		case DD:
+		case OD:
+			v.day = Integer.parseInt(versionHelperElement);
+			elsProtectedByPin.add(schemaElement);
+			break;
+		case BRANCH:
+			v.branch = versionHelperElement;
+			break;
+		case BUILDID:
+			v.buildid = versionHelperElement;
+			break;
+		case BUILDENV:
+			v.buildenv = versionHelperElement;
+			break;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * If oldVersionString is present and we're dealing with calver schema, this effectively does simple bump relative to old version date based on schema and pin
+	 * if it's semver schema and old version present, this will effectively return old version making sure it's matching schema and pin
+	 * if old version is not present, this will do simple bump relative to semver
+	 * @param schema String, required
+	 * @param pin String, required
+	 * @param oldVersionString String, optional
+	 * @param ae ActionEnum
+	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
+	 */
+	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae) {
+		validateGetVersionFromPinAndOldVersionInput(schema, pin, oldVersionString);
+		Version v = new Version();
+		v.schema = schema;
+		schema = VersionUtils.stripSchemaFromModMeta(schema);
+		if (Constants.SEMVER.equalsIgnoreCase(schema)) schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		Version oldV = null;
+		if (StringUtils.isNotEmpty(oldVersionString)) oldV = Version.getVersion(oldVersionString, schema);
+		
+		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		ae = resolveNewVersionAction(schemaVeList, ae);
+		
+		if (Constants.SEMVER.equalsIgnoreCase(pin)) pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		initializeVersionElements(v, oldV, ae);
+		populateNewVersionFromPin(v, oldVersionString, schema, pin);
+
+		// Parse pin to make sure we can do bump actions properly
+		VersionHelper vh = VersionUtils.parseVersion(pin, schema);
 		
 		// this would be set of unmodifiable elements since they are set by pin
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
-		// even thought dates are not bumped below, add them to set to know when to bump nano
+		// even though dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<schemaVeList.size(); i++) {
 			VersionElement parsedVe = VersionElement.getVersionElement(vh.getVersionComponents().get(i));
 			if (parsedVe != schemaVeList.get(i)) {
-				switch (schemaVeList.get(i)) {
-				case MAJOR:
-					v.major = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(VersionElement.MAJOR);
-					break;
-				case MINOR:
-					v.minor = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(VersionElement.MINOR);
-					break;
-				case PATCH:
-					v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(VersionElement.PATCH);
-					break;
-				case NANO:
-					v.nano = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(VersionElement.NANO);
-					break;
-				case SEMVER_MODIFIER:
-				case CALVER_MODIFIER:
-					v.modifier = vh.getVersionComponents().get(i);
-					break;
-				case METADATA:
-					v.metadata = vh.getVersionComponents().get(i);
-					break;
-				case YYYY:
-				case YY:
-				case OY:
-					v.year = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(schemaVeList.get(i));
-					break;
-				case MM:
-				case OM:
-					v.month = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(schemaVeList.get(i));
-					break;
-				case YYOM:
-					String yearPart = vh.getVersionComponents().get(i).substring(0,2);
-					String monthPart = vh.getVersionComponents().get(i).substring(2);
-					v.year = Integer.parseInt(yearPart);
-					v.month = Integer.parseInt(monthPart);
-					elsProtectedByPin.add(schemaVeList.get(i));
-					break;
-				case YYYYOM:
-					yearPart = vh.getVersionComponents().get(i).substring(0,4);
-					monthPart = vh.getVersionComponents().get(i).substring(4);
-					v.year = Integer.parseInt(yearPart);
-					v.month = Integer.parseInt(monthPart);
-					elsProtectedByPin.add(schemaVeList.get(i));
-					break;
-				case DD:
-				case OD:
-					v.day = Integer.parseInt(vh.getVersionComponents().get(i));
-					elsProtectedByPin.add(schemaVeList.get(i));
-					break;
-				case BRANCH:
-					v.branch = vh.getVersionComponents().get(i);
-					break;
-				case BUILDID:
-					v.buildid = vh.getVersionComponents().get(i);
-					break;
-				case BUILDENV:
-					v.buildenv = vh.getVersionComponents().get(i);
-					break;
-				default:
-					break;
-				}
+				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
+					vh.getVersionComponents().get(i));
 			} else if (schemaVeList.get(i) == VersionElement.CALVER_MODIFIER) {
 				v.modifier = Constants.BASE_MODIFIER;
 			} else {
@@ -896,10 +939,7 @@ public class Version implements Comparable<Version> {
 		}
 		
 		// check if we had any updated calver components - and if yes, we reset semver components to 0
-		
 		// normalize years, months and days for comparison
-
-		
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
