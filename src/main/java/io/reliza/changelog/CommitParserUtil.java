@@ -185,7 +185,7 @@ public final class CommitParserUtil {
     	if (rawCommitMessage == null || StringUtils.isBlank(rawCommitMessage)) {
     		throw new IllegalArgumentException("Please provide non-empty/non-null commit message.");
     	}
-    	String LS = false ? System.lineSeparator() : LINE_SEPARATOR_REGEX;
+    	String LS = LINE_SEPARATOR_REGEX;
     	String fullCommitRegex = "(?<header>^(?<type>fix|feat|perf|revert|refactor|build|test|docs|chore|ci|style)[(]?(?<scope>[\\w\\-]+)?[)]?(?<modifier>!)?: (?<desc>.+))(?<body>(?<spacer>"+LS+LS+")(?<bodyline>.+"+LS+"|"+LS+")*)?(?<footer>"+LS+"(?<trailer>^(?<token>[\\w\\-]+|BREAKING CHANGE)(?<seperator>: | #)(?<value>(?<valueline>.+"+LS+")*?(?=([\\w\\-]+|BREAKING CHANGE)(: |# ))))*(?<lasttoken>[\\w\\-]+|BREAKING CHANGE)(?<lastseperator>: | #)(?<lastvalue>(?<lastvalueline>.+|.+"+LS+")*))";
     	Pattern p = Pattern.compile(fullCommitRegex, Pattern.MULTILINE);
     	java.util.regex.Matcher m = p.matcher(rawCommitMessage);
