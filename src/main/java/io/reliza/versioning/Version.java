@@ -948,13 +948,24 @@ public class Version implements Comparable<Version> {
 			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
 			schemaSetWithoutNano.addAll(schemaVeList);
 			schemaSetWithoutNano.remove(VersionElement.NANO);
-			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
+			if (elsProtectedByPin.containsAll(schemaSetWithoutNano) 
 					 && schemaVeList.contains(VersionElement.NANO)) {
 				++v.nano;
 			} else {
-				v.simpleBump();
+				if (StringUtils.isEmpty(v.modifier)) {
+					v.setModifier("1");
+				} else if (isInteger(v.modifier)) {
+					Integer i = Integer.parseInt(v.modifier) + 1;
+					v.setModifier(i.toString());
+				} else {
+					v.simpleBump();
+				}
 			}
 		}
+	}
+
+	private static boolean isInteger(String s) {
+		return s.matches("\\d+");
 	}
 
 	/**
@@ -1001,9 +1012,9 @@ public class Version implements Comparable<Version> {
 				resolveDatesAsCurrentForNewVersion(v, schemaVeList.get(i), ae, oldV);
 			}
 		}
-		
+
 		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList);
-		
+
 		return v;
 	}
 	

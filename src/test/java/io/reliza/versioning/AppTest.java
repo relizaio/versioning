@@ -1087,7 +1087,8 @@ public class AppTest
 		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
-		@Test
+
+	@Test
 	void testParseVersion_BranchHyphenMicroMulti() {
 		String version = "foo-bar-1";
 		String schema = "branch-micro";
@@ -1098,4 +1099,28 @@ public class AppTest
 		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
+
+	@Test
+    public void testIdenticalSemverBumpViaModifier () {
+    	String schema = "semver";
+    	String oldVersion = "1.2.0-1";
+		String pin = "1.2.0-1";
+		ActionEnum action = ActionEnum.BUMP;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "1.2.0-2";
+		assertEquals(expectedV, actualV);
+    }
+
+	@Test
+    public void testIdenticalSemverBumpViaModifier2 () {
+    	String schema = "semver";
+    	String oldVersion = "1.2.3";
+		String pin = "1.2.3";
+		ActionEnum action = ActionEnum.BUMP_MAJOR;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "1.2.3-1";
+		assertEquals(expectedV, actualV);
+    }
 }
