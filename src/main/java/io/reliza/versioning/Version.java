@@ -804,6 +804,13 @@ public class Version implements Comparable<Version> {
 		v.isSnapshot = vh.isSnapshot();
 	}
 
+	/**
+	 * This method resolves per element version changes for updated versions
+	 * @param elsProtectedByPin
+	 * @param v
+	 * @param schemaElement
+	 * @param versionHelperElement
+	 */
 	private static void constructVersionElementForUpdatedElement (Set<VersionElement> elsProtectedByPin, 
 		Version v, VersionElement schemaElement, String versionHelperElement) {
 		switch (schemaElement) {
@@ -875,6 +882,82 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
+	 * This version handles per-element calver date updates for when the pin and schema elements are the same
+	 * @param v
+	 * @param schemaElement
+	 * @param ae
+	 * @param oldV
+	 */
+	private static void resolveDatesAsCurrentForNewVersion (Version v, VersionElement schemaElement,
+			ActionEnum ae, Version oldV) {
+		ZonedDateTime date = ZonedDateTime.now(ZoneId.of("UTC"));
+		switch (schemaElement) {
+		case YYYY:
+		case YY:
+		case OY:
+			if (ae != ActionEnum.BUMP_PATCH && null != v.year) v.year = date.getYear();
+			break;
+		case MM:
+		case OM:
+			if (ae != ActionEnum.BUMP_PATCH && null != v.month) v.month = date.getMonth().getValue();
+			break;
+		case DD:
+		case OD:
+			if (ae != ActionEnum.BUMP_PATCH && null != v.day) v.day = date.getDayOfMonth();
+			break;
+		case BRANCH:
+			v.branch = oldV.branch;
+		default:
+			break;
+		}
+	}
+
+	/** This method checks if we had any updated calver components on the new version - and if yes, resets semver components to 0.
+	 *  It also normalizes years, months and days for comparison.
+	 * @param v
+	 * @param elsProtectedByPin
+	 * @param ae
+	 * @param oldV
+	 * @param schemaVeList
+	 */
+	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
+		ActionEnum ae, Version oldV, List<VersionElement> schemaVeList) {
+		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
+			++v.patch;
+			v.nano = 0;
+		} else if (isCalverUpdated(v, oldV)) {
+			// calver update happened, reset semver if not pinned
+			if (!elsProtectedByPin.contains(VersionElement.MINOR)) v.minor = 0;
+			if (!elsProtectedByPin.contains(VersionElement.MAJOR)) v.major = 0;
+			if (!elsProtectedByPin.contains(VersionElement.PATCH)) v.patch = 0;
+			if (!elsProtectedByPin.contains(VersionElement.NANO)) v.nano = 0;
+		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
+			++v.major;
+			v.minor = 0;
+			v.patch = 0;
+			v.nano = 0;
+		} else if (ae == ActionEnum.BUMP_MINOR && !elsProtectedByPin.contains(VersionElement.MINOR)) {
+			++v.minor;
+			v.patch = 0;
+			v.nano = 0;
+		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
+			++v.patch;
+			v.nano = 0;
+		} else if ( (ae == null || ae == ActionEnum.BUMP) && oldV != null ) {
+			// if everything is pinned but nano, bump nano, else do simple bump if old version present
+			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
+			schemaSetWithoutNano.addAll(schemaVeList);
+			schemaSetWithoutNano.remove(VersionElement.NANO);
+			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
+					 && schemaVeList.contains(VersionElement.NANO)) {
+				++v.nano;
+			} else {
+				v.simpleBump();
+			}
+		}
+	}
+
+	/**
 	 * If oldVersionString is present and we're dealing with calver schema, this effectively does simple bump relative to old version date based on schema and pin
 	 * if it's semver schema and old version present, this will effectively return old version making sure it's matching schema and pin
 	 * if old version is not present, this will do simple bump relative to semver
@@ -915,64 +998,12 @@ public class Version implements Comparable<Version> {
 				v.modifier = Constants.BASE_MODIFIER;
 			} else {
 				// pin matches schema and we need to resolve dates as current if present
-				ZonedDateTime date = ZonedDateTime.now(ZoneId.of("UTC"));
-				switch (schemaVeList.get(i)) {
-				case YYYY:
-				case YY:
-				case OY:
-					if (ae != ActionEnum.BUMP_PATCH && null != v.year) v.year = date.getYear();
-					break;
-				case MM:
-				case OM:
-					if (ae != ActionEnum.BUMP_PATCH && null != v.month) v.month = date.getMonth().getValue();
-					break;
-				case DD:
-				case OD:
-					if (ae != ActionEnum.BUMP_PATCH && null != v.day) v.day = date.getDayOfMonth();
-					break;
-				case BRANCH:
-					v.branch = oldV.branch;
-				default:
-					break;
-				}
+				resolveDatesAsCurrentForNewVersion(v, schemaVeList.get(i), ae, oldV);
 			}
 		}
 		
-		// check if we had any updated calver components - and if yes, we reset semver components to 0
-		// normalize years, months and days for comparison
-		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
-			++v.patch;
-			v.nano = 0;
-		} else if (isCalverUpdated(v, oldV)) {
-			// calver update happened, reset semver if not pinned
-			if (!elsProtectedByPin.contains(VersionElement.MINOR)) v.minor = 0;
-			if (!elsProtectedByPin.contains(VersionElement.MAJOR)) v.major = 0;
-			if (!elsProtectedByPin.contains(VersionElement.PATCH)) v.patch = 0;
-			if (!elsProtectedByPin.contains(VersionElement.NANO)) v.nano = 0;
-		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
-			++v.major;
-			v.minor = 0;
-			v.patch = 0;
-			v.nano = 0;
-		} else if (ae == ActionEnum.BUMP_MINOR && !elsProtectedByPin.contains(VersionElement.MINOR)) {
-			++v.minor;
-			v.patch = 0;
-			v.nano = 0;
-		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
-			++v.patch;
-			v.nano = 0;
-		} else if ( (ae == null || ae == ActionEnum.BUMP) && oldV != null ) {
-			// if everything is pinned but nano, bump nano, else do simple bump if old version present
-			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
-			schemaSetWithoutNano.addAll(schemaVeList);
-			schemaSetWithoutNano.remove(VersionElement.NANO);
-			if ( elsProtectedByPin.containsAll(schemaSetWithoutNano) 
-					 && schemaVeList.contains(VersionElement.NANO)) {
-				++v.nano;
-			} else {
-				v.simpleBump();
-			}
-		}
+		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList);
+		
 		return v;
 	}
 	
