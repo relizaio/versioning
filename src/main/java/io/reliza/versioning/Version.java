@@ -768,7 +768,7 @@ public class Version implements Comparable<Version> {
 	 * @param ae
 	 * @return
 	 */
-	private static ActionEnum resolveNewVersionAction (List<VersionElement> schemaVeList, ActionEnum ae) {
+	private static ActionEnum resolveNewVersionAction (List<VersionElement> schemaVeList, ActionEnum ae, String oldVersionString) {
 		Set<String> veElementCheck = schemaVeList.stream().map(sv -> sv.toString()).collect(Collectors.toSet());
 		
 		if (ae == ActionEnum.BUMP_MAJOR && !veElementCheck.contains("MAJOR")) {
@@ -782,6 +782,8 @@ public class Version implements Comparable<Version> {
 		if (ae == ActionEnum.BUMP_PATCH && !veElementCheck.contains("MICRO") && !veElementCheck.contains("PATCH")) {
 			ae = ActionEnum.BUMP;
 		}
+		if (StringUtils.isNotEmpty(oldVersionString) && null == ae) ae = ActionEnum.BUMP;
+
 		return ae;
 	}
 
@@ -922,6 +924,7 @@ public class Version implements Comparable<Version> {
 	 */
 	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
 		ActionEnum ae, Version oldV, List<VersionElement> schemaVeList) {
+
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
@@ -943,7 +946,7 @@ public class Version implements Comparable<Version> {
 		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
-		} else if ( (ae == null || ae == ActionEnum.BUMP) && oldV != null ) {
+		} else if (oldV != null) {
 			// if everything is pinned but nano, bump nano, else do simple bump if old version present
 			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
 			schemaSetWithoutNano.addAll(schemaVeList);
@@ -988,7 +991,7 @@ public class Version implements Comparable<Version> {
 		if (StringUtils.isNotEmpty(oldVersionString)) oldV = Version.getVersion(oldVersionString, schema);
 		
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
-		ae = resolveNewVersionAction(schemaVeList, ae);
+		ae = resolveNewVersionAction(schemaVeList, ae, oldVersionString);
 		
 		if (Constants.SEMVER.equalsIgnoreCase(pin)) pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
 		initializeVersionElements(v, oldV, ae);

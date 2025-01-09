@@ -1059,7 +1059,7 @@ public class AppTest
     	System.out.println(v.constructVersionString());
 		v.setBranch("foo");
         assertEquals (testVersion, v.constructVersionString());
-		v = Version.getVersionFromPinAndOldVersion(testSchema, testVersion, testVersion, ActionEnum.BUMP);
+		v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, testVersion, ActionEnum.BUMP);
 		assertEquals("foo-1", v.constructVersionString());
         
     }
@@ -1071,12 +1071,12 @@ public class AppTest
     	System.out.println(v.constructVersionString());
 		v.setBranch("foo-bar");
         assertEquals (testVersion, v.constructVersionString());
-		v = Version.getVersionFromPinAndOldVersion(testSchema, testVersion, testVersion, ActionEnum.BUMP);
+		v = Version.getVersionFromPinAndOldVersion(testSchema, testSchema, testVersion, ActionEnum.BUMP);
 		assertEquals("foo-bar-1", v.constructVersionString());
         
     }
 
-		@Test
+	@Test
 	void testParseVersion_BranchHyphenMicro() {
 		String version = "foo-1";
 		String schema = "branch-micro";
