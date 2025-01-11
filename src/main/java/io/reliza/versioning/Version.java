@@ -971,15 +971,26 @@ public class Version implements Comparable<Version> {
 					 && schemaVeList.contains(VersionElement.NANO)) {
 				++v.nano;
 			} else {
-				if (StringUtils.isEmpty(v.modifier)) {
-					v.setModifier("1");
-				} else if (isInteger(v.modifier)) {
-					Integer i = Integer.parseInt(v.modifier) + 1;
-					v.setModifier(i.toString());
-				} else {
-					v.simpleBump();
-				}
+				resolveModifierMetadataUpdate(v, oldV);
 			}
+		}
+	}
+
+	private static void resolveModifierMetadataUpdate (Version v, Version oldV) {
+		if (StringUtils.isEmpty(v.modifier)) {
+			v.setModifier("1");
+		} else if (isInteger(v.modifier)) {
+			Integer i = Integer.parseInt(v.modifier) + 1;
+			v.setModifier(i.toString());
+		} else if (isInteger(oldV.metadata)) {
+			if (StringUtils.isEmpty(v.metadata) || !isInteger(v.metadata)) {
+				v.setMetadata("1");
+			} else {
+				Integer i = Integer.parseInt(v.metadata) + 1;
+				v.setMetadata(i.toString());
+			}
+		} else {
+			v.simpleBump();
 		}
 	}
 

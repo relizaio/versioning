@@ -1101,7 +1101,7 @@ public class AppTest
 	}
 
 	@Test
-    public void testIdenticalSemverBumpViaModifier () {
+    public void testIdenticalSemverBumpViaModifier1 () {
     	String schema = "semver";
     	String oldVersion = "1.2.0-1";
 		String pin = "1.2.0-1";
@@ -1121,6 +1121,30 @@ public class AppTest
 		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
 		String actualV = newV.constructVersionString();
 		String expectedV = "1.2.3-1";
+		assertEquals(expectedV, actualV);
+    }
+
+	@Test
+    public void testIdenticalSemverBumpViaModifier3 () {
+    	String schema = "semver";
+    	String oldVersion = "1.2.0-11";
+		String pin = "1.2.0-2";
+		ActionEnum action = ActionEnum.BUMP;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "1.2.0-12";
+		assertEquals(expectedV, actualV);
+    }
+
+	@Test
+    public void testIdenticalSemverBumpViaMetadata () {
+    	String schema = "semver";
+    	String oldVersion = "1.2.0-testfeature.1+49";
+		String pin = "1.2.0-testfeature.1+30";
+		ActionEnum action = ActionEnum.BUMP;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "1.2.0-testfeature.1+50";
 		assertEquals(expectedV, actualV);
     }
 }
