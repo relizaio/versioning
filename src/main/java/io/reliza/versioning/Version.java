@@ -571,6 +571,22 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
+	 * Get version modifier field
+	 * @return modifier
+	 */
+	public String  getModifier() {
+		return modifier;
+	}
+
+	/**
+	 * Get version metadata field
+	 * @return metadata
+	 */
+	public String  getMetadata() {
+		return metadata;
+	}
+
+	/**
 	 * Factory method to initialize version based on specified schema
 	 * @param schema String
 	 * @return Version object corresponding to the supplied schema
