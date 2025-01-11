@@ -150,20 +150,26 @@ public class VersionUtils {
 
 		String[] dashelHelper = null;
 		String[] dashel = null;
-		String splitRegex = "\\.";
 		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
 			dashelHelper = version.split("-");
 			if (dashelHelper.length > 2) {
-				// if there are no dots, then only split on the last dash
-				if (dashelHelper[dashelHelper.length - 1].contains(".")) {
-					// if there are dots after dashes then dashes are just part of the version - do
-					// nothing
-				} else {
+				dashel = new String[2];
+				if (dashInSchemaAfterBranch) {
+					System.out.println("in dash in schema after branch");
 					// just take the latest dash and split on that
-					dashel = new String[2];
 					dashel[1] = dashelHelper[dashelHelper.length - 1];
 					dashel[0] = version.replaceFirst("-" + dashel[1], "");
+					version = dashel[0];
+					System.out.println(version);
+				} else {
+					// split on the first dash
+					dashel[0] = dashelHelper[0];
+					Integer firstDashIndexToSplit = version.indexOf("-") + 1;
+					dashel[1] = version.substring(firstDashIndexToSplit, version.length());
+					System.out.println(dashel.toString());
+					version = dashelHelper[0];
 				}
+
 			} else if (!dashInSchemaAfterBranch){
 				// only one dash
 				dashel = dashelHelper;
@@ -171,16 +177,20 @@ public class VersionUtils {
 			}
 		}
 		
+		String splitRegex = "\\.";
 		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
 			splitRegex = "(\\.|_)";
 		}
 
-		if(version.contains("-") && handleBranchInVersion && dashInSchemaAfterBranch){
-			splitRegex = "(\\.|-)";
-		}
+		// if(version.contains("-") && handleBranchInVersion && dashInSchemaAfterBranch){
+		// 	splitRegex = "(\\.|-)";
+		// }
 		
+		System.out.println("version 185 = " + version + ", split regex =" + splitRegex);
+
 		List<String> versionComponents = Arrays.asList(version.split(splitRegex));
 		
+		if (StringUtils.isNotEmpty(schema)) schema = stripSchemaFromModMeta(schema);
 		// Alternative way to split version string into components. See
 		// VersionUtilsTest::testParseVersion_BranchWithVersionInName() for example that would fail with just above code
 		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_") || (handleBranchInVersion && dashInSchemaAfterBranch))) { // Only works if schema is of form VersionElement.VersoinElement...
@@ -192,6 +202,7 @@ public class VersionUtils {
 				splitRegex = splitRegex.replace("(", "(?:");
 			}
 			String separator = splitRegex;
+			System.out.println("ve list for schema proc = " + veList.toString());
 			for (VersionElement ve : veList) {
 				// Remove first and last characters from regex patter string (^ and $)
 				
@@ -211,7 +222,9 @@ public class VersionUtils {
 					schemaRegex += separator + "(?=" + veRegex + ")(" + veRegex + ")";
 				}
 			}
+			System.out.println("version components proc 1 = " + versionComponents.toString());
 			// Deconstruct version string using regex
+			System.out.println("schema regex post proc = " + schemaRegex);
 			Pattern pattern = Pattern.compile(schemaRegex);
 			Matcher matcher = pattern.matcher(version.toLowerCase());
 			// Extract groups from regex result and add to new version components collection
@@ -230,7 +243,7 @@ public class VersionUtils {
 				// No match, do not replace versionComponents.
 			}
 		}
-		
+		System.out.println("version components proc 2 = " + versionComponents.toString());
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
 		return new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
@@ -257,10 +270,13 @@ public class VersionUtils {
 		List<VersionElement> veList = parseSchema(schema);
 		List<String> versionComponents = vh.getVersionComponents();
 		String modifier = vh.getModifier();
+		System.out.println("ve list = " + veList.toString());
+		System.out.println("versionComponents = " + versionComponents.toString());
 		if(modifier != null && modifier != "" && versionComponents.contains(modifier) && versionComponents.size() > veList.size()){
 			versionComponents.remove(modifier);
 		}
-
+		System.out.println("versionComponents2 = " + versionComponents.toString());
+		System.out.println("velist size = " + veList.size() + ", version components size = " + versionComponents.size());
 		if (veList.size() != versionComponents.size()) {
 			matching = false;
 		}

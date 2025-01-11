@@ -1147,4 +1147,16 @@ public class AppTest
 		String expectedV = "1.2.0-testfeature.1+50";
 		assertEquals(expectedV, actualV);
     }
+
+	@Test
+    public void testIdenticalSemverBumpDashedBranchViaMetadata () {
+    	String schema = "semver";
+    	String oldVersion = "1.2.0-test-feature.1+49";
+		String pin = "1.2.0-test-feature.1+30";
+		ActionEnum action = ActionEnum.BUMP;
+		Version newV = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, action);
+		String actualV = newV.constructVersionString();
+		String expectedV = "1.2.0-test-feature.1+50";
+		assertEquals(expectedV, actualV);
+    }
 }
