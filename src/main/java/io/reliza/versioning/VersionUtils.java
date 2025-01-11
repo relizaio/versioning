@@ -149,9 +149,9 @@ public class VersionUtils {
 			    plusel[0] = version.replaceFirst("+" + plusel[1], "");
 			}
 		    } else {
-			// only one plus
-			plusel = pluselHelper;
-			version = plusel[0];
+				// only one plus
+				plusel = pluselHelper;
+				version = plusel[0];
 		    }
 		}
 
@@ -160,7 +160,6 @@ public class VersionUtils {
 		String splitRegex = "\\.";
 		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
 			dashelHelper = version.split("-");
-			// if more than one dash raise an error
 			if (dashelHelper.length > 2) {
 				// if there are no dots, then only split on the last dash
 				if (dashelHelper[dashelHelper.length - 1].contains(".")) {
@@ -307,7 +306,7 @@ public class VersionUtils {
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
 		List<VersionElement> veList = parseSchema(schema);
-		
+
 		if (veList.size() != vh.getVersionComponents().size()) {
 			matching = false;
 		}
