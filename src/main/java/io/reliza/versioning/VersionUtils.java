@@ -116,6 +116,10 @@ public class VersionUtils {
 		return parseVersion(version, null);
 	}
 
+
+	private static void handleVersionPlusElement () {
+
+	}
 	/**
 	 * This method parses version string into VersionHelper based on provided schema
 	 * The need for schema arises where version elements need to include special characters themselves, such as dashes, periods or underscores
@@ -137,22 +141,11 @@ public class VersionUtils {
 		String[] plusel = null;
 		if (version.contains("+") && !handleBranchInVersion) {
 		    pluselHelper = version.split("\\+");
-		    // if more than one plus raise an error
-		    if (pluselHelper.length > 2) {
-			// if there are no dots, then only split on the last plus
-			if (pluselHelper[pluselHelper.length - 1].contains(".")) {
-			    // if there are dots after dashes then dashes are just part of the version - do nothing
-			} else {
-			    // just take the latest plus and split on that
-			    plusel = new String[2];
-			    plusel[1] = pluselHelper[pluselHelper.length - 1];
-			    plusel[0] = version.replaceFirst("+" + plusel[1], "");
-			}
-		    } else {
-				// only one plus
-				plusel = pluselHelper;
-				version = plusel[0];
-		    }
+			plusel = new String[2];
+			Integer firstPlusIndexToSplit = version.indexOf("+") + 1;
+			plusel[1] = version.substring(firstPlusIndexToSplit, version.length());
+			version = pluselHelper[0];
+			plusel[0] = pluselHelper[0];
 		}
 
 		String[] dashelHelper = null;
@@ -290,6 +283,8 @@ public class VersionUtils {
 	 * @return true if pin is matching schema, false otherwise
 	 */
 	public static boolean isPinMatchingSchema (String schema, String pin) {
+		System.out.println("schema = " + schema);
+		System.out.println("pin = " + pin);
 		boolean matching = true;
 
 		// handle semver as schema name
@@ -302,6 +297,9 @@ public class VersionUtils {
 		}
 		
 		VersionHelper vh = parseVersion(pin, schema);
+
+		System.out.println(vh.getVersionComponents().toString());
+		System.out.println(vh.getModifier());
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
