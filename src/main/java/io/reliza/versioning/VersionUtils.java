@@ -117,9 +117,102 @@ public class VersionUtils {
 	}
 
 
-	private static void handleVersionPlusElement () {
-
+	private static class PlusDashElHelper {
+		private String version;
+		private String[] elHelper = new String[2];
+		private boolean isFulfilled = false;
 	}
+
+	/**
+	 * This method handles pluses in version string when parsing version
+	 * @param version
+	 * @param handleBranchInVersion
+	 * @return
+	 */
+	private static PlusDashElHelper handlePlusesInVersion (String version, boolean handleBranchInVersion) {
+		PlusDashElHelper pdeh = new PlusDashElHelper();
+		String[] pluselHelper = null;
+		if (version.contains("+") && !handleBranchInVersion) {
+		    pluselHelper = version.split("\\+");
+			Integer firstPlusIndexToSplit = version.indexOf("+") + 1;
+			pdeh.elHelper[1] = version.substring(firstPlusIndexToSplit, version.length());
+			pdeh.version = pluselHelper[0];
+			pdeh.elHelper[0] = pluselHelper[0];
+			pdeh.isFulfilled = true;
+		}
+		return pdeh;
+	}
+
+	private static PlusDashElHelper handleDashesInVersion (String version, boolean handleBranchInVersion,
+			boolean dashInSchemaAfterBranch, String schema) {
+		PlusDashElHelper pdeh = new PlusDashElHelper();
+		String[] dashelHelper = null;
+		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
+			dashelHelper = version.split("-");
+			if (dashelHelper.length > 2) {
+				if (dashInSchemaAfterBranch) {
+					List<VersionElement> schemaElList = (ArrayList<VersionElement>) parseSchema(schema);
+					if (schemaElList.contains(VersionElement.CALVER_MODIFIER) || schemaElList.contains(VersionElement.SEMVER_MODIFIER)) {
+						// just take the latest dash and split on that
+						pdeh.elHelper[1] = dashelHelper[dashelHelper.length - 1];
+						pdeh.elHelper[0] = version.replaceFirst("-" + pdeh.elHelper[1], "");
+						pdeh.version = pdeh.elHelper[0];
+						pdeh.isFulfilled = true;
+					}
+				} else {
+					// split on the first dash
+					pdeh.elHelper[0] = dashelHelper[0];
+					Integer firstDashIndexToSplit = version.indexOf("-") + 1;
+					pdeh.elHelper[1] = version.substring(firstDashIndexToSplit, version.length());
+					pdeh.version = dashelHelper[0];
+					pdeh.isFulfilled = true;
+				}
+
+			} else if (!dashInSchemaAfterBranch){
+				// only one dash
+				pdeh.elHelper = dashelHelper;
+				pdeh.version = dashelHelper[0];
+				pdeh.isFulfilled = true;
+			}
+		}
+		return pdeh;
+	}
+
+	/**
+	 * This method creates regex to split version string into parts based on schema.
+	 * @param schema
+	 * @param splitRegex
+	 * @return
+	 */
+	private static String constructSchemaRegexFromSchema (String schema, String splitRegex) {
+		String schemaRegex = "";
+		ArrayList<VersionElement> veList = (ArrayList<VersionElement>) parseSchema(schema);
+		// Make sure splitRegex is not a capturing group
+		if (splitRegex.startsWith("(")) {
+			splitRegex = splitRegex.replace("(", "(?:");
+		}
+		String separator = splitRegex;
+		for (VersionElement ve : veList) {
+			// Remove first and last characters from regex patter string (^ and $)
+			String veRegex = ve.getRegexPattern().pattern().substring(1, ve.getRegexPattern().pattern().length()-1);
+			Set<String> pinElement = ve.getNamingInSchema();
+			String pinRegex = pinElement.stream().reduce("", (partialString, element) -> partialString + "|" + element);
+			veRegex = veRegex + pinRegex;
+			// If version element regex has capturing groups -> make non capture groups so they do not interfere
+			if (veRegex.startsWith("(")) {
+				veRegex = veRegex.replace("(", "(?:");
+			}
+			// Construct total schema regex from individual version element regex's
+			if (schemaRegex.equals("")) { // first
+				schemaRegex += "(" + veRegex + ")";
+			} else {
+				separator = ve.getSeparator()=="" ? splitRegex : "(?:\\" + ve.getSeparator() + ")";
+				schemaRegex += separator + "(?=" + veRegex + ")(" + veRegex + ")";
+			}
+		}
+		return schemaRegex;
+	}
+
 	/**
 	 * This method parses version string into VersionHelper based on provided schema
 	 * The need for schema arises where version elements need to include special characters themselves, such as dashes, periods or underscores
@@ -138,44 +231,19 @@ public class VersionUtils {
 			version = version.replaceFirst(Constants.MAVEN_STYLE_SNAPSHOT + "$", "");
 		}
 		// handle + and - differently as semver supports other separators after plus and dash
-		String[] pluselHelper = null;
 		String[] plusel = null;
-		if (version.contains("+") && !handleBranchInVersion) {
-		    pluselHelper = version.split("\\+");
-			plusel = new String[2];
-			Integer firstPlusIndexToSplit = version.indexOf("+") + 1;
-			plusel[1] = version.substring(firstPlusIndexToSplit, version.length());
-			version = pluselHelper[0];
-			plusel[0] = pluselHelper[0];
+		PlusDashElHelper plusElHelper = handlePlusesInVersion(version, handleBranchInVersion);
+		if (plusElHelper.isFulfilled) {
+			plusel = plusElHelper.elHelper;
+			version = plusElHelper.version;
 		}
 
-		String[] dashelHelper = null;
 		String[] dashel = null;
-		if (version.contains("-") && (!handleBranchInVersion || dashInSchemaAfterBranch)) {
-			dashelHelper = version.split("-");
-			if (dashelHelper.length > 2) {
-				dashel = new String[2];
-				if (dashInSchemaAfterBranch) {
-					List<VersionElement> schemaElList = (ArrayList<VersionElement>) parseSchema(schema);
-					if (schemaElList.contains(VersionElement.CALVER_MODIFIER) || schemaElList.contains(VersionElement.SEMVER_MODIFIER)) {
-						// just take the latest dash and split on that
-						dashel[1] = dashelHelper[dashelHelper.length - 1];
-						dashel[0] = version.replaceFirst("-" + dashel[1], "");
-						version = dashel[0];
-					}
-				} else {
-					// split on the first dash
-					dashel[0] = dashelHelper[0];
-					Integer firstDashIndexToSplit = version.indexOf("-") + 1;
-					dashel[1] = version.substring(firstDashIndexToSplit, version.length());
-					version = dashelHelper[0];
-				}
-
-			} else if (!dashInSchemaAfterBranch){
-				// only one dash
-				dashel = dashelHelper;
-				version = dashel[0];
-			}
+		PlusDashElHelper dashElHelper = handleDashesInVersion(version, handleBranchInVersion,
+			dashInSchemaAfterBranch, schema);
+		if (dashElHelper.isFulfilled) {
+			dashel = dashElHelper.elHelper;
+			version = dashElHelper.version;
 		}
 		
 		String splitRegex = "\\.";
@@ -189,33 +257,7 @@ public class VersionUtils {
 		// Alternative way to split version string into components. See
 		// VersionUtilsTest::testParseVersion_BranchWithVersionInName() for example that would fail with just above code
 		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_") || (handleBranchInVersion && dashInSchemaAfterBranch))) { // Only works if schema is of form VersionElement.VersoinElement...
-			// Create regex to split version string into parts based on schema
-			String schemaRegex = "";
-			ArrayList<VersionElement> veList = (ArrayList<VersionElement>) parseSchema(schema);
-			// Make sure splitRegex is not a capturing group
-			if (splitRegex.startsWith("(")) {
-				splitRegex = splitRegex.replace("(", "(?:");
-			}
-			String separator = splitRegex;
-			for (VersionElement ve : veList) {
-				// Remove first and last characters from regex patter string (^ and $)
-				
-				String veRegex = ve.getRegexPattern().pattern().substring(1, ve.getRegexPattern().pattern().length()-1);
-				Set<String> pinElement = ve.getNamingInSchema();
-				String pinRegex = pinElement.stream().reduce("", (partialString, element) -> partialString + "|" + element);
-				veRegex = veRegex + pinRegex;
-				// If version element regex has capturing groups -> make non capture groups so they do not interfere
-				if (veRegex.startsWith("(")) {
-					veRegex = veRegex.replace("(", "(?:");
-				}
-				// Construct total schema regex from individual version element regex's
-				if (schemaRegex.equals("")) { // first
-					schemaRegex += "(" + veRegex + ")";
-				} else {
-					separator = ve.getSeparator()=="" ? splitRegex : "(?:\\" + ve.getSeparator() + ")";
-					schemaRegex += separator + "(?=" + veRegex + ")(" + veRegex + ")";
-				}
-			}
+			String schemaRegex = constructSchemaRegexFromSchema(schema, splitRegex);
 			// Deconstruct version string using regex
 			Pattern pattern = Pattern.compile(schemaRegex);
 			Matcher matcher = pattern.matcher(version.toLowerCase());
@@ -225,11 +267,9 @@ public class VersionUtils {
 				versionComponents = new ArrayList<String>();
 				// get elements of version from results to versionComponents.
 				for (int i = 1; i <= matcher.groupCount(); i++) {
-					
 					if(splitVersionComponents.size() >= i && splitVersionComponents.get(i-1).toLowerCase().equals(matcher.group(i)))
 						versionComponents.add(splitVersionComponents.get(i-1));
-					else
-						versionComponents.add(matcher.group(i));
+					else versionComponents.add(matcher.group(i));
 				}
 			} else {
 				// No match, do not replace versionComponents.
