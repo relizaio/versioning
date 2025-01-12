@@ -738,9 +738,9 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("2020");
 		versionComponentsExpected.add("test-branch-go");
-		versionComponentsExpected.add("mymodifier");
 		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
+		assertEquals("mymodifier", vh.getModifier());
 	}
     
     @Test

@@ -129,7 +129,8 @@ public class VersionUtils {
 	 */
 	public static VersionHelper parseVersion (String version, String schema) {
 		boolean handleBranchInVersion = (StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase())) || (StringUtils.isNotEmpty(version) && version.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase()));
-		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") && schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
+		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") 
+			&& schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
 		// check special case for Maven-style Snapshot
 		boolean isSnapshot = false;
 		if (version.endsWith(Constants.MAVEN_STYLE_SNAPSHOT)) {
@@ -155,12 +156,15 @@ public class VersionUtils {
 			if (dashelHelper.length > 2) {
 				dashel = new String[2];
 				if (dashInSchemaAfterBranch) {
-					System.out.println("in dash in schema after branch");
-					// just take the latest dash and split on that
-					dashel[1] = dashelHelper[dashelHelper.length - 1];
-					dashel[0] = version.replaceFirst("-" + dashel[1], "");
-					version = dashel[0];
-					System.out.println(version);
+					List<VersionElement> schemaElList = (ArrayList<VersionElement>) parseSchema(schema);
+					if (schemaElList.contains(VersionElement.CALVER_MODIFIER) || schemaElList.contains(VersionElement.SEMVER_MODIFIER)) {
+						System.out.println("in dash in schema after branch");
+						// just take the latest dash and split on that
+						dashel[1] = dashelHelper[dashelHelper.length - 1];
+						dashel[0] = version.replaceFirst("-" + dashel[1], "");
+						version = dashel[0];
+						System.out.println(version);
+					}
 				} else {
 					// split on the first dash
 					dashel[0] = dashelHelper[0];
