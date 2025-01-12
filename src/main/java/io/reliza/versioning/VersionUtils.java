@@ -143,6 +143,14 @@ public class VersionUtils {
 		return pdeh;
 	}
 
+	/**
+	 * This method handles dashes in version string when parsing version
+	 * @param version
+	 * @param handleBranchInVersion
+	 * @param dashInSchemaAfterBranch
+	 * @param schema
+	 * @return
+	 */
 	private static PlusDashElHelper handleDashesInVersion (String version, boolean handleBranchInVersion,
 			boolean dashInSchemaAfterBranch, String schema) {
 		PlusDashElHelper pdeh = new PlusDashElHelper();
