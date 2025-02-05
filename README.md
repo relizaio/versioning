@@ -134,6 +134,12 @@ Using gralde:
 ```
 gradle test
 ```
+
+Run a single test:
+```
+gradle test --tests '*bumpCalverVersionWithPin3*' --info
+```
+
 ## 4. Usage as Java Library
 Use methods exposed in the VersionApi class to create vresions. More documentation is coming soon.
 
