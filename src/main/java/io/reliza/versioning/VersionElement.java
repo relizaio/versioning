@@ -1,14 +1,12 @@
 /**
-* Copyright 2019 - 2020 Reliza Incorporated. Licensed under MIT License.
+* Copyright 2019 - 2025 Reliza Incorporated. Licensed under MIT License.
 * https://reliza.io
 */
 
 package io.reliza.versioning;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -21,118 +19,30 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum VersionElement {
 
-	/**
-	 * Version Element type Major
-	 */
-	MAJOR(new HashSet<String>(Arrays.asList(new String[] {"major"})), "^\\d+$"),
-
-
-	/**
-	 * Version Element type MINOR
-	 */
-	MINOR(new HashSet<String>(Arrays.asList(new String[] {"minor"})), "^\\d+$"),
-
-
-	/**
-	 * Version Element type PATCH
-	 */
-	PATCH(new HashSet<String>(Arrays.asList(new String[] {"micro", "patch"})), "^\\d+$"),
-
-
-	/**
-	 * Version Element type NANO
-	 */
-	NANO(new HashSet<String>(Arrays.asList(new String[] {"nano"})), "^\\d+$"),
-
-
-	/**
-	 * Version Element type SEMVER_MODIFIER
-	 */
-	SEMVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"modifier", "identifier", "mod", "ident", "id"})), "^[a-zA-Z0-9]+$"),
-
-
-	/**
-	 * Version Element type CALVER_MODIFIER
-	 */
-	CALVER_MODIFIER(new HashSet<String>(Arrays.asList(new String[] {"calvermodifier", "calvermod", "calverid", "stable"})), "^[a-zA-Z0-9]+$"),
-
-
-	/**
-	 * Version Element type METADATA
-	 */
-	METADATA(new HashSet<String>(Arrays.asList(new String[] {"meta", "metadata"})), "^[a-zA-Z0-9]+$"),
-
-
-	/**
-	 * Version Element type YYYY
-	 */
-	YYYY(new HashSet<String>(Arrays.asList(new String[] {"year", "yyyy"})), "^[12][0-9]{3}$"),
-
-
-	/**
-	 * Version Element type YYYYOM
-	 */
-	YYYYOM(new HashSet<String>(Arrays.asList(new String[] {"yyyy0m", "yyyyom"})), "^[12][0-9]{3}(?:1[0-2]|0[1-9])$"),
-
-
-	/**
-	 * Version Element type YYOM
-	 */
-	YYOM(new HashSet<String>(Arrays.asList(new String[] {"yy0m", "yyom"})), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$"),
-
-
-	/**
-	 * Version Element type YY
-	 */
-	YY(new HashSet<String>(Arrays.asList(new String[] {"yy"})), "^([1-9][0-9]|[1-9])?[0-9]$"),
-
-
-	/**
-	 * Version Element type OY
-	 */
-	OY(new HashSet<String>(Arrays.asList(new String[] {"oy", "0y"})), "^([0-9])?[0-9]{2}$"),
-
-
-	/**
-	 * Version Element type MM
-	 */
-	MM(new HashSet<String>(Arrays.asList(new String[] {"mm", "month"})), "^(1[0-2]|[1-9])$"),
-
-
-	/**
-	 * Version Element type OM
-	 */
-	OM(new HashSet<String>(Arrays.asList(new String[] {"om", "0m"})), "^(1[0-2]|0[1-9])$"),
-
-
-	/**
-	 * Version Element type DD
-	 */
-	DD(new HashSet<String>(Arrays.asList(new String[] {"dd", "day"})), "^(3[01]|[12][0-9]|[1-9])$"),
-
-
-	/**
-	 * Version Element type OD
-	 */
-	OD(new HashSet<String>(Arrays.asList(new String[] {"od", "0d"})), "^(3[01]|[0-2][0-9])$"),
-
-
-	/**
-	 * Version Element type BUILDID
-	 */
-	BUILDID(new HashSet<String>(Arrays.asList(new String[] {"build", "buildid", "cibuildid", "cibuild"})), "^[a-zA-Z0-9]+$"),
-
-
-	/**
-	 * Version Element type BUILDENV
-	 */
-	BUILDENV(new HashSet<String>(Arrays.asList(new String[] {"cienv", "buildenv", "cibuildenv"})), "^[a-zA-Z0-9]+$"),
-
-
-	/**
-	 * Version Element type BRANCH
-	 */
-	BRANCH(new HashSet<String>(Arrays.asList(new String[] {"Branch", "branch", "branchName", "branchname"})), "^[-./_a-zA-Z0-9\\:]+$")
+	MAJOR(Set.of("major"), "^\\d+$"),
+	MINOR(Set.of("minor"), "^\\d+$"),
+	PATCH(Set.of("micro", "patch"), "^\\d+$"),
+	NANO(Set.of("nano"), "^\\d+$"),
+	SEMVER_MODIFIER(Set.of("modifier", "identifier", "mod", "ident", "id"), "^[a-zA-Z0-9]+$"),
+	CALVER_MODIFIER(Set.of("calvermodifier", "calvermod", "calverid", "stable"), "^[a-zA-Z0-9]+$"),
+	METADATA(Set.of("meta", "metadata"), "^[a-zA-Z0-9]+$"),
+	YYYY(Set.of("year", "yyyy"), "^[12][0-9]{3}$"),
+	YYYYOM(Set.of("yyyy0m", "yyyyom"), "^[12][0-9]{3}(?:1[0-2]|0[1-9])$"),
+    YYOM(Set.of("yy0m", "yyom"), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$"),
+    YY(Set.of("yy"), "^([1-9][0-9]|[1-9])?[0-9]$"),
+    OY(Set.of("oy", "0y"), "^([0-9])?[0-9]{2}$"),
+    MM(Set.of("mm", "month"), "^(1[0-2]|[1-9])$"),
+    OM(Set.of("om", "0m"), "^(1[0-2]|0[1-9])$"),
+    DD(Set.of("dd", "day"), "^(3[01]|[12][0-9]|[1-9])$"),
+    OD(Set.of("od", "0d"), "^(3[01]|[0-2][0-9])$"),
+    BUILDID(Set.of("build", "buildid", "cibuildid", "cibuild"), "^[a-zA-Z0-9]+$"),
+    BUILDENV(Set.of("cienv", "buildenv", "cibuildenv"), "^[a-zA-Z0-9]+$"),
+    BRANCH(Set.of("Branch", "branch", "branchName", "branchname"), "^[-./_a-zA-Z0-9\\:]+$")
+//	DOT_SEPARATOR(Set.of("."), "^\\.$"),
+//	UNDERSCORE_SEPARATOR(Set.of("_"), "^_$"),
+//	DASH_SEPARATOR(Set.of("-"), "^\\-$"),
+//	COLON_SEPARATOR(Set.of(":"), "^:$"),
+//	PLUS_SEPARATOR(Set.of("+"), "^\\+$")
 	;
 	
 	private Set<String> namingInSchema;
@@ -187,7 +97,7 @@ public enum VersionElement {
 	public Pattern getRegexPattern () {
 		return this.regex;
 	}
-
+	
 	/**
 	 * get seprator of this element
 	 * @return seprator string

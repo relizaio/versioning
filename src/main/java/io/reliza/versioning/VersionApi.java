@@ -1,5 +1,5 @@
 /**
-* Copyright 2019 Reliza Incorporated. Licensed under MIT License.
+* Copyright 2019-2025 Reliza Incorporated. Licensed under MIT License.
 * https://reliza.io
 */
 
@@ -217,7 +217,7 @@ public class VersionApi {
 	 * @return Version object as initialized
 	 */
 	public static Version initializeSemVerVersion (String version) {
-		VersionApiObject vao = createVao(Constants.SEMVER);
+		VersionApiObject vao = createVao(VersionType.SEMVER_FULL_NOTATION.getSchema());
 		vao.setVersion(version);
 		return initializeVersion(vao);
 	}

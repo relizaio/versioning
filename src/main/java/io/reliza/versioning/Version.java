@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,13 +25,15 @@ import io.reliza.versioning.VersionApi.ActionEnum;
  */
 public class Version implements Comparable<Version> {
 	
+	public static record VersionComponent (VersionElement ve, String representation) {}
+	
 	/**
 	 * 
 	 * This class is used as a helper to parse version string
 	 *
 	 */
 	public static class VersionHelper {
-		private List<String> versionComponents;
+		private List<VersionComponent> versionComponents;
 		private String modifier;
 		private String metadata;
 		private boolean isSnapshot = false;
@@ -42,7 +45,7 @@ public class Version implements Comparable<Version> {
 		 * @param metadata String
 		 * @param isSnapshot boolean, true if this is maven-style snapshot
 		 */
-		public VersionHelper(Collection<String> versionComponents, String modifier, 
+		public VersionHelper(Collection<VersionComponent> versionComponents, String modifier, 
 												String metadata, boolean isSnapshot) {
 			this.versionComponents = new ArrayList<>(versionComponents);
 			this.modifier = modifier;
@@ -54,7 +57,7 @@ public class Version implements Comparable<Version> {
 		 * Returns list of version components used in the Versionelper
 		 * @return list of version components
 		 */
-		public List<String> getVersionComponents() {
+		public List<VersionComponent> getVersionComponents() {
 			return new ArrayList<>(versionComponents);
 		}
 		
@@ -97,6 +100,7 @@ public class Version implements Comparable<Version> {
 	private String buildenv; // i.e. circleci
 	private String branch; // name of branch, i.e. 234-ticket_I_work_on
 	private boolean isSnapshot;
+	private VersionType versionType;
 	
 	/**
 	 * Private constructor to denote uninitializable class
@@ -128,9 +132,9 @@ public class Version implements Comparable<Version> {
 		}
 		StringBuilder versionString = new StringBuilder();
 		
-		if (Constants.SEMVER.equalsIgnoreCase(useSchema)) {
-			useSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(useSchema);
+		if (ovt.isPresent()) useSchema = ovt.get().getSchema();
+
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(useSchema);
 		List<String> separators = VersionUtils.extractSchemaSeparators(useSchema);
 		try {
@@ -631,61 +635,60 @@ public class Version implements Comparable<Version> {
 	 */
 	public static Version getVersion (String origVersion, String schema) {
 		if (!VersionUtils.isVersionMatchingSchema(schema, origVersion)) {
-			throw new RuntimeException("Cannot construct Version object, since version is not matching schema");
+			throw new RuntimeException("Cannot construct Version object, since version is not matching schema, schema = " + schema + " , version = " + origVersion);
 		}
 		Version v = new Version();
 		v.schema = schema;
 		schema = VersionUtils.stripSchemaFromModMeta(schema);
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = "Major.Minor.Patch";
-		}
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		VersionHelper vh = VersionUtils.parseVersion(origVersion, schema);
 		v.modifier = vh.getModifier();
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
-		for (int i=0; i<schemaVeList.size(); i++) {
-			switch (schemaVeList.get(i)) {
+		for (VersionComponent vc : vh.getVersionComponents()) {
+			switch (vc.ve()) {
 			case MAJOR:
-				v.major = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.major = Integer.parseInt(vc.representation());
 				break;
 			case MINOR:
-				v.minor = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.minor = Integer.parseInt(vc.representation());
 				break;
 			case PATCH:
-				v.patch = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.patch = Integer.parseInt(vc.representation());
 				break;
 			case NANO:
-				v.nano = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.nano = Integer.parseInt(vc.representation());
 				break;
 			case SEMVER_MODIFIER:
 			case CALVER_MODIFIER:
-				v.modifier = vh.getVersionComponents().get(i);
+				v.modifier = vc.representation();
 				if (null == v.modifier) {
 					v.modifier = Constants.BASE_MODIFIER;
 				}
 				break;
 			case METADATA:
-				v.metadata = vh.getVersionComponents().get(i);
+				v.metadata = vc.representation();
 				break;
 			case YYYY:
 			case YY:
 			case OY:
-				v.year = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.year = Integer.parseInt(vc.representation());
 				break;
 			case MM:
 			case OM:
-				v.month = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.month = Integer.parseInt(vc.representation());
 				break;
 			case YYOM:
-				String compToParse = vh.getVersionComponents().get(i);
+				String compToParse = vc.representation();
 				String yearPart = compToParse.substring(0, 2);
 				String monthPart = compToParse.substring(2);
 				v.year = Integer.parseInt(yearPart);
 				v.month = Integer.parseInt(monthPart);
 				break;
 			case YYYYOM:
-				compToParse = vh.getVersionComponents().get(i);
+				compToParse = vc.representation();
 				yearPart = compToParse.substring(0, 4);
 				monthPart = compToParse.substring(4);
 				v.year = Integer.parseInt(yearPart);
@@ -693,16 +696,16 @@ public class Version implements Comparable<Version> {
 				break;
 			case DD:
 			case OD:
-				v.day = Integer.parseInt(vh.getVersionComponents().get(i));
+				v.day = Integer.parseInt(vc.representation());
 				break;
 			case BUILDID:
-				v.buildid = vh.getVersionComponents().get(i);
+				v.buildid = vc.representation();
 				break;
 			case BUILDENV:
-				v.buildenv = vh.getVersionComponents().get(i);
+				v.buildenv = vc.representation();
 				break;
 			case BRANCH:
-				v.branch = vh.getVersionComponents().get(i);
+				v.branch = vc.representation();
 				break;
 			default:
 				break;
@@ -1013,14 +1016,17 @@ public class Version implements Comparable<Version> {
 		Version v = new Version();
 		v.schema = schema;
 		schema = VersionUtils.stripSchemaFromModMeta(schema);
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		Version oldV = null;
 		if (StringUtils.isNotEmpty(oldVersionString)) oldV = Version.getVersion(oldVersionString, schema);
 		
 		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
 		ae = resolveNewVersionAction(schemaVeList, ae, oldVersionString);
 		
-		if (Constants.SEMVER.equalsIgnoreCase(pin)) pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
+		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
+		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
+
 		initializeVersionElements(v, oldV, ae);
 		populateNewVersionFromPin(v, oldVersionString, schema, pin);
 
@@ -1031,10 +1037,10 @@ public class Version implements Comparable<Version> {
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even though dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<schemaVeList.size(); i++) {
-			VersionElement parsedVe = VersionElement.getVersionElement(vh.getVersionComponents().get(i));
+			VersionElement parsedVe = vh.getVersionComponents().get(i).ve();
 			if (parsedVe != schemaVeList.get(i)) {
 				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
-					vh.getVersionComponents().get(i));
+					vh.getVersionComponents().get(i).representation);
 			} else if (schemaVeList.get(i) == VersionElement.CALVER_MODIFIER) {
 				v.modifier = Constants.BASE_MODIFIER;
 			} else {

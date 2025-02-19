@@ -490,7 +490,7 @@ public class AppTest
     public void versionComparison2semver() {
     	String version1 = "2.3.5";
     	String version2 = "2.7.10";
-    	String schema = Constants.SEMVER;
+    	String schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
     	List<Version> vList = new LinkedList<>();
@@ -518,7 +518,7 @@ public class AppTest
     public void versionStringComparator1Semver() {
     	String version1 = "2.3.25";
     	String version2 = "2.3.7";
-    	String schema = Constants.SEMVER;
+    	String schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
@@ -739,7 +739,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("2020");
 		versionComponentsExpected.add("test-branch-go");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 		assertEquals("mymodifier", vh.getModifier());
 	}
@@ -1085,7 +1085,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo");
 		versionComponentsExpected.add("1");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 
@@ -1097,7 +1097,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo-bar");
 		versionComponentsExpected.add("1");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents();
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 

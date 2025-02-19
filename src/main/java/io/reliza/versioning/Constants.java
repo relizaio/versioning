@@ -14,11 +14,6 @@ package io.reliza.versioning;
 public class Constants {
 	
 	private Constants () {}
-	
-	/**
-	 * semver
-	 */
-	public static final String SEMVER = "semver";
 
 	/**
 	 * base modifier

@@ -8,14 +8,17 @@ package io.reliza.versioning;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.reliza.versioning.Version.VersionComponent;
 import io.reliza.versioning.Version.VersionHelper;
 
 /**
@@ -35,18 +38,18 @@ public class VersionUtils {
 	 * @return list of VersionElement
 	 */
 	public static List<VersionElement> parseSchema (String schema) {
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		List<VersionElement> retList = new ArrayList<>();
 		// split schema to elements
-		String[] strElements = schema.split("(?=\\+|-|_|\\.)");
+		String[] strElements = schema.split("(\\+|:|-|_|\\.)");
 		int i = 0;
+		int charIndex = 0;
 		for (String el : strElements) {
 			String separator = "";
-			if(i>0){
-				separator = el.substring(0, 1);
-				el = el.substring(1);
+			if (i < strElements.length - 1) {
+				separator = schema.substring(charIndex + el.length(), charIndex + el.length() + 1);
+				charIndex += el.length() + 1;
 			}
 			VersionElement ve = VersionElement.getVersionElement(el);
 			
@@ -66,9 +69,9 @@ public class VersionUtils {
 	 * @return list of VersionElement
 	 */
 	public static List<VersionElement> parsePin (String pin) {
-		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
-			pin = VersionType.SEMVER_FULL_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
+		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
+
 		List<VersionElement> retList = new ArrayList<>();
 		// split schema to elements
 		String[] strElements = pin.split("(?=\\+|-|_|\\.)");
@@ -254,35 +257,25 @@ public class VersionUtils {
 			version = dashElHelper.version;
 		}
 		
-		String splitRegex = "\\.";
-		if (StringUtils.isEmpty(schema) || !handleBranchInVersion) {
-			splitRegex = "(\\.|_)";
-		}
-
-		List<String> versionComponents = Arrays.asList(version.split(splitRegex));
-		
-		if (StringUtils.isNotEmpty(schema)) schema = stripSchemaFromModMeta(schema);
-		// Alternative way to split version string into components. See
-		// VersionUtilsTest::testParseVersion_BranchWithVersionInName() for example that would fail with just above code
-		if (StringUtils.isNotEmpty(schema) && (schema.contains(".") || schema.contains("_") || (handleBranchInVersion && dashInSchemaAfterBranch))) { // Only works if schema is of form VersionElement.VersoinElement...
-			String schemaRegex = constructSchemaRegexFromSchema(schema, splitRegex);
-			// Deconstruct version string using regex
-			Pattern pattern = Pattern.compile(schemaRegex);
-			Matcher matcher = pattern.matcher(version.toLowerCase());
-			// Extract groups from regex result and add to new version components collection
-			if (matcher.matches()) {
-				List<String> splitVersionComponents = versionComponents;
-				versionComponents = new ArrayList<String>();
-				// get elements of version from results to versionComponents.
-				for (int i = 1; i <= matcher.groupCount(); i++) {
-					if(splitVersionComponents.size() >= i && splitVersionComponents.get(i-1).toLowerCase().equals(matcher.group(i)))
-						versionComponents.add(splitVersionComponents.get(i-1));
-					else versionComponents.add(matcher.group(i));
-				}
+		List<VersionElement> schemaEls = parseSchema(schema);
+		List<VersionComponent> versionComponents = new LinkedList<>();
+		VersionComponent vc;
+		int versionCharIndex = 0;
+		for (VersionElement se : schemaEls) {
+			String versionSubstring = version.substring(versionCharIndex);
+			if (StringUtils.isNotEmpty(se.getSeparator())) {
+				String separator = se.getSeparator();
+				if (".".equals(separator)) separator = "\\.";
+				if ("+".equals(separator)) separator = "\\+";
+				var verSplit = versionSubstring.split(separator);
+				vc = new VersionComponent(se, verSplit[0]);
+				versionCharIndex += verSplit[0].length() + se.getSeparator().length();
 			} else {
-				// No match, do not replace versionComponents.
+				vc = new VersionComponent(se, versionSubstring);
 			}
-		}
+			versionComponents.add(vc);
+		}		
+
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
 		return new VersionHelper(versionComponents, modifier, metadata, isSnapshot);
@@ -299,15 +292,13 @@ public class VersionUtils {
 		
 		VersionHelper vh = parseVersion(version, schema);
 
-		// handle semver as schema name
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		
 		// remove -modifier and +metadata from schema as it's irrelevant
 		schema = stripSchemaFromModMeta(schema);
 		List<VersionElement> veList = parseSchema(schema);
-		List<String> versionComponents = vh.getVersionComponents();
+		List<VersionComponent> versionComponents = vh.getVersionComponents();
 		String modifier = vh.getModifier();
 		if(modifier != null && modifier != "" && versionComponents.contains(modifier) && versionComponents.size() > veList.size()){
 			versionComponents.remove(modifier);
@@ -320,7 +311,7 @@ public class VersionUtils {
 							.get(i)
 							.getRegexPattern();
 			matching = p
-						.matcher(versionComponents.get(i))
+						.matcher(versionComponents.get(i).representation())
 						.matches();
 		}
 		return matching;
@@ -336,14 +327,11 @@ public class VersionUtils {
 	public static boolean isPinMatchingSchema (String schema, String pin) {
 		boolean matching = true;
 
-		// handle semver as schema name
-		if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-			schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		
-		if (Constants.SEMVER.equalsIgnoreCase(pin)) {
-			pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-		}
+		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
+		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 		
 		VersionHelper vh = parseVersion(pin, schema);
 		
@@ -359,9 +347,9 @@ public class VersionUtils {
 							.get(i)
 							.getRegexPattern();
 			matching = p
-						.matcher(vh.getVersionComponents().get(i))
+						.matcher(vh.getVersionComponents().get(i).representation())
 						.matches() ||
-					   VersionElement.getVersionElement(vh.getVersionComponents().get(i)) == veList.get(i);
+					   vh.getVersionComponents().get(i).ve() == veList.get(i);
 		}
 		return matching;
 	}
@@ -378,14 +366,11 @@ public class VersionUtils {
 		boolean matching = isPinMatchingSchema(schema, pin);
 		if (matching) {
 			
-			// handle semver as schema name
-			if (Constants.SEMVER.equalsIgnoreCase(schema)) {
-				schema = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-			}
+			Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+			if (ovt.isPresent()) schema = ovt.get().getSchema();
 			
-			if (Constants.SEMVER.equalsIgnoreCase(pin)) {
-				pin = VersionType.SEMVER_SHORT_NOTATION.getSchema();
-			}
+			Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
+			if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 			
 			VersionHelper vhPin = parseVersion(pin, schema);
 			VersionHelper vhVersion = parseVersion(version, schema);
@@ -402,15 +387,15 @@ public class VersionUtils {
 								.get(i)
 								.getRegexPattern();
 				matching = p
-							.matcher(vhVersion.getVersionComponents().get(i))
+							.matcher(vhVersion.getVersionComponents().get(i).representation())
 							.matches();
-				if (matching && p.matcher(vhPin.getVersionComponents().get(i)).matches() &&
+				if (matching && p.matcher(vhPin.getVersionComponents().get(i).representation()).matches() &&
 						// make sure that it's not a name of version element inside pin
 						// i.e. could happen with string elements such as modifier / metadata
-						null == VersionElement.getVersionElement(vhPin.getVersionComponents().get(i))) {
+						null == vhPin.getVersionComponents().get(i).ve()) {
 					// here we know that version is matching schema and need to verify if it's matching pin
 					// means we're dealing with pin item that must match version element exactly
-					matching = vhPin.getVersionComponents().get(i).equals(vhVersion.getVersionComponents().get(i));
+					matching = vhPin.getVersionComponents().get(i).representation().equals(vhVersion.getVersionComponents().get(i).representation());
 				}
 			}
 		}
@@ -549,7 +534,7 @@ public class VersionUtils {
 			int minVersionLength = Math.min(oldVh.getVersionComponents().size(), newVh.getVersionComponents().size());
 			// use old for loop so we can reference both version component lists
 			for (int i = 0; i < minVersionLength && returnVe == null; i++) {
-				if (!oldVh.getVersionComponents().get(i).equals(newVh.getVersionComponents().get(i))) {
+				if (!oldVh.getVersionComponents().get(i).representation().equals(newVh.getVersionComponents().get(i).representation())) {
 					// if version components do not have same value, return the corresponding version element from schema list
 					returnVe = schemaVeList.get(i);
 				}
@@ -583,7 +568,7 @@ public class VersionUtils {
 			int minVersionLength = Math.min(oldVh.getVersionComponents().size(), newVh.getVersionComponents().size());
 			// use old for loop so we can reference both version component lists
 			for (int i = 0; i < minVersionLength && returnVe == null; i++) {
-				if (!oldVh.getVersionComponents().get(i).equals(newVh.getVersionComponents().get(i))) {
+				if (!oldVh.getVersionComponents().get(i).representation().equals(newVh.getVersionComponents().get(i).representation())) {
 					// make sure corresponding element is a Semver element before returning
 					if (schemaVeList.get(i) == VersionElement.MAJOR
 							|| schemaVeList.get(i) == VersionElement.MINOR
