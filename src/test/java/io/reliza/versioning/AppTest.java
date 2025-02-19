@@ -682,7 +682,8 @@ public class AppTest
     	String testOldVer = "2021.1.3.4-testmod";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
     	v.setModifier("newmodifier");
-    	assertEquals("2021." + CURRENT_MONTH_SINGLE + ".3.5-newmodifier", v.constructVersionString());
+    	String assertedVersionSuffix = ("1".equals(CURRENT_MONTH_SINGLE)) ? ".3.5-newmodifier" : ".0.0-newmodifier";
+    	assertEquals("2021." + CURRENT_MONTH_SINGLE + assertedVersionSuffix, v.constructVersionString());
     }
     
     @Test
