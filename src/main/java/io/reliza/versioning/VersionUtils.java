@@ -338,7 +338,8 @@ public class VersionUtils {
 				ParsedVersionElement pve = pveListIter.next();
 				VersionComponent vc = versionComponents.get(i);
 				Pattern p = pve.ve().getRegexPattern();
-				matching = p.matcher(vc.representation()).matches() || pve.ve().name().equalsIgnoreCase(vc.representation());
+				matching = p.matcher(vc.representation()).matches() 
+						|| VersionElement.getVersionElement(vc.representation()) == pve.ve();
 				// TODO recurse if not matching and element optional
 				// if (!matching && pve.isElementOptional())
 				++i;
