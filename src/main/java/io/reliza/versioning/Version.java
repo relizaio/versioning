@@ -1036,7 +1036,7 @@ public class Version implements Comparable<Version> {
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even though dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<ovh.get().getVersionComponents().size(); i++) {
-			VersionElement parsedVe = ovh.get().getVersionComponents().get(i).pve().ve();
+			VersionElement parsedVe = VersionElement.getVersionElement(ovh.get().getVersionComponents().get(i).representation());
 			if (parsedVe != schemaVeList.get(i)) {
 				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
 					ovh.get().getVersionComponents().get(i).representation);
