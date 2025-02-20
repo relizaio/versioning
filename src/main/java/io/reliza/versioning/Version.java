@@ -640,8 +640,7 @@ public class Version implements Comparable<Version> {
 		}
 		Version v = new Version();
 		v.schema = schema;
-		schema = VersionUtils.stripSchemaFromModMeta(schema);
-		
+
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
 		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		Optional<VersionHelper> ovh = VersionUtils.parseVersion(origVersion, schema);
@@ -1017,7 +1016,6 @@ public class Version implements Comparable<Version> {
 		validateGetVersionFromPinAndOldVersionInput(schema, pin, oldVersionString);
 		Version v = new Version();
 		v.schema = schema;
-		schema = VersionUtils.stripSchemaFromModMeta(schema);
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
 		if (ovt.isPresent()) schema = ovt.get().getSchema();
 		Version oldV = null;
@@ -1039,7 +1037,7 @@ public class Version implements Comparable<Version> {
 		// this would be set of unmodifiable elements since they are set by pin
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even though dates are not bumped below, add them to set to know when to bump nano
-		for (int i=0; i<schemaVeList.size(); i++) {
+		for (int i=0; i<ovh.get().getVersionComponents().size(); i++) {
 			VersionElement parsedVe = ovh.get().getVersionComponents().get(i).pve().ve();
 			if (parsedVe != schemaVeList.get(i)) {
 				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
