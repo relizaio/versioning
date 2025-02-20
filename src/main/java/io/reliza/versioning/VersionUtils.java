@@ -213,20 +213,20 @@ public class VersionUtils {
 			version = version.replaceFirst(Constants.MAVEN_STYLE_SNAPSHOT + "$", "");
 		}
 		// handle + and - differently as semver supports other separators after plus and dash
-		String[] plusel = null;
-		PlusDashElHelper plusElHelper = handlePlusesInVersion(version, handleBranchInVersion);
-		if (plusElHelper.isFulfilled) {
-			plusel = plusElHelper.elHelper;
-			version = plusElHelper.version;
-		}
-
-		String[] dashel = null;
-		PlusDashElHelper dashElHelper = handleDashesInVersion(version, handleBranchInVersion,
-			dashInSchemaAfterBranch, schema);
-		if (dashElHelper.isFulfilled) {
-			dashel = dashElHelper.elHelper;
-			version = dashElHelper.version;
-		}
+//		String[] plusel = null;
+//		PlusDashElHelper plusElHelper = handlePlusesInVersion(version, handleBranchInVersion);
+//		if (plusElHelper.isFulfilled) {
+//			plusel = plusElHelper.elHelper;
+//			version = plusElHelper.version;
+//		}
+//
+//		String[] dashel = null;
+//		PlusDashElHelper dashElHelper = handleDashesInVersion(version, handleBranchInVersion,
+//			dashInSchemaAfterBranch, schema);
+//		if (dashElHelper.isFulfilled) {
+//			dashel = dashElHelper.elHelper;
+//			version = dashElHelper.version;
+//		}
 		
 		List<ParsedVersionElement> schemaEls = parseSchema(schema);
 		List<VersionComponent> versionComponents = new LinkedList<>();
@@ -258,8 +258,8 @@ public class VersionUtils {
 		}		
 
 		if (!retEmpty) {
-			String modifier = (null == dashel) ? null : dashel[1];
-			String metadata = (null == plusel) ? null : plusel[1];
+			String modifier = ""; // (null == dashel) ? null : dashel[1];
+			String metadata = ""; // (null == plusel) ? null : plusel[1];
 			ovh = Optional.of(new VersionHelper(versionComponents, modifier, metadata, isSnapshot));
 		}
 		return ovh;
@@ -338,8 +338,14 @@ public class VersionUtils {
 				ParsedVersionElement pve = pveListIter.next();
 				VersionComponent vc = versionComponents.get(i);
 				Pattern p = pve.ve().getRegexPattern();
+				String elRepresentation = vc.representation();
+				boolean isOptional = false;
+				if (elRepresentation.endsWith("?")) {
+					isOptional = true; // TODO use
+					elRepresentation = elRepresentation.substring(0, elRepresentation.length() - 1);
+				}
 				matching = p.matcher(vc.representation()).matches() 
-						|| VersionElement.getVersionElement(vc.representation()) == pve.ve();
+						|| VersionElement.getVersionElement(elRepresentation) == pve.ve();
 				// TODO recurse if not matching and element optional
 				// if (!matching && pve.isElementOptional())
 				++i;
