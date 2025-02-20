@@ -89,16 +89,6 @@ public class VersionUtils {
 		}
 		return retList;
 	}
-	
-	/**
-	 * This method parses version string into VersionHelper
-	 * @param version String
-	 * @return VersionHelper
-	 */
-	public static Optional<VersionHelper> parseVersion (String version) {
-		return parseVersion(version, null);
-	}
-
 
 	private static class PlusDashElHelper {
 		private String version;

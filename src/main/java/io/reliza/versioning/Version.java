@@ -818,12 +818,10 @@ public class Version implements Comparable<Version> {
 		Optional<VersionHelper> ovh = Optional.empty();
 		if (StringUtils.isNotEmpty(oldVersionString)) {
 		    ovh = VersionUtils.parseVersion(oldVersionString, schema);
-		} else {
-			ovh = VersionUtils.parseVersion(pin);
+			v.modifier = ovh.get().getModifier();
+			v.metadata = ovh.get().getMetadata();
+			v.isSnapshot = ovh.get().isSnapshot();
 		}
-		v.modifier = ovh.get().getModifier();
-		v.metadata = ovh.get().getMetadata();
-		v.isSnapshot = ovh.get().isSnapshot();
 	}
 
 	/**
