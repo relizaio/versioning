@@ -217,7 +217,7 @@ public class VersionApi {
 	 * @return Version object as initialized
 	 */
 	public static Version initializeSemVerVersion (String version) {
-		VersionApiObject vao = createVao(VersionType.SEMVER_FULL_NOTATION.getSchema());
+		VersionApiObject vao = createVao(VersionType.SEMVER.getSchema());
 		vao.setVersion(version);
 		return initializeVersion(vao);
 	}

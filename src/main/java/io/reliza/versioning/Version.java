@@ -19,13 +19,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import io.reliza.versioning.VersionApi.ActionEnum;
+import io.reliza.versioning.VersionElement.ParsedVersionElement;
 
 /**
  * class Version
  */
 public class Version implements Comparable<Version> {
 	
-	public static record VersionComponent (VersionElement ve, String representation) {}
+	public static record VersionComponent (ParsedVersionElement pve, String representation) {}
 	
 	/**
 	 * 
@@ -135,12 +136,12 @@ public class Version implements Comparable<Version> {
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(useSchema);
 		if (ovt.isPresent()) useSchema = ovt.get().getSchema();
 
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(useSchema);
+		List<ParsedVersionElement> schemaPveList = VersionUtils.parseSchema(useSchema);
 		List<String> separators = VersionUtils.extractSchemaSeparators(useSchema);
 		try {
-			for (int i=0; i<schemaVeList.size(); i++) {
-				boolean useEl = i < schemaVeList.size() - 1;
-				switch (schemaVeList.get(i)) {
+			for (int i=0; i<schemaPveList.size(); i++) {
+				boolean useEl = i < schemaPveList.size() - 1;
+				switch (schemaPveList.get(i).ve()) {
 				case MAJOR:
 					versionString.append(this.major.toString());
 					break;
@@ -495,7 +496,7 @@ public class Version implements Comparable<Version> {
 	 * otherwise bumps date to today's if using CalVer
 	 */
 	public void simpleBump () {
-		Set<VersionElement> veList = new HashSet<>(VersionUtils.parseSchema(schema));
+		Set<VersionElement> veList = VersionUtils.parseSchema(schema).stream().map(x -> x.ve()).collect(Collectors.toSet());
 		if (veList.contains(VersionElement.PATCH)) {
 			this.bumpPatch(null);
 		} else if (veList.contains(VersionElement.MINOR)) {
@@ -598,7 +599,7 @@ public class Version implements Comparable<Version> {
 	public static Version getVersion (String schema) {
 		Version v = new Version();
 		v.schema = schema;
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		Set<VersionElement> schemaVeList = VersionUtils.parseSchema(schema).stream().map(x -> x.ve()).collect(Collectors.toSet());
 		if (schemaVeList.contains(VersionElement.MINOR)) {
 			v.minor = 1;
 			v.major = 0;
@@ -648,7 +649,7 @@ public class Version implements Comparable<Version> {
 		v.metadata = vh.getMetadata();
 		v.isSnapshot = vh.isSnapshot();
 		for (VersionComponent vc : vh.getVersionComponents()) {
-			switch (vc.ve()) {
+			switch (vc.pve().ve()) {
 			case MAJOR:
 				v.major = Integer.parseInt(vc.representation());
 				break;
@@ -1021,7 +1022,8 @@ public class Version implements Comparable<Version> {
 		Version oldV = null;
 		if (StringUtils.isNotEmpty(oldVersionString)) oldV = Version.getVersion(oldVersionString, schema);
 		
-		List<VersionElement> schemaVeList = VersionUtils.parseSchema(schema);
+		List<ParsedVersionElement> schemaPveList = VersionUtils.parseSchema(schema);
+		List<VersionElement> schemaVeList = schemaPveList.stream().map(x -> x.ve()).toList();
 		ae = resolveNewVersionAction(schemaVeList, ae, oldVersionString);
 		
 		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
@@ -1037,7 +1039,7 @@ public class Version implements Comparable<Version> {
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even though dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<schemaVeList.size(); i++) {
-			VersionElement parsedVe = vh.getVersionComponents().get(i).ve();
+			VersionElement parsedVe = vh.getVersionComponents().get(i).pve().ve();
 			if (parsedVe != schemaVeList.get(i)) {
 				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
 					vh.getVersionComponents().get(i).representation);

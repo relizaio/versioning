@@ -18,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  */
 public enum VersionElement {
-
+	
 	MAJOR(Set.of("major"), "^\\d+$"),
 	MINOR(Set.of("minor"), "^\\d+$"),
 	PATCH(Set.of("micro", "patch"), "^\\d+$"),
@@ -45,9 +45,10 @@ public enum VersionElement {
 //	PLUS_SEPARATOR(Set.of("+"), "^\\+$")
 	;
 	
+	public static record ParsedVersionElement(VersionElement ve, String frontSeparator, Boolean isSeparatorOptional, Boolean isElementOptional) {}
+	
 	private Set<String> namingInSchema;
 	private Pattern regex;
-	private String separator;
 	
 	private static final Map<String, VersionElement> veLookupMap;
 	
@@ -98,19 +99,4 @@ public enum VersionElement {
 		return this.regex;
 	}
 	
-	/**
-	 * get seprator of this element
-	 * @return seprator string
-	 */
-	public String getSeparator(){
-		return this.separator;
-	}
-
-	/**
-	 * set separator of this element
-	 * @param separator String
-	 */
-	public void setSeparator(String separator){
-		this.separator = separator;
-	}
 }

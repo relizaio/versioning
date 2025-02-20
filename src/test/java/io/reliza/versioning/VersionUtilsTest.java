@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import io.reliza.versioning.Version.VersionHelper;
 import io.reliza.versioning.VersionApi.ActionEnum;
 import io.reliza.versioning.VersionApi.VersionApiObject;
+import io.reliza.versioning.VersionElement.ParsedVersionElement;
 
 class VersionUtilsTest {
 
@@ -132,8 +133,8 @@ class VersionUtilsTest {
 		String schema1 = "Major.Minor.Patch";
 		String schema2 = "MAJOR.MINOR.MICRO";
 		// schemas are functionally equal
-		List<VersionElement> vel1 = VersionUtils.parseSchema(schema1);
-		List<VersionElement> vel2 = VersionUtils.parseSchema(schema2);
+		List<ParsedVersionElement> vel1 = VersionUtils.parseSchema(schema1);
+		List<ParsedVersionElement> vel2 = VersionUtils.parseSchema(schema2);
 		assertEquals(vel1, vel2);
 	}
 	

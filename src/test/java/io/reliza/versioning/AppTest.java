@@ -490,7 +490,7 @@ public class AppTest
     public void versionComparison2semver() {
     	String version1 = "2.3.5";
     	String version2 = "2.7.10";
-    	String schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
+    	String schema = VersionType.SEMVER.getSchema();
     	Version v1 = Version.getVersion(version1, schema);
     	Version v2 = Version.getVersion(version2, schema);
     	List<Version> vList = new LinkedList<>();
@@ -518,7 +518,7 @@ public class AppTest
     public void versionStringComparator1Semver() {
     	String version1 = "2.3.25";
     	String version2 = "2.3.7";
-    	String schema = VersionType.SEMVER_FULL_NOTATION.getSchema();
+    	String schema = VersionType.SEMVER.getSchema();
     	List<String> vList = new LinkedList<>();
     	vList.add(version2);
     	vList.add(version1);
@@ -707,7 +707,7 @@ public class AppTest
     
     @Test
     public void bumpSemverVersionWithPin1() {
-    	String testSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
+    	String testSchema = VersionType.SEMVER.getSchema();
     	String testPin = "5.9.patch";
     	String testOldVer = "5.9.2";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
@@ -716,7 +716,7 @@ public class AppTest
     
     @Test
     public void bumpSemverVersionWithPin2() {
-    	String testSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
+    	String testSchema = VersionType.SEMVER.getSchema();
     	String testPin = "5.minor.patch";
     	String testOldVer = "5.6.2";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP);
@@ -725,7 +725,7 @@ public class AppTest
     
     @Test
     public void bumpSemverVersionWithPin3() {
-    	String testSchema = VersionType.SEMVER_FULL_NOTATION.getSchema();
+    	String testSchema = VersionType.SEMVER.getSchema();
     	String testPin = "5.minor.patch";
     	String testOldVer = "5.6.2";
     	Version v = Version.getVersionFromPinAndOldVersion(testSchema, testPin, testOldVer, ActionEnum.BUMP_MINOR);
