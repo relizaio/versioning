@@ -370,7 +370,7 @@ public class VersionUtils {
 			
 			if (matching) {
 				for (int i=0; matching && i < ovhVersion.get().getVersionComponents().size(); i++) {
-					if (null == ovhPin.get().getVersionComponents().get(i).pve()) {
+					if (null == VersionElement.getVersionElement(ovhPin.get().getVersionComponents().get(i).representation())) {
 						matching = ovhPin.get().getVersionComponents().get(i).representation()
 								.equals(ovhVersion.get().getVersionComponents().get(i).representation());
 					}

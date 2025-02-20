@@ -253,7 +253,7 @@ public class AppTest
     @Test
     public void testVersionMatchingPinAndSchema9CalverFail() {
     	String testSchema = VersionType.CALVER_RELIZA_2020.getSchema();
-    	String testPin = "2019.12.Calvermodifier.Minor.Micro+metadata";
+    	String testPin = "2019.12.Calvermodifier.Minor.Micro+metadata?";
     	String testVersion = "2019.11.Snapshot.0.0";
         assertFalse( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
     }
