@@ -130,7 +130,7 @@ public class AppTest
     
     @Test
     public void testPinMatching1Semver() {
-    	String testSchema = "major.minor.patch-modifier";
+    	String testSchema = "major.minor.patch-modifier?";
     	String testPin = "1.3.patch";
         assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
     }
@@ -172,7 +172,7 @@ public class AppTest
     
     @Test
     public void testVersionMatchingPinAndSchema1Semver() {
-    	String testSchema = "major.minor.patch-modifier";
+    	String testSchema = "major.minor.patch-modifier?";
     	String testPin = "1.3.patch";
     	String testVersion = "1.3.5";
         assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
@@ -1046,7 +1046,7 @@ public class AppTest
     }
 
 	@Test
-    public void testSchemaMatchin6BranchHyphenMicro() {
+    public void testSchemaMatchingBranchHyphenMicro() {
     	String testSchema = "branch-micro";
     	String testVersion = "foo-bar-1";
         assertTrue( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
