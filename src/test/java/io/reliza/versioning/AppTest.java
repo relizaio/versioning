@@ -151,15 +151,15 @@ public class AppTest
     
     @Test
     public void testPinMatching4FailCalver() {
-    	String testSchema = "Year.Month.minor.patch-modifier";
-    	String testPin = "2020.22.minor.patch-modifier";
+    	String testSchema = "Year.Month.minor.patch-modifier?";
+    	String testPin = "2020.22.minor.patch-modifier?";
         assertFalse( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
     }
     
     @Test
     public void testPinMatching5SuccessCalver() {
-    	String testSchema = "Year.Month.minor.patch-modifier";
-    	String testPin = "2020.2.minor.patch-modifier";
+    	String testSchema = "Year.Month.minor.patch-modifier?";
+    	String testPin = "2020.2.minor.patch-modifier?";
         assertTrue( VersionUtils.isPinMatchingSchema(testSchema, testPin) );
     }
 
@@ -220,16 +220,16 @@ public class AppTest
     
     @Test
     public void testVersionMatchingPinAndSchema6CalverOptionalModifier() {
-    	String testSchema = "Year.Month.minor.patch-modifier";
-    	String testPin = "2020.1.minor.patch-modifier";
+    	String testSchema = "Year.Month.minor.patch-modifier?";
+    	String testPin = "2020.1.minor.patch-modifier?";
     	String testVersion = "2020.1.7.8";
         assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
     }
     
     @Test
     public void testVersionMatchingPinAndSchema6CalverOptionalMetadata() {
-    	String testSchema = "Year.Month.minor.patch+metadata";
-    	String testPin = "2020.1.minor.patch+metadata";
+    	String testSchema = "Year.Month.minor.patch+metadata?";
+    	String testPin = "2020.1.minor.patch+metadata?";
     	String testVersion = "2020.1.7.8";
         assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
     }
@@ -244,8 +244,8 @@ public class AppTest
     
     @Test
     public void testVersionMatchingPinAndSchema8SemverOptionalMetadata() {
-    	String testSchema = "Year.Month.minor.patch+metadata";
-    	String testPin = "2020.1.minor.patch+metadata";
+    	String testSchema = "Year.Month.minor.patch+metadata?";
+    	String testPin = "2020.1.minor.patch+metadata?";
     	String testVersion = "2020.1.7.8";
         assertTrue( VersionUtils.isVersionMatchingSchemaAndPin(testSchema, testPin, testVersion) );
     }
