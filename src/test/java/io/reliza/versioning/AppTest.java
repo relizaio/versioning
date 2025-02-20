@@ -739,7 +739,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("2020");
 		versionComponentsExpected.add("test-branch-go");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation()).toList();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 		assertEquals("mymodifier", vh.getModifier());
 	}
@@ -1085,7 +1085,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo");
 		versionComponentsExpected.add("1");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation()).toList();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 
@@ -1097,7 +1097,7 @@ public class AppTest
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo-bar");
 		versionComponentsExpected.add("1");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation()).toList();
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 
