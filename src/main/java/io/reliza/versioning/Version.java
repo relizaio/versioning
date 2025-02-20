@@ -644,11 +644,12 @@ public class Version implements Comparable<Version> {
 		
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
 		if (ovt.isPresent()) schema = ovt.get().getSchema();
-		VersionHelper vh = VersionUtils.parseVersion(origVersion, schema);
-		v.modifier = vh.getModifier();
-		v.metadata = vh.getMetadata();
-		v.isSnapshot = vh.isSnapshot();
-		for (VersionComponent vc : vh.getVersionComponents()) {
+		Optional<VersionHelper> ovh = VersionUtils.parseVersion(origVersion, schema);
+		if (ovh.isEmpty()) throw new RuntimeException("Version does not match schema: version = " + origVersion + " , schema = " + schema);
+		v.modifier = ovh.get().getModifier();
+		v.metadata = ovh.get().getMetadata();
+		v.isSnapshot = ovh.get().isSnapshot();
+		for (VersionComponent vc : ovh.get().getVersionComponents()) {
 			switch (vc.pve().ve()) {
 			case MAJOR:
 				v.major = Integer.parseInt(vc.representation());
@@ -815,15 +816,15 @@ public class Version implements Comparable<Version> {
 	 * @param pin
 	 */
 	private static void populateNewVersionFromPin (Version v, String oldVersionString, String schema, String pin) {
-		VersionHelper vh = null;
+		Optional<VersionHelper> ovh = Optional.empty();
 		if (StringUtils.isNotEmpty(oldVersionString)) {
-		    vh = VersionUtils.parseVersion(oldVersionString, schema);
+		    ovh = VersionUtils.parseVersion(oldVersionString, schema);
 		} else {
-			vh = VersionUtils.parseVersion(pin);
+			ovh = VersionUtils.parseVersion(pin);
 		}
-		v.modifier = vh.getModifier();
-		v.metadata = vh.getMetadata();
-		v.isSnapshot = vh.isSnapshot();
+		v.modifier = ovh.get().getModifier();
+		v.metadata = ovh.get().getMetadata();
+		v.isSnapshot = ovh.get().isSnapshot();
 	}
 
 	/**
@@ -1033,16 +1034,16 @@ public class Version implements Comparable<Version> {
 		populateNewVersionFromPin(v, oldVersionString, schema, pin);
 
 		// Parse pin to make sure we can do bump actions properly
-		VersionHelper vh = VersionUtils.parseVersion(pin, schema);
+		Optional<VersionHelper> ovh = VersionUtils.parseVersion(pin, schema);
 		
 		// this would be set of unmodifiable elements since they are set by pin
 		Set<VersionElement> elsProtectedByPin = new HashSet<>(); 
 		// even though dates are not bumped below, add them to set to know when to bump nano
 		for (int i=0; i<schemaVeList.size(); i++) {
-			VersionElement parsedVe = vh.getVersionComponents().get(i).pve().ve();
+			VersionElement parsedVe = ovh.get().getVersionComponents().get(i).pve().ve();
 			if (parsedVe != schemaVeList.get(i)) {
 				constructVersionElementForUpdatedElement(elsProtectedByPin, v, schemaVeList.get(i), 
-					vh.getVersionComponents().get(i).representation);
+					ovh.get().getVersionComponents().get(i).representation);
 			} else if (schemaVeList.get(i) == VersionElement.CALVER_MODIFIER) {
 				v.modifier = Constants.BASE_MODIFIER;
 			} else {
