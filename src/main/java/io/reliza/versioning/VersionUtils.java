@@ -218,6 +218,7 @@ public class VersionUtils {
 		if (plusElHelper.isFulfilled) {
 			plusel = plusElHelper.elHelper;
 			version = plusElHelper.version;
+			schema = stripSchemaFromMetadata(schema);
 		}
 
 		String[] dashel = null;
@@ -226,6 +227,7 @@ public class VersionUtils {
 		if (dashElHelper.isFulfilled) {
 			dashel = dashElHelper.elHelper;
 			version = dashElHelper.version;
+			schema = stripSchemaFromModifier(schema);
 		}
 		
 		List<ParsedVersionElement> schemaEls = parseSchema(schema);
@@ -393,9 +395,13 @@ public class VersionUtils {
 	 * @param schema String
 	 * @return schema string without modifier or metadata elements
 	 */
-	public static String stripSchemaFromModMeta (String schema) {
-		schema = schema.replaceAll("(?i)(\\+|-)metadata", "");
-		schema = schema.replaceAll("(?i)(\\+|-)modifier", "");
+	private static String stripSchemaFromModifier (String schema) {
+		schema = schema.replaceAll("(?i)-modifier(\\?)?", "");
+		return schema;
+	}
+	
+	private static String stripSchemaFromMetadata (String schema) {
+		schema = schema.replaceAll("(?i)\\+metadata(\\?)?", "");
 		return schema;
 	}
 	
