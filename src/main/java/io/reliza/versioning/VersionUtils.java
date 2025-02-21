@@ -321,34 +321,35 @@ public class VersionUtils {
 		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
 		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 		
-		Optional<VersionHelper> ovh = parseVersion(pin, schema);
-		if (ovh.isEmpty()) matching = false;
+		Optional<VersionHelper> ovhPin = parseVersion(pin, schema);
+		if (ovhPin.isEmpty()) matching = false;
 		if (matching) {
-			List<VersionComponent> versionComponents = ovh.get().getVersionComponents();
+			List<VersionComponent> pinComponents = ovhPin.get().getVersionComponents();
 	
 			List<ParsedVersionElement> pveList = parseSchema(schema);
 	
-			if (versionComponents.size() > pveList.size()) {
+			if (pinComponents.size() > pveList.size()) {
 				matching = false;
 			}
 			
 			var pveListIter = pveList.iterator();
 			int i = 0;
-			while (matching && pveListIter.hasNext() && i < versionComponents.size()) {
-				ParsedVersionElement pve = pveListIter.next();
-				VersionComponent vc = versionComponents.get(i);
-				Pattern p = pve.ve().getRegexPattern();
-				String elRepresentation = vc.representation();
-				boolean isOptional = false;
+			while (matching && pveListIter.hasNext() && i < pinComponents.size()) {
+				ParsedVersionElement schemaPve = pveListIter.next();
+				VersionComponent pinComp = pinComponents.get(i);
+				Pattern p = schemaPve.ve().getRegexPattern();
+				String elRepresentation = pinComp.representation();
 				if (elRepresentation.endsWith("?")) {
-					isOptional = true; // TODO use
 					elRepresentation = elRepresentation.substring(0, elRepresentation.length() - 1);
 				}
-				matching = p.matcher(vc.representation()).matches() 
-						|| VersionElement.getVersionElement(elRepresentation) == pve.ve();
-				// TODO recurse if not matching and element optional
-				// if (!matching && pve.isElementOptional())
-				++i;
+				matching = p.matcher(pinComp.representation()).matches() 
+						|| VersionElement.getVersionElement(elRepresentation) == schemaPve.ve();
+				if (!matching && schemaPve.isElementOptional() && pveListIter.hasNext()) {
+					// try next cycle over the same pin component
+					matching = true;
+				} else {
+					++i;	
+				}
 			}
 		}
 		return matching;
