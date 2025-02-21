@@ -25,7 +25,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add("1");
 		versionComponentsExpected.add("0");
 		versionComponentsExpected.add("0");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 	
@@ -37,7 +37,7 @@ class VersionUtilsTest {
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("dependabot/npm_and_yarn/vue/cli-plugin-babel-4.5.13");
 		versionComponentsExpected.add("0");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
 	}
 	
@@ -50,7 +50,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add("1");
 		versionComponentsExpected.add("3");
 		versionComponentsExpected.add("6");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
     }
 	
@@ -63,7 +63,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
 		versionComponentsExpected.add("3");
 		versionComponentsExpected.add("4");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
     }
 	
@@ -77,7 +77,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add("20");
 		versionComponentsExpected.add("3");
 		versionComponentsExpected.add("4");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
     }
 	
@@ -94,7 +94,7 @@ class VersionUtilsTest {
 		versionComponentsExpected.add(month);
 		versionComponentsExpected.add("3");
 		versionComponentsExpected.add("4");
-		ArrayList<String> versionComponenetsActual = (ArrayList<String>) vh.getVersionComponents().stream().map(x -> x.representation());
+		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
     }
 	
