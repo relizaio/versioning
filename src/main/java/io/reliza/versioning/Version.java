@@ -1047,6 +1047,9 @@ public class Version implements Comparable<Version> {
 				resolveDatesAsCurrentForNewVersion(v, schemaVeList.get(i), ae, oldV);
 			}
 		}
+		
+		if (StringUtils.isEmpty(v.metadata) && ovh.isPresent()) v.metadata = ovh.get().metadata;
+		if (StringUtils.isEmpty(v.modifier) && ovh.isPresent()) v.modifier = ovh.get().modifier;
 
 		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList);
 

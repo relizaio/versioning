@@ -390,9 +390,9 @@ public class AppTest
     @Test
     public void initializeVersionFromPin3CalVer() {
     	String testSchema = VersionType.CALVER_RELIZA_2020.getSchema();
-    	String testPin = "2020.01.Calvermodifier.Minor.Micro+Metadata";
+    	String testPin = "2020.01.Calvermodifier.Minor.Micro+Mymetadata";
     	Version v = Version.getVersionFromPin(testSchema, testPin);
-        assertEquals("2020.01.Snapshot.0.0+Metadata", v.constructVersionString());
+        assertEquals("2020.01.Snapshot.0.0+Mymetadata", v.constructVersionString());
     }
     
     @Test
