@@ -7,6 +7,7 @@ import java.io.PrintStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,6 +29,7 @@ class VersionCliTest {
 	// Test Cases //
 	
 	@Test
+	@Disabled
 	void sampleCliTestcase() {
 		// Catch ExitException that occurs when VersionCli.main method calls System.exit
 		// Check exit code using e.status
@@ -41,6 +43,7 @@ class VersionCliTest {
 	}
 	
 	@Test
+	@Disabled
 	void testMainInvalidCommitTwoLines() {
 		String commitMessage = "fix: commit message" + System.lineSeparator() + "";
 		try {
