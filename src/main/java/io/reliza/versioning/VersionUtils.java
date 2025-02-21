@@ -30,6 +30,7 @@ import io.reliza.versioning.VersionElement.ParsedVersionElement;
 public class VersionUtils {
 	
 	private final static String SPLIT_REGEX = "(?=\\+|:|-|_|\\.)";
+	private final static String SPLIT_REGEX_EXCLUDE_SEP = "\\+|:|-|_|\\.";
 	
 	/**
 	 * Private constructor for uninitializable class
@@ -244,13 +245,21 @@ public class VersionUtils {
 			} else if (!(schemaEl.isElementOptional() && versionCharIndex >= version.length())) {
 				String versionSubstring = version.substring(versionCharIndex);
 				if (schemaElIndex < schemaEls.size() - 1) {
-					String separator = schemaEls.get(schemaElIndex+1).frontSeparator();
-					separator = normalizeSeparator(separator);
+					//String separator = schemaEls.get(schemaElIndex+1).frontSeparator();
+					// separator = normalizeSeparator(separator);
 
-					var verSplit = Arrays.asList(versionSubstring.split(separator));
+					var verSplit = Arrays.asList(versionSubstring.split(SPLIT_REGEX_EXCLUDE_SEP));
 					ovc = resolveVersionSchemaParseElement(verSplit, schemaEls, schemaElIndex, isPin);
-					if (ovc.isPresent()) versionCharIndex += ovc.get().representation().length() 
-							+ schemaEls.get(schemaElIndex+1).frontSeparator().length();
+					if (ovc.isPresent()) {
+						if ( versionCharIndex + ovc.get().representation().length() + 1 < version.length() &&
+								!schemaEls.get(schemaElIndex+1).frontSeparator().equals(
+								version.substring(versionCharIndex + ovc.get().representation().length(), 
+										versionCharIndex + ovc.get().representation().length() + 1))) {
+							return Optional.empty();
+						}
+						versionCharIndex += ovc.get().representation().length() 
+								+ schemaEls.get(schemaElIndex+1).frontSeparator().length(); 
+					}		
 				} else {
 					ovc = resolveVersionSchemaParseElement(List.of(versionSubstring),
 							schemaEls, schemaElIndex, isPin);

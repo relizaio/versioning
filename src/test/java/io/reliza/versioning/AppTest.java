@@ -87,6 +87,13 @@ public class AppTest
     	String testVersion = "23.06.0-newbr";
         assertTrue( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
     }
+    
+    @Test
+    public void testSchemaMatchin7DifferentSeparatorsFail() {
+    	String testSchema = "Major.Minor.Patch";
+    	String testVersion = "5.7_3";
+        assertFalse( VersionUtils.isVersionMatchingSchema(testSchema, testVersion) );
+    }
 
     @Test
     public void testSchemaMatchingPinYYMMMicrohyphenBranch() {
