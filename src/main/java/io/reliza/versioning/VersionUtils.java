@@ -250,7 +250,10 @@ public class VersionUtils {
 
 					var verSplit = Arrays.asList(versionSubstring.split(SPLIT_REGEX_EXCLUDE_SEP));
 					var verSplitWithSeparators = Arrays.asList(versionSubstring.split(SPLIT_REGEX));
-					ovc = resolveVersionSchemaParseElement(verSplit, verSplitWithSeparators, schemaEls, schemaElIndex, isPin);
+					boolean curLastSplit = false;
+					if (verSplit.size() == 2) curLastSplit = true;
+					ovc = resolveVersionSchemaParseElement(verSplit, verSplitWithSeparators, schemaEls, schemaElIndex,
+							isPin, curLastSplit);
 					if (ovc.isPresent()) {
 						if ( versionCharIndex + ovc.get().representation().length() + 1 < version.length() &&
 								!schemaEls.get(schemaElIndex+1).frontSeparator().equals(
@@ -263,7 +266,7 @@ public class VersionUtils {
 					}		
 				} else {
 					ovc = resolveVersionSchemaParseElement(List.of(versionSubstring), List.of(versionSubstring),
-							schemaEls, schemaElIndex, isPin);
+							schemaEls, schemaElIndex, isPin, true);
 				}
 				if (ovc.isEmpty()) {
 					return Optional.empty();
@@ -282,7 +285,8 @@ public class VersionUtils {
 	}
 	
 	private static Optional<VersionComponent> resolveVersionSchemaParseElement (List<String> verSplit,
-			List<String> verSplitWithSeparators, List<ParsedVersionElement> schemaEls, int schemaElIndex, boolean isPin) {
+			List<String> verSplitWithSeparators, List<ParsedVersionElement> schemaEls, int schemaElIndex, boolean isPin,
+			boolean lastSplit) {
 		Optional<VersionComponent> ovc = Optional.empty();
 		if (verSplit.size() == 1 && schemaElIndex < schemaEls.size()) {
 			ParsedVersionElement schemaEl = schemaEls.get(schemaElIndex);
@@ -290,7 +294,8 @@ public class VersionUtils {
 			boolean matching = p.matcher(verSplit.get(0)).matches();
 			if (!matching && isPin) matching = schemaEl.ve() == VersionElement.getVersionElement(verSplit.get(0));
 			if (matching) ovc = Optional.of(new VersionComponent(schemaEl, verSplit.get(0)));
-		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size()) {
+		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size() 
+				&& (lastSplit || schemaElIndex + 2 < schemaEls.size())) {
 			ParsedVersionElement schemaEl1 = schemaEls.get(schemaElIndex);
 			ParsedVersionElement schemaEl2 = schemaEls.get(schemaElIndex + 1);
 			Pattern p1 = schemaEl1.ve().getRegexPattern();
@@ -302,7 +307,7 @@ public class VersionUtils {
 			if (matching1 && matching2) ovc = Optional.of(new VersionComponent(schemaEl1, verSplit.get(0)));
 		} else if (verSplit.size() > 2) {
 			ovc = resolveVersionSchemaParseElement(verSplit.subList(0, 2), verSplitWithSeparators.subList(0, 2),
-					schemaEls, schemaElIndex, isPin);
+						schemaEls, schemaElIndex, isPin, false);
 			if (ovc.isEmpty()) {
 				List<String> updatedVerSplit = new LinkedList<>();
 				List<String> updatedVerSplitWithSeparators = new LinkedList<>();
@@ -310,7 +315,10 @@ public class VersionUtils {
 				updatedVerSplitWithSeparators.add(verSplit.get(0) + verSplitWithSeparators.get(1) );
 				updatedVerSplit.addAll(verSplit.subList(2, verSplit.size()));
 				updatedVerSplitWithSeparators.addAll(verSplitWithSeparators.subList(2, verSplitWithSeparators.size()));
-				ovc = resolveVersionSchemaParseElement(updatedVerSplit, updatedVerSplitWithSeparators, schemaEls, schemaElIndex, isPin);
+				boolean curLastSplit = false;
+				if (verSplit.size() == 3) curLastSplit = true;
+				ovc = resolveVersionSchemaParseElement(updatedVerSplit, updatedVerSplitWithSeparators, schemaEls, schemaElIndex,
+						isPin, curLastSplit);
 			}
 		}
 		return ovc;
