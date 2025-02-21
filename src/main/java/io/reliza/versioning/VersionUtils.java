@@ -237,34 +237,77 @@ public class VersionUtils {
 		int schemaElIndex = 0;
 		
 		Optional<VersionHelper> ovh = Optional.empty();
-		boolean retEmpty = false;
-		for (ParsedVersionElement se : schemaEls) {
-			if (!se.isElementOptional() && versionCharIndex >= version.length()) {
+		for (ParsedVersionElement schemaEl : schemaEls) {
+			if (!schemaEl.isElementOptional() && versionCharIndex >= version.length()) {
 				// version does not match schema, return empty
-				retEmpty = true;
-			} else if (!(se.isElementOptional() && versionCharIndex >= version.length())) {
+				return Optional.empty();
+			} else if (!(schemaEl.isElementOptional() && versionCharIndex >= version.length())) {
 				String versionSubstring = version.substring(versionCharIndex);
 				if (schemaElIndex < schemaEls.size() - 1) {
 					String separator = schemaEls.get(schemaElIndex+1).frontSeparator();
-					if (".".equals(separator)) separator = "\\.";
-					if ("+".equals(separator)) separator = "\\+";
-					var verSplit = versionSubstring.split(separator);
-					vc = new VersionComponent(se, verSplit[0]);
-					versionCharIndex += verSplit[0].length() + schemaEls.get(schemaElIndex+1).frontSeparator().length();
+					separator = normalizeSeparator(separator);
+
+					var verSplit = Arrays.asList(versionSubstring.split(separator));
+					Optional<VersionComponent> ovc = resolveVersionSchemaParseElement(verSplit, schemaEls, schemaElIndex);
+					if (ovc.isEmpty()) {
+						return Optional.empty();
+					} else {
+						vc = ovc.get();
+						versionCharIndex += vc.representation().length() 
+								+ schemaEls.get(schemaElIndex+1).frontSeparator().length();
+					}
+					
 				} else {
-					vc = new VersionComponent(se, versionSubstring);
+					Pattern p = schemaEl.ve().getRegexPattern();
+					boolean matching = p.matcher(versionSubstring).matches();
+					if (matching) {
+						vc = new VersionComponent(schemaEl, versionSubstring);
+					} else return Optional.empty();
 				}
 				versionComponents.add(vc);
 			}
 			schemaElIndex++;
 		}		
 
-		if (!retEmpty) {
-			String modifier = (null == dashel) ? null : dashel[1];
-			String metadata = (null == plusel) ? null : plusel[1];
-			ovh = Optional.of(new VersionHelper(versionComponents, modifier, metadata, isSnapshot));
-		}
+		String modifier = (null == dashel) ? null : dashel[1];
+		String metadata = (null == plusel) ? null : plusel[1];
+		ovh = Optional.of(new VersionHelper(versionComponents, modifier, metadata, isSnapshot));
+
 		return ovh;
+	}
+	
+	private static Optional<VersionComponent> resolveVersionSchemaParseElement (List<String> verSplit,
+			List<ParsedVersionElement> schemaEls, int schemaElIndex) {
+		Optional<VersionComponent> ovc = Optional.empty();
+		if (verSplit.size() == 1 && schemaElIndex < schemaEls.size()) {
+			ParsedVersionElement schemaEl = schemaEls.get(schemaElIndex);
+			Pattern p = schemaEl.ve().getRegexPattern();
+			boolean matching = p.matcher(verSplit.get(0)).matches();
+			if (matching) ovc = Optional.of(new VersionComponent(schemaEl, verSplit.get(0)));
+		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size()) {
+			ParsedVersionElement schemaEl1 = schemaEls.get(schemaElIndex);
+			ParsedVersionElement schemaEl2 = schemaEls.get(schemaElIndex + 1);
+			Pattern p1 = schemaEl1.ve().getRegexPattern();
+			boolean matching1 = p1.matcher(verSplit.get(0)).matches();
+			Pattern p2 = schemaEl2.ve().getRegexPattern();
+			boolean matching2 = p2.matcher(verSplit.get(1)).matches();
+			if (matching1 && matching2) ovc = Optional.of(new VersionComponent(schemaEl1, verSplit.get(0)));
+		} else if (verSplit.size() > 2) {
+			ovc = resolveVersionSchemaParseElement(verSplit.subList(0, 2), schemaEls, schemaElIndex);
+			if (ovc.isEmpty()) {
+				List<String> updatedVerSplit = new LinkedList<>();
+				updatedVerSplit.add(verSplit.get(0) + schemaEls.get(schemaElIndex + 1).frontSeparator() + verSplit.get(1) );
+				updatedVerSplit.addAll(verSplit.subList(2, verSplit.size()));
+				ovc = resolveVersionSchemaParseElement(updatedVerSplit, schemaEls, schemaElIndex);
+			}
+		}
+		return ovc;
+	}
+	
+	private static String normalizeSeparator (String separator) {
+		if (".".equals(separator)) separator = "\\.";
+		if ("+".equals(separator)) separator = "\\+";
+		return separator;
 	}
 	
 	/**
