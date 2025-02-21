@@ -735,7 +735,7 @@ public class AppTest
 	void testParseVersion_BranchMultipleDashes() {
 		String schema = "Year.Branch-modifier";
 		String version = "2020.test-branch-go-mymodifier";
-		VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("2020");
 		versionComponentsExpected.add("test-branch-go");
@@ -1081,7 +1081,7 @@ public class AppTest
 	void testParseVersion_BranchHyphenMicro() {
 		String version = "foo-1";
 		String schema = "branch-micro";
-		VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo");
 		versionComponentsExpected.add("1");
@@ -1093,7 +1093,7 @@ public class AppTest
 	void testParseVersion_BranchHyphenMicroMulti() {
 		String version = "foo-bar-1";
 		String schema = "branch-micro";
-		VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("foo-bar");
 		versionComponentsExpected.add("1");

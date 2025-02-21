@@ -202,7 +202,7 @@ public class VersionUtils {
 	 * @param schema String
 	 * @return VersionHelper
 	 */
-	public static Optional<VersionHelper> parseVersion (String version, String schema) {
+	public static Optional<VersionHelper> parseVersion (String version, String schema, boolean isPin) {
 		boolean handleBranchInVersion = (StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase())) || (StringUtils.isNotEmpty(version) && version.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase()));
 		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") 
 			&& schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
@@ -232,7 +232,7 @@ public class VersionUtils {
 		
 		List<ParsedVersionElement> schemaEls = parseSchema(schema);
 		List<VersionComponent> versionComponents = new LinkedList<>();
-		VersionComponent vc;
+		Optional<VersionComponent> ovc = Optional.empty();
 		int versionCharIndex = 0;
 		int schemaElIndex = 0;
 		
@@ -248,23 +248,18 @@ public class VersionUtils {
 					separator = normalizeSeparator(separator);
 
 					var verSplit = Arrays.asList(versionSubstring.split(separator));
-					Optional<VersionComponent> ovc = resolveVersionSchemaParseElement(verSplit, schemaEls, schemaElIndex);
-					if (ovc.isEmpty()) {
-						return Optional.empty();
-					} else {
-						vc = ovc.get();
-						versionCharIndex += vc.representation().length() 
-								+ schemaEls.get(schemaElIndex+1).frontSeparator().length();
-					}
-					
+					ovc = resolveVersionSchemaParseElement(verSplit, schemaEls, schemaElIndex, isPin);
+					if (ovc.isPresent()) versionCharIndex += ovc.get().representation().length() 
+							+ schemaEls.get(schemaElIndex+1).frontSeparator().length();
 				} else {
-					Pattern p = schemaEl.ve().getRegexPattern();
-					boolean matching = p.matcher(versionSubstring).matches();
-					if (matching) {
-						vc = new VersionComponent(schemaEl, versionSubstring);
-					} else return Optional.empty();
+					ovc = resolveVersionSchemaParseElement(List.of(versionSubstring),
+							schemaEls, schemaElIndex, isPin);
 				}
-				versionComponents.add(vc);
+				if (ovc.isEmpty()) {
+					return Optional.empty();
+				} else {
+					versionComponents.add(ovc.get());
+				}
 			}
 			schemaElIndex++;
 		}		
@@ -277,28 +272,31 @@ public class VersionUtils {
 	}
 	
 	private static Optional<VersionComponent> resolveVersionSchemaParseElement (List<String> verSplit,
-			List<ParsedVersionElement> schemaEls, int schemaElIndex) {
+			List<ParsedVersionElement> schemaEls, int schemaElIndex, boolean isPin) {
 		Optional<VersionComponent> ovc = Optional.empty();
 		if (verSplit.size() == 1 && schemaElIndex < schemaEls.size()) {
 			ParsedVersionElement schemaEl = schemaEls.get(schemaElIndex);
 			Pattern p = schemaEl.ve().getRegexPattern();
 			boolean matching = p.matcher(verSplit.get(0)).matches();
+			if (!matching && isPin) matching = schemaEl.ve().name().equalsIgnoreCase(verSplit.get(0));
 			if (matching) ovc = Optional.of(new VersionComponent(schemaEl, verSplit.get(0)));
 		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size()) {
 			ParsedVersionElement schemaEl1 = schemaEls.get(schemaElIndex);
 			ParsedVersionElement schemaEl2 = schemaEls.get(schemaElIndex + 1);
 			Pattern p1 = schemaEl1.ve().getRegexPattern();
 			boolean matching1 = p1.matcher(verSplit.get(0)).matches();
+			if (!matching1 && isPin) matching1 = schemaEl1.ve().name().equalsIgnoreCase(verSplit.get(0));
 			Pattern p2 = schemaEl2.ve().getRegexPattern();
 			boolean matching2 = p2.matcher(verSplit.get(1)).matches();
+			if (!matching2 && isPin) matching2 = schemaEl2.ve().name().equalsIgnoreCase(verSplit.get(1));
 			if (matching1 && matching2) ovc = Optional.of(new VersionComponent(schemaEl1, verSplit.get(0)));
 		} else if (verSplit.size() > 2) {
-			ovc = resolveVersionSchemaParseElement(verSplit.subList(0, 2), schemaEls, schemaElIndex);
+			ovc = resolveVersionSchemaParseElement(verSplit.subList(0, 2), schemaEls, schemaElIndex, isPin);
 			if (ovc.isEmpty()) {
 				List<String> updatedVerSplit = new LinkedList<>();
 				updatedVerSplit.add(verSplit.get(0) + schemaEls.get(schemaElIndex + 1).frontSeparator() + verSplit.get(1) );
 				updatedVerSplit.addAll(verSplit.subList(2, verSplit.size()));
-				ovc = resolveVersionSchemaParseElement(updatedVerSplit, schemaEls, schemaElIndex);
+				ovc = resolveVersionSchemaParseElement(updatedVerSplit, schemaEls, schemaElIndex, isPin);
 			}
 		}
 		return ovc;
@@ -319,7 +317,7 @@ public class VersionUtils {
 	public static boolean isVersionMatchingSchema (String schema, String version) {
 		boolean matching = true;
 		
-		Optional<VersionHelper> ovh = parseVersion(version, schema);
+		Optional<VersionHelper> ovh = parseVersion(version, schema, false);
 		
 		if (ovh.isEmpty()) matching = false;
 
@@ -366,7 +364,7 @@ public class VersionUtils {
 		Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
 		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 		
-		Optional<VersionHelper> ovhPin = parseVersion(pin, schema);
+		Optional<VersionHelper> ovhPin = parseVersion(pin, schema, true);
 		if (ovhPin.isEmpty()) matching = false;
 		if (matching) {
 			List<VersionComponent> pinComponents = ovhPin.get().getVersionComponents();
@@ -415,8 +413,8 @@ public class VersionUtils {
 			Optional<VersionType> ovtpin = VersionType.resolveByAliasName(pin);
 			if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 			
-			Optional<VersionHelper> ovhPin = parseVersion(pin, schema);
-			Optional<VersionHelper> ovhVersion = parseVersion(version, schema);
+			Optional<VersionHelper> ovhPin = parseVersion(pin, schema, true);
+			Optional<VersionHelper> ovhVersion = parseVersion(version, schema, false);
 			
 			if (ovhPin.isEmpty() || ovhVersion.isEmpty()) matching = false;
 			
@@ -559,8 +557,8 @@ public class VersionUtils {
 		Objects.requireNonNull(newVersion, "New version must not be null");
 		Objects.requireNonNull(schema, "Schema must not be null");
 		VersionElement returnVe = null;
-		Optional<VersionHelper> oldVh = parseVersion(oldVersion, schema);
-		Optional<VersionHelper> newVh = parseVersion(newVersion, schema);
+		Optional<VersionHelper> oldVh = parseVersion(oldVersion, schema, false);
+		Optional<VersionHelper> newVh = parseVersion(newVersion, schema, false);
 		if (oldVh.isPresent() && newVh.isPresent()) {
 			List<ParsedVersionElement> schemaPveList = parseSchema(schema);
 			int minVersionLength = Math.min(oldVh.get().getVersionComponents().size(), newVh.get().getVersionComponents().size());
@@ -592,8 +590,8 @@ public class VersionUtils {
 		Objects.requireNonNull(newVersion, "New version must not be null");
 		Objects.requireNonNull(schema, "Schema must not be null");
 		VersionElement returnVe = null;
-		Optional<VersionHelper> oldVh = parseVersion(oldVersion, schema);
-		Optional<VersionHelper> newVh = parseVersion(newVersion, schema);
+		Optional<VersionHelper> oldVh = parseVersion(oldVersion, schema, false);
+		Optional<VersionHelper> newVh = parseVersion(newVersion, schema, false);
 		if (oldVh.isPresent() && newVh.isPresent()) {
 			List<ParsedVersionElement> schemaPveList = parseSchema(schema);
 			int minVersionLength = Math.min(oldVh.get().getVersionComponents().size(), newVh.get().getVersionComponents().size());

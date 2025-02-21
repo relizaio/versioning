@@ -20,7 +20,7 @@ class VersionUtilsTest {
 	void testParseVersion_Semver() {
 		String version = "1.0.0";
 		String schema = "semver";
-		VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("1");
 		versionComponentsExpected.add("0");
@@ -33,7 +33,7 @@ class VersionUtilsTest {
 	void testParseVersion_BranchWithVersionInName() {
 		String version = "dependabot/npm_and_yarn/vue/cli-plugin-babel-4.5.13.0";
 		String schema = "Branch.Micro";
-		VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("dependabot/npm_and_yarn/vue/cli-plugin-babel-4.5.13");
 		versionComponentsExpected.add("0");
@@ -45,7 +45,7 @@ class VersionUtilsTest {
     public void testParseVersion_SemverPlusModifer() {
     	String version = "1.3.6-alpha.1+1234.234.5";
     	String schema = "semver";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("1");
 		versionComponentsExpected.add("3");
@@ -58,7 +58,7 @@ class VersionUtilsTest {
     public void testParseVersion_BranchWithVersionInName2() {
     	String version = "branch-name/subbranch-name/test-name-1.2.3.3.4";
     	String schema = "Branch.Major.Micro";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
 		versionComponentsExpected.add("3");
@@ -71,7 +71,7 @@ class VersionUtilsTest {
     public void testParseVersion_BranchWithVersionInName3() {
     	String version = "branch-name/subbranch-name/test-name-1.2.3.20.3.4";
     	String schema = "Branch.YY.Major.Micro";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
 		versionComponentsExpected.add("20");
@@ -85,7 +85,7 @@ class VersionUtilsTest {
     public void testParseVersion_BranchWithVersionInName4() {
     	String version = "branch-name/subbranch-name/test-name-1.2.3.23." + AppTest.CURRENT_MONTH + ".3.4";
     	String schema = "Branch.YY.0M.Major.Micro";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema).get();
+    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
 		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
 		String month = AppTest.CURRENT_MONTH_SINGLE;
