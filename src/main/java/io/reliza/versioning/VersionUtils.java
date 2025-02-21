@@ -278,17 +278,17 @@ public class VersionUtils {
 			ParsedVersionElement schemaEl = schemaEls.get(schemaElIndex);
 			Pattern p = schemaEl.ve().getRegexPattern();
 			boolean matching = p.matcher(verSplit.get(0)).matches();
-			if (!matching && isPin) matching = schemaEl.ve().name().equalsIgnoreCase(verSplit.get(0));
+			if (!matching && isPin) matching = schemaEl.ve() == VersionElement.getVersionElement(verSplit.get(0));
 			if (matching) ovc = Optional.of(new VersionComponent(schemaEl, verSplit.get(0)));
 		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size()) {
 			ParsedVersionElement schemaEl1 = schemaEls.get(schemaElIndex);
 			ParsedVersionElement schemaEl2 = schemaEls.get(schemaElIndex + 1);
 			Pattern p1 = schemaEl1.ve().getRegexPattern();
 			boolean matching1 = p1.matcher(verSplit.get(0)).matches();
-			if (!matching1 && isPin) matching1 = schemaEl1.ve().name().equalsIgnoreCase(verSplit.get(0));
+			if (!matching1 && isPin) matching1 = schemaEl1.ve() == VersionElement.getVersionElement(verSplit.get(0));
 			Pattern p2 = schemaEl2.ve().getRegexPattern();
 			boolean matching2 = p2.matcher(verSplit.get(1)).matches();
-			if (!matching2 && isPin) matching2 = schemaEl2.ve().name().equalsIgnoreCase(verSplit.get(1));
+			if (!matching2 && isPin) matching2 = schemaEl2.ve() == VersionElement.getVersionElement(verSplit.get(1));
 			if (matching1 && matching2) ovc = Optional.of(new VersionComponent(schemaEl1, verSplit.get(0)));
 		} else if (verSplit.size() > 2) {
 			ovc = resolveVersionSchemaParseElement(verSplit.subList(0, 2), schemaEls, schemaElIndex, isPin);
