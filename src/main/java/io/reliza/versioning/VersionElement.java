@@ -19,25 +19,25 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum VersionElement {
 	
-	MAJOR(Set.of("major"), "^\\d+$"),
-	MINOR(Set.of("minor"), "^\\d+$"),
-	PATCH(Set.of("micro", "patch"), "^\\d+$"),
-	NANO(Set.of("nano"), "^\\d+$"),
-	SEMVER_MODIFIER(Set.of("modifier", "identifier", "mod", "ident", "id"), "^[a-zA-Z0-9]+$"),
-	CALVER_MODIFIER(Set.of("calvermodifier", "calvermod", "calverid", "stable"), "^[a-zA-Z0-9]+$"),
-	METADATA(Set.of("meta", "metadata"), "^[a-zA-Z0-9]+$"),
-	YYYY(Set.of("year", "yyyy"), "^[12][0-9]{3}$"),
-	YYYYOM(Set.of("yyyy0m", "yyyyom"), "^[12][0-9]{3}(?:1[0-2]|0[1-9])$"),
-    YYOM(Set.of("yy0m", "yyom"), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$"),
-    YY(Set.of("yy"), "^([1-9][0-9]|[1-9])?[0-9]$"),
-    OY(Set.of("oy", "0y"), "^([0-9])?[0-9]{2}$"),
-    MM(Set.of("mm", "month"), "^(1[0-2]|[1-9])$"),
-    OM(Set.of("om", "0m"), "^(1[0-2]|0[1-9])$"),
-    DD(Set.of("dd", "day"), "^(3[01]|[12][0-9]|[1-9])$"),
-    OD(Set.of("od", "0d"), "^(3[01]|[0-2][0-9])$"),
-    BUILDID(Set.of("build", "buildid", "cibuildid", "cibuild"), "^[a-zA-Z0-9]+$"),
-    BUILDENV(Set.of("cienv", "buildenv", "cibuildenv"), "^[a-zA-Z0-9]+$"),
-    BRANCH(Set.of("Branch", "branch", "branchName", "branchname"), "^[-./_a-zA-Z0-9\\:]+$")
+	MAJOR(Set.of("major"), "^\\d+$", false),
+	MINOR(Set.of("minor"), "^\\d+$", false),
+	PATCH(Set.of("micro", "patch"), "^\\d+$", false),
+	NANO(Set.of("nano"), "^\\d+$", false),
+	SEMVER_MODIFIER(Set.of("modifier", "identifier", "mod", "ident", "id"), "^[a-zA-Z0-9]+$", true),
+	CALVER_MODIFIER(Set.of("calvermodifier", "calvermod", "calverid", "stable"), "^[a-zA-Z0-9]+$", true),
+	METADATA(Set.of("meta", "metadata"), "^[a-zA-Z0-9]+$", false),
+	YYYY(Set.of("year", "yyyy"), "^[12][0-9]{3}$", false),
+	YYYYOM(Set.of("yyyy0m", "yyyyom"), "^[12][0-9]{3}(?:1[0-2]|0[1-9])$", false),
+    YYOM(Set.of("yy0m", "yyom"), "^([1-9][0-9]|[1-9])?[0-9](1[0-2]|0[1-9])$", false),
+    YY(Set.of("yy"), "^([1-9][0-9]|[1-9])?[0-9]$", false),
+    OY(Set.of("oy", "0y"), "^([0-9])?[0-9]{2}$", false),
+    MM(Set.of("mm", "month"), "^(1[0-2]|[1-9])$", false),
+    OM(Set.of("om", "0m"), "^(1[0-2]|0[1-9])$", false),
+    DD(Set.of("dd", "day"), "^(3[01]|[12][0-9]|[1-9])$", false),
+    OD(Set.of("od", "0d"), "^(3[01]|[0-2][0-9])$", false),
+    BUILDID(Set.of("build", "buildid", "cibuildid", "cibuild"), "^[a-zA-Z0-9]+$", false),
+    BUILDENV(Set.of("cienv", "buildenv", "cibuildenv"), "^[a-zA-Z0-9]+$", false),
+    BRANCH(Set.of("Branch", "branch", "branchName", "branchname"), "^[-./_a-zA-Z0-9\\:]+$", true)
 //	DOT_SEPARATOR(Set.of("."), "^\\.$"),
 //	UNDERSCORE_SEPARATOR(Set.of("_"), "^_$"),
 //	DASH_SEPARATOR(Set.of("-"), "^\\-$"),
@@ -49,6 +49,7 @@ public enum VersionElement {
 	
 	private Set<String> namingInSchema;
 	private Pattern regex;
+	private boolean mayContainSeparators;
 	
 	private static final Map<String, VersionElement> veLookupMap;
 	
@@ -65,9 +66,10 @@ public enum VersionElement {
 	 * @param namingInSchema
 	 * @param pattern
 	 */
-	private VersionElement (Set<String> namingInSchema, String pattern) {
+	private VersionElement (Set<String> namingInSchema, String pattern, boolean mayContainSeparators) {
 		this.namingInSchema = namingInSchema;
 		this.regex = Pattern.compile(pattern);
+		this.mayContainSeparators = mayContainSeparators;
 	}
 	
 	/**
@@ -97,6 +99,10 @@ public enum VersionElement {
 	 */
 	public Pattern getRegexPattern () {
 		return this.regex;
+	}
+	
+	public boolean isMayContainSeparators() {
+		return this.mayContainSeparators;
 	}
 	
 }

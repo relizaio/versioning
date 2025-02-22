@@ -294,8 +294,10 @@ public class VersionUtils {
 			boolean matching = p.matcher(verSplit.get(0)).matches();
 			if (!matching && isPin) matching = schemaEl.ve() == VersionElement.getVersionElement(verSplit.get(0));
 			if (matching) ovc = Optional.of(new VersionComponent(schemaEl, verSplit.get(0)));
-		} else if (verSplit.size() == 2 && schemaElIndex + 1 < schemaEls.size() 
-				&& (lastSplit || schemaElIndex + 2 < schemaEls.size())) {
+		} else if (verSplit.size() == 2 && (
+				!schemaEls.get(schemaElIndex).ve().isMayContainSeparators() ||
+				(schemaElIndex + 1 < schemaEls.size() 
+				&& (lastSplit || schemaElIndex + 2 < schemaEls.size())))) {
 			ParsedVersionElement schemaEl1 = schemaEls.get(schemaElIndex);
 			ParsedVersionElement schemaEl2 = schemaEls.get(schemaElIndex + 1);
 			Pattern p1 = schemaEl1.ve().getRegexPattern();
@@ -316,7 +318,7 @@ public class VersionUtils {
 				updatedVerSplit.addAll(verSplit.subList(2, verSplit.size()));
 				updatedVerSplitWithSeparators.addAll(verSplitWithSeparators.subList(2, verSplitWithSeparators.size()));
 				boolean curLastSplit = false;
-				if (verSplit.size() == 3) curLastSplit = true;
+				if ((verSplit.size() == 3)) curLastSplit = true;
 				ovc = resolveVersionSchemaParseElement(updatedVerSplit, updatedVerSplitWithSeparators, schemaEls, schemaElIndex,
 						isPin, curLastSplit);
 			}
