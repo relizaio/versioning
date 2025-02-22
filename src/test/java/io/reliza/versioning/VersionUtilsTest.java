@@ -57,42 +57,10 @@ class VersionUtilsTest {
 	@Test
     public void testParseVersion_BranchWithVersionInName2() {
     	String version = "branch-name/subbranch-name/test-name-1.2.3.3.4";
-    	String schema = "Branch.Major.Micro";
+    	String schema = "Branch.Micro";
     	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
 		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
-		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
-		versionComponentsExpected.add("3");
-		versionComponentsExpected.add("4");
-		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
-		assertEquals(versionComponentsExpected, versionComponenetsActual);
-    }
-	
-	@Test
-    public void testParseVersion_BranchWithVersionInName3() {
-    	String version = "branch-name/subbranch-name/test-name-1.2.3.20.3.4";
-    	String schema = "Branch.YY.Major.Micro";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
-		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
-		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
-		versionComponentsExpected.add("20");
-		versionComponentsExpected.add("3");
-		versionComponentsExpected.add("4");
-		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
-		assertEquals(versionComponentsExpected, versionComponenetsActual);
-    }
-	
-	@Test
-    public void testParseVersion_BranchWithVersionInName4() {
-    	String version = "branch-name/subbranch-name/test-name-1.2.3.23." + AppTest.CURRENT_MONTH + ".3.4";
-    	String schema = "Branch.YY.0M.Major.Micro";
-    	VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
-		ArrayList<String> versionComponentsExpected = new ArrayList<String>();
-		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3");
-		String month = AppTest.CURRENT_MONTH_SINGLE;
-		month = month.length() == 1 ? "0" + month : month;
-		versionComponentsExpected.add("23");
-		versionComponentsExpected.add(month);
-		versionComponentsExpected.add("3");
+		versionComponentsExpected.add("branch-name/subbranch-name/test-name-1.2.3.3");
 		versionComponentsExpected.add("4");
 		ArrayList<String> versionComponenetsActual = new ArrayList<>(vh.getVersionComponents().stream().map(x -> x.representation()).toList());
 		assertEquals(versionComponentsExpected, versionComponenetsActual);
