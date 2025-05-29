@@ -2,6 +2,8 @@
 
 This tool allows for automatic generation and bumping of [CalVer](https://calver.org/) or [SemVer](https://semver.org/) or custom version schemas. Motivational article: https://worklifenotes.com/2020/02/27/automatic-version-increments-with-reliza-hub-2-strategies/
 
+If you are looking for a versioning server using this library for automated software version management, refer to [Project ReARM](https://github.com/relizaio/rearm).
+
 
 <p align="center"><img src="/img/terminal_demo.gif?raw=true"/></p>
 
