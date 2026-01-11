@@ -46,3 +46,9 @@ jobs:
           echo "GPG_SIGNING_PASSWORD=$SIGN_PASS" >> gradle.properties
           # prepare gradle.properties for signing
           gradle publishAllPublicationsToCentralRepository -PcentralUser=$CENTRAL_USER -PcentralPassword=$CENTRAL_PASS
+      - name: Finalize deployment to Central Portal
+        # Required for new OSSRH Staging API - transfers deployment to Central Publisher Portal
+        if: success()
+        run: |
+          curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.reliza" \
+            -u "$CENTRAL_USER:$CENTRAL_PASS"
