@@ -1167,4 +1167,114 @@ public class AppTest
 		String expectedV = "1.2.0-test-feature.1+50";
 		assertEquals(expectedV, actualV);
     }
+
+	// ==================== Namespace Tests ====================
+
+	@Test
+	public void testGetVersionFromPinWithNamespace_NoModifier() {
+		// When no modifier exists and namespace is provided, modifier should be set to namespace
+		String schema = "YYYY.0M.Calvermodifier.Micro";
+		String pin = "2025.01.Calvermodifier.Micro";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPin(schema, pin, namespace);
+		assertEquals("2025.01.Snapshot.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_NumericModifierGetsNamespacePrefix() {
+		// When old version has numeric modifier like -1, it becomes -namespace2
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "2025.01.5-modifier";  // Micro is pinned to 5
+		String oldVersion = "2025.01.5-1";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("2025.01.5-rc2", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_ExistingNamespaceModifierBumpsNumber() {
+		// When old version already has namespace prefix like -rc1, just bump to -rc2
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "2025.01.5-modifier";  // Micro is pinned to 5
+		String oldVersion = "2025.01.5-rc1";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("2025.01.5-rc2", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_ExistingNamespaceModifierBumpsHigherNumber() {
+		// When old version has -rc5, bump to -rc6
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "2025.01.5-modifier";  // Micro is pinned to 5
+		String oldVersion = "2025.01.5-rc5";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("2025.01.5-rc6", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_CalverUpdateResetsToNamespace() {
+		// When calver date changes, modifier should reset to just namespace
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "YYYY.0M.Micro-modifier";
+		String oldVersion = "2024.12.5-rc3";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		// Since date changes to current, modifier resets to namespace
+		assertEquals(CURRENT_YEAR_LONG + "." + CURRENT_MONTH + ".0-rc", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_SemverWithNamespace() {
+		// Test namespace with semver schema - when patch bumps, modifier is cleared
+		String schema = "semver";
+		String pin = "1.2.patch";
+		String oldVersion = "1.2.3-2";
+		String namespace = "beta";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.4-beta", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_SemverWithNamespace_2() {
+		// Test namespace with semver schema - when patch is pinned, modifier bumps with namespace
+		String schema = "semver";
+		String pin = "1.2.4";  // patch is pinned, so modifier should bump
+		String oldVersion = "1.2.4-1";
+		String namespace = "beta";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.4-beta2", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_SemverWithNamespace_3() {
+		// Test namespace with semver schema - when patch is pinned, modifier bumps with namespace
+		String schema = "semver";
+		String pin = "1.2.4";  // patch is pinned, so modifier should bump
+		String oldVersion = "1.2.4-beta1";
+		String namespace = "beta";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.4-beta2", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_NullNamespaceBehavesAsOriginal() {
+		// When namespace is null, behavior should be same as original method
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "2025.01.5-modifier";  // Micro is pinned to 5
+		String oldVersion = "2025.01.5-1";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, null);
+		assertEquals("2025.01.5-2", v.constructVersionString());
+	}
+
+	@Test
+	public void testGetVersionFromPinAndOldVersionWithNamespace_EmptyNamespaceBehavesAsOriginal() {
+		// When namespace is empty string, behavior should be same as original method
+		String schema = "YYYY.0M.Micro-modifier";
+		String pin = "2025.01.5-modifier";  // Micro is pinned to 5
+		String oldVersion = "2025.01.5-1";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, "");
+		assertEquals("2025.01.5-2", v.constructVersionString());
+	}
 }

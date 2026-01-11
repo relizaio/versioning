@@ -724,6 +724,16 @@ public class Version implements Comparable<Version> {
 		return getVersionFromPinAndOldVersion(schema, pin, null, null);
 	}
 	
+	/** 
+	 * @param schema String  
+	 * @param pin String 
+	 * @param namespace String - if supplied and no modifier exists, modifier is set to namespace; if modifier exists, it becomes namespace + number
+	 * @return Version
+	 */
+	public static Version getVersionFromPin (String schema, String pin, String namespace) {
+		return getVersionFromPinAndOldVersion(schema, pin, null, null, namespace);
+	}
+	
 	/**
 	 * This method validates input for get version call and throws exception if not valid
 	 * @param schema
@@ -940,16 +950,24 @@ public class Version implements Comparable<Version> {
 	 */
 	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
 		ActionEnum ae, Version oldV, List<VersionElement> schemaVeList) {
+		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList, null);
+	}
+
+	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
+		ActionEnum ae, Version oldV, List<VersionElement> schemaVeList, String namespace) {
 
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
-		} else if (isCalverUpdated(v, oldV)) {
+		} else if (isCalverUpdated(v, oldV, elsProtectedByPin)) {
 			// calver update happened, reset semver if not pinned
 			if (!elsProtectedByPin.contains(VersionElement.MINOR)) v.minor = 0;
 			if (!elsProtectedByPin.contains(VersionElement.MAJOR)) v.major = 0;
 			if (!elsProtectedByPin.contains(VersionElement.PATCH)) v.patch = 0;
 			if (!elsProtectedByPin.contains(VersionElement.NANO)) v.nano = 0;
+			if (StringUtils.isNotEmpty(namespace)) {
+				v.setModifier(namespace);
+			}
 		} else if (ae == ActionEnum.BUMP_MAJOR && !elsProtectedByPin.contains(VersionElement.MAJOR)) {
 			++v.major;
 			v.minor = 0;
@@ -962,6 +980,9 @@ public class Version implements Comparable<Version> {
 		} else if (ae != null && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
+			if (StringUtils.isNotEmpty(namespace)) {
+				v.setModifier(namespace);
+			}
 		} else if (oldV != null) {
 			// if everything is pinned but nano, bump nano, else do simple bump if old version present
 			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
@@ -971,31 +992,60 @@ public class Version implements Comparable<Version> {
 					 && schemaVeList.contains(VersionElement.NANO)) {
 				++v.nano;
 			} else {
-				resolveModifierMetadataUpdate(v, oldV);
+				resolveModifierMetadataUpdate(v, oldV, namespace);
 			}
+		} else if (StringUtils.isNotEmpty(namespace) && StringUtils.isEmpty(v.modifier)) {
+			v.setModifier(namespace);
 		}
 	}
 
 	private static void resolveModifierMetadataUpdate (Version v, Version oldV) {
-		if (StringUtils.isEmpty(v.modifier)) {
-			v.setModifier("1");
-		} else if (isInteger(v.modifier)) {
-			Integer i = Integer.parseInt(v.modifier) + 1;
-			v.setModifier(i.toString());
-		} else if (isInteger(oldV.metadata)) {
-			if (StringUtils.isEmpty(v.metadata) || !isInteger(v.metadata)) {
-				v.setMetadata("1");
+		resolveModifierMetadataUpdate(v, oldV, null);
+	}
+
+	private static void resolveModifierMetadataUpdate (Version v, Version oldV, String namespace) {
+		if (StringUtils.isNotEmpty(namespace)) {
+			if (StringUtils.isEmpty(v.modifier)) {
+				v.setModifier(namespace + "1");
+			} else if (isInteger(v.modifier)) {
+				// modifier is just a number like "1", "2" - prepend namespace
+				Integer i = Integer.parseInt(v.modifier) + 1;
+				v.setModifier(namespace + i.toString());
+			} else if (v.modifier.startsWith(namespace) && isInteger(v.modifier.substring(namespace.length()))) {
+				// modifier already has namespace prefix like "rc1", "rc2" - just bump the number
+				Integer i = Integer.parseInt(v.modifier.substring(namespace.length())) + 1;
+				v.setModifier(namespace + i.toString());
+			} else if (isInteger(oldV.metadata)) {
+				if (StringUtils.isEmpty(v.metadata) || !isInteger(v.metadata)) {
+					v.setMetadata("1");
+				} else {
+					Integer i = Integer.parseInt(v.metadata) + 1;
+					v.setMetadata(i.toString());
+				}
 			} else {
-				Integer i = Integer.parseInt(v.metadata) + 1;
-				v.setMetadata(i.toString());
+				v.simpleBump();
 			}
 		} else {
-			v.simpleBump();
+			if (StringUtils.isEmpty(v.modifier)) {
+				v.setModifier("1");
+			} else if (isInteger(v.modifier)) {
+				Integer i = Integer.parseInt(v.modifier) + 1;
+				v.setModifier(i.toString());
+			} else if (isInteger(oldV.metadata)) {
+				if (StringUtils.isEmpty(v.metadata) || !isInteger(v.metadata)) {
+					v.setMetadata("1");
+				} else {
+					Integer i = Integer.parseInt(v.metadata) + 1;
+					v.setMetadata(i.toString());
+				}
+			} else {
+				v.simpleBump();
+			}
 		}
 	}
 
 	private static boolean isInteger(String s) {
-		return s.matches("\\d+");
+		return StringUtils.isNotEmpty(s) && s.matches("\\d+");
 	}
 
 	/**
@@ -1009,6 +1059,21 @@ public class Version implements Comparable<Version> {
 	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
 	 */
 	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae) {
+		return getVersionFromPinAndOldVersion(schema, pin, oldVersionString, ae, null);
+	}
+	
+	/**
+	 * If oldVersionString is present and we're dealing with calver schema, this effectively does simple bump relative to old version date based on schema and pin
+	 * if it's semver schema and old version present, this will effectively return old version making sure it's matching schema and pin
+	 * if old version is not present, this will do simple bump relative to semver
+	 * @param schema String, required
+	 * @param pin String, required
+	 * @param oldVersionString String, optional
+	 * @param ae ActionEnum
+	 * @param namespace String, optional - if supplied and no modifier exists, modifier is set to namespace; if modifier exists, it becomes namespace + number
+	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
+	 */
+	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae, String namespace) {
 		validateGetVersionFromPinAndOldVersionInput(schema, pin, oldVersionString);
 		Version v = new Version();
 		v.schema = schema;
@@ -1049,7 +1114,7 @@ public class Version implements Comparable<Version> {
 		if (StringUtils.isEmpty(v.metadata) && ovh.isPresent()) v.metadata = ovh.get().metadata;
 		if (StringUtils.isEmpty(v.modifier) && ovh.isPresent()) v.modifier = ovh.get().modifier;
 
-		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList);
+		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList, namespace);
 
 		return v;
 	}
@@ -1060,9 +1125,22 @@ public class Version implements Comparable<Version> {
 	 * @param oldV
 	 * @return boolean
 	 */
-	private static boolean isCalverUpdated (final Version v, final Version oldV) {
+	private static boolean isCalverUpdated (final Version v, final Version oldV, final Set<VersionElement> elsProtectedByPin) {
 		boolean calverUpdated = false;
-		if (null != oldV && null != oldV.year && null != v.year) {
+		// Check if year elements are pinned - if any year element is pinned, skip year comparison
+		boolean yearPinned = elsProtectedByPin.contains(VersionElement.YYYY) 
+			|| elsProtectedByPin.contains(VersionElement.YY) 
+			|| elsProtectedByPin.contains(VersionElement.OY)
+			|| elsProtectedByPin.contains(VersionElement.YYOM)
+			|| elsProtectedByPin.contains(VersionElement.YYYYOM);
+		boolean monthPinned = elsProtectedByPin.contains(VersionElement.MM) 
+			|| elsProtectedByPin.contains(VersionElement.OM)
+			|| elsProtectedByPin.contains(VersionElement.YYOM)
+			|| elsProtectedByPin.contains(VersionElement.YYYYOM);
+		boolean dayPinned = elsProtectedByPin.contains(VersionElement.DD) 
+			|| elsProtectedByPin.contains(VersionElement.OD);
+		
+		if (!yearPinned && null != oldV && null != oldV.year && null != v.year) {
 			if (oldV.year.toString().length() == 2 && v.year.toString().length() == 4) {
 				Integer newYearNormalized = Integer.parseInt(v.year.toString().substring(2));
 				if (newYearNormalized > oldV.year) {
@@ -1072,10 +1150,10 @@ public class Version implements Comparable<Version> {
 				calverUpdated = (v.year > oldV.year);
 			}
 		}
-		if (!calverUpdated && null != oldV && null != oldV.month && null != v.month && v.month > oldV.month) {
+		if (!calverUpdated && !monthPinned && null != oldV && null != oldV.month && null != v.month && v.month > oldV.month) {
 			calverUpdated = true;
 		}
-		if (!calverUpdated && null != oldV && null != oldV.day && null != v.day && v.day > oldV.day) {
+		if (!calverUpdated && !dayPinned && null != oldV && null != oldV.day && null != v.day && v.day > oldV.day) {
 			calverUpdated = true;
 		}
 		return calverUpdated;
