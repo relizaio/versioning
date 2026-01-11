@@ -1504,4 +1504,50 @@ public class AppTest
 		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH);
 		assertEquals("1.2.4.0", v.constructVersionString());
 	}
+
+	// ==================== isSchemaSemver and isSchemaFourPartVersioning Tests ====================
+
+	@Test
+	public void testIsSchemaSemver_ValidSchemas() {
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Patch"));
+		assertTrue(VersionUtils.isSchemaSemver("major.minor.patch"));
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Micro"));  // micro is synonym for patch
+		assertTrue(VersionUtils.isSchemaSemver("major.minor.micro"));
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Build"));  // build is synonym for patch
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Patch-Modifier"));
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Patch+Metadata"));
+		assertTrue(VersionUtils.isSchemaSemver("Major.Minor.Patch-Modifier+Metadata"));
+		assertTrue(VersionUtils.isSchemaSemver("semver"));  // alias
+	}
+
+	@Test
+	public void testIsSchemaSemver_InvalidSchemas() {
+		assertFalse(VersionUtils.isSchemaSemver("Major.Minor"));
+		assertFalse(VersionUtils.isSchemaSemver("Major.Minor.Patch.Nano"));
+		assertFalse(VersionUtils.isSchemaSemver("YYYY.MM.Patch"));
+		assertFalse(VersionUtils.isSchemaSemver(""));
+	}
+
+	@Test
+	public void testIsSchemaFourPartVersioning_ValidSchemas() {
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch.Nano"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("major.minor.patch.nano"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Micro.Nano"));  // micro is synonym for patch
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Build.Nano"));  // build is synonym for patch
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch.Revision"));  // revision is synonym for nano
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Build.Revision"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch.Nano-Modifier"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch.Nano+Metadata"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch.Nano-Modifier+Metadata"));
+		assertTrue(VersionUtils.isSchemaFourPartVersioning("four_part"));  // alias
+	}
+
+	@Test
+	public void testIsSchemaFourPartVersioning_InvalidSchemas() {
+		assertFalse(VersionUtils.isSchemaFourPartVersioning("Major.Minor.Patch"));
+		assertFalse(VersionUtils.isSchemaFourPartVersioning("Major.Minor"));
+		assertFalse(VersionUtils.isSchemaFourPartVersioning("YYYY.MM.Patch.Nano"));
+		assertFalse(VersionUtils.isSchemaFourPartVersioning(""));
+		assertFalse(VersionUtils.isSchemaFourPartVersioning(null));
+	}
 }

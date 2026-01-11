@@ -466,40 +466,29 @@ public class VersionUtils {
 	
 	/**
 	 * This method is used to test if the specified schema string is Semver style schema or not.
-	 * Valid Semver: Major.Minor.Patch with optional +modifer and -metadata
+	 * Valid Semver: Major.Minor.Patch with optional -modifier and +metadata
+	 * Resolves synonyms (e.g., micro=patch, build=patch) and is case-insensitive.
 	 * @param schema String
 	 * @return true if schema is semver format, false otherwise
 	 */
 	public static boolean isSchemaSemver(String schema) {
-		Objects.requireNonNull(schema);
-		boolean isSemver = false;
+		if (StringUtils.isEmpty(schema)) return false;
+		// Check if it's the semver alias
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent() && ovt.get() == VersionType.SEMVER) return true;
+		// Parse schema to version elements and check structure
 		List<ParsedVersionElement> schemaVeList = parseSchema(schema);
-		if (schemaVeList.size() > 2) {
-			for (int i = 0; i < schemaVeList.size(); i++) {
-				VersionElement ve = schemaVeList.get(i).ve();
-				switch (i) {
-				case 0:
-					isSemver = ve.equals(VersionElement.MAJOR);
-					break;
-				case 1:
-					isSemver = ve.equals(VersionElement.MINOR);
-					break;
-				case 2:
-					isSemver = ve.equals(VersionElement.PATCH);
-					break;
-				case 3:
-					isSemver = ve.equals(VersionElement.SEMVER_MODIFIER);
-					break;
-				case 4:
-					isSemver = ve.equals(VersionElement.METADATA);
-					break;
-				default:
-					// any more than 5 elements and it is not semver
-					isSemver = false;
-				}
-			}
+		if (schemaVeList.size() < 3 || schemaVeList.size() > 5) return false;
+		// Core semver must have exactly MAJOR, MINOR, PATCH (in that order) as first 3 elements
+		if (schemaVeList.get(0).ve() != VersionElement.MAJOR) return false;
+		if (schemaVeList.get(1).ve() != VersionElement.MINOR) return false;
+		if (schemaVeList.get(2).ve() != VersionElement.PATCH) return false;
+		// Remaining elements (if any) must be modifier or metadata only
+		for (int i = 3; i < schemaVeList.size(); i++) {
+			VersionElement ve = schemaVeList.get(i).ve();
+			if (ve != VersionElement.SEMVER_MODIFIER && ve != VersionElement.METADATA) return false;
 		}
-		return isSemver;
+		return true;
 	}
 	
 	/**
@@ -567,6 +556,33 @@ public class VersionUtils {
 	 * @param schema String Does not have to be strictly Semver. Must match both versions
 	 * @return VersionElement representing the largest differing semver version component between the two versions, or null if either version does match schema.
 	 */
+	/**
+	 * Checks if the given schema string represents a Four Part Versioning schema (Major.Minor.Patch.Nano with optional modifier and metadata).
+	 * Resolves synonyms (e.g., micro=patch, build=patch, revision=nano) and is case-insensitive.
+	 * @param schema String schema to check
+	 * @return true if schema is a Four Part Versioning schema, false otherwise
+	 */
+	public static boolean isSchemaFourPartVersioning(String schema) {
+		if (StringUtils.isEmpty(schema)) return false;
+		// Check if it's the four_part alias
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent() && ovt.get() == VersionType.FOUR_PART_VERSIONING) return true;
+		// Parse schema to version elements and check structure
+		List<ParsedVersionElement> elements = parseSchema(schema);
+		if (elements.size() < 4 || elements.size() > 6) return false;
+		// Core four-part must have exactly MAJOR, MINOR, PATCH, NANO (in that order) as first 4 elements
+		if (elements.get(0).ve() != VersionElement.MAJOR) return false;
+		if (elements.get(1).ve() != VersionElement.MINOR) return false;
+		if (elements.get(2).ve() != VersionElement.PATCH) return false;
+		if (elements.get(3).ve() != VersionElement.NANO) return false;
+		// Remaining elements (if any) must be optional modifier or metadata
+		for (int i = 4; i < elements.size(); i++) {
+			VersionElement ve = elements.get(i).ve();
+			if (ve != VersionElement.SEMVER_MODIFIER && ve != VersionElement.METADATA) return false;
+		}
+		return true;
+	}
+
 	public static VersionElement getLargestSemverVersionElementDifference(String oldVersion, String newVersion, String schema) {
 		Objects.requireNonNull(oldVersion, "Old version must not be null");
 		Objects.requireNonNull(newVersion, "New version must not be null");
