@@ -9,8 +9,8 @@ If you are looking for a versioning server using this library for automated soft
 
 
 ## 1. Features
-- Generate CalVer or SemVer versions
-- Bump CalVer or SemVer versions
+- Generate CalVer, SemVer, or Four-Part versions
+- Bump CalVer, SemVer, or Four-Part versions
 - Flexibility in creating and managing different flavors of versioning schemas
 - Usage as either Java Library or a CLI tool
 
@@ -32,6 +32,15 @@ java -jar versioning.jar -s semver -v 2.4.7 -a Bump
 or with docker:
 ```
 docker run --rm relizaio/versioning -s semver -v 2.4.7 -a Bump
+```
+
+#### 2.2.1. Bump nano in existing Four-Part version (will produce 1.2.3.5)
+```
+java -jar versioning.jar -s four_part -v 1.2.3.4 -a Bump
+```
+or with docker:
+```
+docker run --rm relizaio/versioning -s four_part -v 1.2.3.4 -a Bump
 ```
 
 #### 2.3. Sample call inside Reliza Versioning itself to bump version in the project's pom file, with snapshot option (-t flag) set to true:
@@ -60,7 +69,8 @@ Note that in any usage case other than help page -s (schema) parameter is requir
 Reliza Versioning understands following elements of versioning schema (case insensitive):
 - **Major**
 - **Minor**
-- **Micro** (or Patch)
+- **Micro** (or Patch, Build, Bugfix)
+- **Nano** (or Revision, Hotfix) - used in Four-Part versioning
 - **Year** (or YYYY) - 4-digit year presentation
 - **YY** - 2-digit year presentation, if 1st digit is 0, only second digit is shown
 - **OY** - 2 digit year presentation, if 1st digit is 0, it's still displayed as 0
@@ -81,7 +91,9 @@ Dot (.), underscore(_) may be used as separators. Dash (-) or plus (+) may be us
 
 Note: for SemVer always use "modifier" notation, for CalVer still use "modifier" if it's used after -, i.e. YYYY.MM-modifier, but use calvermodifier in the dot notation, i.e. YYYY.MM.Calvermodifier.Patch
 
-Reliza Versioning also understands "SemVer" as a code for "major.minor.patch-identifier+metadata" (where identifier and metadata are treated as optional).
+Reliza Versioning also understands the following schema aliases:
+- **"SemVer"** - resolves to "Major.Minor.Patch-Modifier?+Metadata?" (where modifier and metadata are optional)
+- **"four_part"** - resolves to "Major.Minor.Patch.Nano-Modifier?+Metadata?" for Four-Part versioning (e.g., 1.2.3.4)
 
 ## 3 Different ways to use - CLI vs Java Library
 
