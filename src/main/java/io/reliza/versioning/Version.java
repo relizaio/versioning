@@ -297,6 +297,16 @@ public class Version implements Comparable<Version> {
 					versionString.append(separators.get(i));
 				}
 			}
+			// If schema doesn't have modifier but modifier is set, append it for pure semver/four-part schemas
+			// Only do this for schemas that are exactly Major.Minor.Patch or Major.Minor.Patch.Nano (no calver elements)
+			boolean schemaHasModifier = schemaPveList.stream()
+				.anyMatch(pve -> pve.ve() == VersionElement.SEMVER_MODIFIER || pve.ve() == VersionElement.CALVER_MODIFIER);
+			boolean isPureSemverOrFourPart = VersionUtils.isSchemaSemver(useSchema) || VersionUtils.isSchemaFourPartVersioning(useSchema);
+			if (!schemaHasModifier && StringUtils.isNotEmpty(this.modifier) && isPureSemverOrFourPart) {
+				versionString.append('-');
+				versionString.append(this.modifier);
+			}
+			
 			Boolean setSnapshot = (null == setIsSnapshot) ? null : setIsSnapshot;
 			if (null == setSnapshot) {
 				setSnapshot = isSnapshot();

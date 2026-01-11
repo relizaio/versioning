@@ -1550,4 +1550,16 @@ public class AppTest
 		assertFalse(VersionUtils.isSchemaFourPartVersioning(""));
 		assertFalse(VersionUtils.isSchemaFourPartVersioning(null));
 	}
+
+	@Test
+	public void testFourPartVersioning_BumpWithNoModifierInSchema() {
+		// When schema is Major.Minor.Micro.Nano (no modifier in schema) and all elements are pinned,
+		// BUMP should add a modifier to the version string
+		String schema = "Major.Minor.Micro.Nano";
+		String pin = "0.0.5.7";
+		String oldVersion = "0.0.5.7";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, null);
+		// Since all 4 components are pinned, modifier should be bumped
+		assertEquals("0.0.5.7-1", v.constructVersionString());
+	}
 }
