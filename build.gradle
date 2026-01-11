@@ -7,7 +7,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'java'
-    id 'org.graalvm.buildtools.native' version '0.9.25'
+    id 'org.graalvm.buildtools.native' version '0.10.4'
     id 'signing'
 }
 
@@ -27,14 +27,14 @@ dependencies {
 group = 'io.reliza'
 version = '2023.07.5'
 description = 'versioning'
-java.sourceCompatibility = JavaVersion.VERSION_17
-java.targetCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_21
+java.targetCompatibility = JavaVersion.VERSION_21
 
 task changeVersion {
 	doLast {
 		if(project.hasProperty('newVersion')) {
-			String s=buildFile.getText().replaceFirst("version = '$version'","version = '"+newVersion+"'")
-			buildFile.setText(s)
+			String s=buildFile.text.replaceFirst("version = '$version'","version = '"+newVersion+"'")
+			buildFile.text = s
 		}
 	}
 }
@@ -123,8 +123,8 @@ tasks.withType(Sign) {
 }
 
 signing {
-    def signingKey = GPG_SIGNING_KEY
-    def signingPassword = GPG_SIGNING_PASSWORD
+    def signingKey = findProperty('GPG_SIGNING_KEY') ?: ''
+    def signingPassword = findProperty('GPG_SIGNING_PASSWORD') ?: ''
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.versioning
 }
@@ -146,11 +146,10 @@ graalvmNative {
         
             useFatJar = true // Instead of passing each jar individually, builds a fat jar
 			javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(17)
+                languageVersion = JavaLanguageVersion.of(25)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
             }
 			buildArgs.add('--no-fallback') 
-			buildArgs.add('--static') 
         }
     }
 }
