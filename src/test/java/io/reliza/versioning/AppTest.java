@@ -8,6 +8,7 @@ package io.reliza.versioning;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZoneId;
@@ -1169,6 +1170,15 @@ public class AppTest
     }
 
 	// ==================== Namespace Tests ====================
+
+	@Test
+	public void testGetVersionFromPinWithSemverAlias_NoSchemaKeywordsInOutput() {
+		// When pin is 'semver' alias, metadata and modifier should be empty, not 'Metadata?' or 'Modifier?'
+		Version v = Version.getVersionFromPin("semver", "semver", null);
+		assertEquals("0.0.0", v.constructVersionString());
+		assertNull(v.getModifier());
+		assertNull(v.getMetadata());
+	}
 
 	@Test
 	public void testGetVersionFromPinWithNamespace_NoModifier() {

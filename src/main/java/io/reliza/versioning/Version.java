@@ -1111,8 +1111,13 @@ public class Version implements Comparable<Version> {
 			}
 		}
 		
-		if (StringUtils.isEmpty(v.metadata) && ovh.isPresent()) v.metadata = ovh.get().metadata;
-		if (StringUtils.isEmpty(v.modifier) && ovh.isPresent()) v.modifier = ovh.get().modifier;
+		// Only set metadata/modifier from pin if they are actual values, not schema keywords (ending with ?)
+		if (StringUtils.isEmpty(v.metadata) && ovh.isPresent() && ovh.get().metadata != null && !ovh.get().metadata.endsWith("?")) {
+			v.metadata = ovh.get().metadata;
+		}
+		if (StringUtils.isEmpty(v.modifier) && ovh.isPresent() && ovh.get().modifier != null && !ovh.get().modifier.endsWith("?")) {
+			v.modifier = ovh.get().modifier;
+		}
 
 		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList, namespace);
 
