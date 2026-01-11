@@ -1287,4 +1287,221 @@ public class AppTest
 		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, "");
 		assertEquals("2025.01.5-2", v.constructVersionString());
 	}
+
+	// ==================== Four Part Versioning Tests ====================
+
+	@Test
+	public void testFourPartVersioning_AliasResolution() {
+		// Test that 'four_part' alias resolves correctly
+		String schema = "four_part";
+		String pin = "four_part";
+		Version v = Version.getVersionFromPin(schema, pin, null);
+		assertEquals("0.0.0.0", v.constructVersionString());
+		assertNull(v.getModifier());
+		assertNull(v.getMetadata());
+	}
+
+	@Test
+	public void testFourPartVersioning_SchemaMatching() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String version = "1.2.3.4";
+		assertTrue(VersionUtils.isVersionMatchingSchema(schema, version));
+	}
+
+	@Test
+	public void testFourPartVersioning_SchemaMatchingWithModifier() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String version = "1.2.3.4-beta";
+		assertTrue(VersionUtils.isVersionMatchingSchema(schema, version));
+	}
+
+	@Test
+	public void testFourPartVersioning_SchemaMatchingWithMetadata() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String version = "1.2.3.4+build123";
+		assertTrue(VersionUtils.isVersionMatchingSchema(schema, version));
+	}
+
+	@Test
+	public void testFourPartVersioning_SchemaMatchingWithModifierAndMetadata() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String version = "1.2.3.4-rc1+build123";
+		assertTrue(VersionUtils.isVersionMatchingSchema(schema, version));
+	}
+
+	@Test
+	public void testFourPartVersioning_PinMatching() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.nano";
+		assertTrue(VersionUtils.isPinMatchingSchema(schema, pin));
+	}
+
+	@Test
+	public void testFourPartVersioning_PinMatchingWithRevision() {
+		// Test that 'revision' synonym works for NANO
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.revision";
+		assertTrue(VersionUtils.isPinMatchingSchema(schema, pin));
+	}
+
+	@Test
+	public void testFourPartVersioning_InitializeFromPin() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.nano";
+		Version v = Version.getVersionFromPin(schema, pin);
+		assertEquals("1.2.0.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_InitializeFromPinWithRevision() {
+		// Test that 'revision' synonym works in pin
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.revision";
+		Version v = Version.getVersionFromPin(schema, pin);
+		assertEquals("1.2.0.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_BumpNano() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.3.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP);
+		assertEquals("1.2.3.6", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_BumpPatch() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH);
+		assertEquals("1.2.4.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_BumpMinor() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.minor.patch.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_MINOR);
+		assertEquals("1.3.0.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_BumpMajor() {
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "major.minor.patch.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_MAJOR);
+		assertEquals("2.0.0.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_WithNamespace_NoModifier() {
+		// When no modifier exists and namespace is provided, modifier should be set to namespace+1
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.3.4";  // all pinned
+		String oldVersion = "1.2.3.4";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.3.4-rc1", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_WithNamespace_NumericModifier() {
+		// When old version has numeric modifier, it becomes namespace + (number+1)
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.3.4";  // all pinned
+		String oldVersion = "1.2.3.4-1";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.3.4-rc2", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_WithNamespace_ExistingNamespaceModifier() {
+		// When old version already has namespace prefix, just bump the number
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.3.4";  // all pinned
+		String oldVersion = "1.2.3.4-rc1";
+		String namespace = "rc";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, namespace);
+		assertEquals("1.2.3.4-rc2", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_WithNamespace_BumpPatchSetsNamespace() {
+		// When patch bumps with namespace, modifier should be set to namespace
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.patch.nano";
+		String oldVersion = "1.2.3.5";
+		String namespace = "beta";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH, namespace);
+		assertEquals("1.2.4.0-beta", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_NullNamespaceBehavesAsOriginal() {
+		// When namespace is null, behavior should be same as original
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		String pin = "1.2.3.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, null);
+		assertEquals("1.2.3.6", v.constructVersionString());
+	}
+
+	@Test
+	public void testFourPartVersioning_VersionComparison() {
+		// Version compareTo sorts in descending order (newest first)
+		String schema = VersionType.FOUR_PART_VERSIONING.getSchema();
+		Version v1 = Version.getVersion("1.2.3.4", schema);
+		Version v2 = Version.getVersion("1.2.3.5", schema);
+		List<Version> vList = new LinkedList<>();
+		vList.add(v1);
+		vList.add(v2);
+		Collections.sort(vList);
+		assertEquals("1.2.3.5", vList.get(0).constructVersionString());
+		assertEquals("1.2.3.4", vList.get(1).constructVersionString());
+	}
+
+	@Test
+	public void testBugfixSynonymForPatch() {
+		// Test that 'bugfix' works as synonym for PATCH
+		String schema = "Major.Minor.Bugfix.Nano";
+		String pin = "1.2.bugfix.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH);
+		assertEquals("1.2.4.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testBuildSynonymForPatch() {
+		// Test that 'build' works as synonym for PATCH
+		String schema = "Major.Minor.Build.Nano";
+		String pin = "1.2.build.nano";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH);
+		assertEquals("1.2.4.0", v.constructVersionString());
+	}
+
+	@Test
+	public void testRevisionSynonymForNano() {
+		// Test that 'revision' works as synonym for NANO
+		String schema = "Major.Minor.Patch.Revision";
+		String pin = "1.2.3.revision";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP);
+		assertEquals("1.2.3.6", v.constructVersionString());
+	}
+
+	@Test
+	public void testMajorMinorBugfixRevisionSchema() {
+		// Test full major.minor.bugfix.revision schema
+		String schema = "Major.Minor.Bugfix.Revision-Modifier?";
+		String pin = "1.2.bugfix.revision";
+		String oldVersion = "1.2.3.5";
+		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP_PATCH);
+		assertEquals("1.2.4.0", v.constructVersionString());
+	}
 }

@@ -959,6 +959,9 @@ public class Version implements Comparable<Version> {
 		if (ae == ActionEnum.BUMP_PATCH && !elsProtectedByPin.contains(VersionElement.PATCH)) {
 			++v.patch;
 			v.nano = 0;
+			if (StringUtils.isNotEmpty(namespace)) {
+				v.setModifier(namespace);
+			}
 		} else if (isCalverUpdated(v, oldV, elsProtectedByPin)) {
 			// calver update happened, reset semver if not pinned
 			if (!elsProtectedByPin.contains(VersionElement.MINOR)) v.minor = 0;
@@ -984,12 +987,16 @@ public class Version implements Comparable<Version> {
 				v.setModifier(namespace);
 			}
 		} else if (oldV != null) {
-			// if everything is pinned but nano, bump nano, else do simple bump if old version present
-			Set<VersionElement> schemaSetWithoutNano = new HashSet<VersionElement>();
-			schemaSetWithoutNano.addAll(schemaVeList);
-			schemaSetWithoutNano.remove(VersionElement.NANO);
-			if (elsProtectedByPin.containsAll(schemaSetWithoutNano) 
-					 && schemaVeList.contains(VersionElement.NANO)) {
+			// if everything is pinned but nano (and optional elements), bump nano, else do simple bump if old version present
+			Set<VersionElement> schemaSetWithoutNanoAndOptional = new HashSet<VersionElement>();
+			schemaSetWithoutNanoAndOptional.addAll(schemaVeList);
+			schemaSetWithoutNanoAndOptional.remove(VersionElement.NANO);
+			schemaSetWithoutNanoAndOptional.remove(VersionElement.SEMVER_MODIFIER);
+			schemaSetWithoutNanoAndOptional.remove(VersionElement.CALVER_MODIFIER);
+			schemaSetWithoutNanoAndOptional.remove(VersionElement.METADATA);
+			if (elsProtectedByPin.containsAll(schemaSetWithoutNanoAndOptional) 
+					 && schemaVeList.contains(VersionElement.NANO)
+					 && !elsProtectedByPin.contains(VersionElement.NANO)) {
 				++v.nano;
 			} else {
 				resolveModifierMetadataUpdate(v, oldV, namespace);
@@ -997,10 +1004,6 @@ public class Version implements Comparable<Version> {
 		} else if (StringUtils.isNotEmpty(namespace) && StringUtils.isEmpty(v.modifier)) {
 			v.setModifier(namespace);
 		}
-	}
-
-	private static void resolveModifierMetadataUpdate (Version v, Version oldV) {
-		resolveModifierMetadataUpdate(v, oldV, null);
 	}
 
 	private static void resolveModifierMetadataUpdate (Version v, Version oldV, String namespace) {

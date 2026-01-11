@@ -19,6 +19,7 @@ public enum VersionType {
 	CALVER_RELIZA("YYYY.0M.Calvermodifier.Micro+Metadata?", ""),
 	CALVER_RELIZA_2020("YYYY.0M.Calvermodifier.Minor.Micro+Metadata?", ""),
 	SEMVER("Major.Minor.Patch-Modifier?+Metadata?", "semver"),
+	FOUR_PART_VERSIONING("Major.Minor.Patch.Nano-Modifier?+Metadata?", "four_part"),
 	FEATURE_BRANCH("Branch.Micro", ""),
 	FEATURE_BRANCH_CALVER("YYYY.0M.Branch.Micro", "")
 	;

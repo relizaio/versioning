@@ -21,8 +21,8 @@ public enum VersionElement {
 	
 	MAJOR(Set.of("major"), "^\\d+$", false),
 	MINOR(Set.of("minor"), "^\\d+$", false),
-	PATCH(Set.of("micro", "patch"), "^\\d+$", false),
-	NANO(Set.of("nano"), "^\\d+$", false),
+	PATCH(Set.of("micro", "patch", "bugfix", "build"), "^\\d+$", false),
+	NANO(Set.of("nano", "revision", "hotfix"), "^\\d+$", false),
 	SEMVER_MODIFIER(Set.of("modifier", "identifier", "mod", "ident", "id"), "^[a-zA-Z0-9]+$", true),
 	CALVER_MODIFIER(Set.of("calvermodifier", "calvermod", "calverid", "stable"), "^[a-zA-Z0-9]+$", true),
 	METADATA(Set.of("meta", "metadata"), "^[a-zA-Z0-9]+$", false),
@@ -35,7 +35,7 @@ public enum VersionElement {
     OM(Set.of("om", "0m"), "^(1[0-2]|0[1-9])$", false),
     DD(Set.of("dd", "day"), "^(3[01]|[12][0-9]|[1-9])$", false),
     OD(Set.of("od", "0d"), "^(3[01]|[0-2][0-9])$", false),
-    BUILDID(Set.of("build", "buildid", "cibuildid", "cibuild"), "^[a-zA-Z0-9]+$", false),
+    BUILDID(Set.of("buildid", "cibuildid", "cibuild"), "^[a-zA-Z0-9]+$", false),
     BUILDENV(Set.of("cienv", "buildenv", "cibuildenv"), "^[a-zA-Z0-9]+$", false),
     BRANCH(Set.of("Branch", "branch", "branchName", "branchname"), "^[-./_a-zA-Z0-9\\:]+$", true)
 //	DOT_SEPARATOR(Set.of("."), "^\\.$"),
