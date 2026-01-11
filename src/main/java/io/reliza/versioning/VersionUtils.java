@@ -7,7 +7,6 @@ package io.reliza.versioning;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -162,41 +161,6 @@ public class VersionUtils {
 	}
 
 	/**
-	 * This method creates regex to split version string into parts based on schema.
-	 * @param schema
-	 * @param splitRegex
-	 * @return
-	 */
-	private static String constructSchemaRegexFromSchema (String schema, String splitRegex) {
-		String schemaRegex = "";
-		List<ParsedVersionElement> pveList = parseSchema(schema);
-		// Make sure splitRegex is not a capturing group
-		if (splitRegex.startsWith("(")) {
-			splitRegex = splitRegex.replace("(", "(?:");
-		}
-		String separator = splitRegex;
-		for (ParsedVersionElement pve : pveList) {
-			// Remove first and last characters from regex patter string (^ and $)
-			String veRegex = pve.ve().getRegexPattern().pattern().substring(1, pve.ve().getRegexPattern().pattern().length()-1);
-			Set<String> pinElement = pve.ve().getNamingInSchema();
-			String pinRegex = pinElement.stream().reduce("", (partialString, element) -> partialString + "|" + element);
-			veRegex = veRegex + pinRegex;
-			// If version element regex has capturing groups -> make non capture groups so they do not interfere
-			if (veRegex.startsWith("(")) {
-				veRegex = veRegex.replace("(", "(?:");
-			}
-			// Construct total schema regex from individual version element regex's
-			if (schemaRegex.equals("")) { // first
-				schemaRegex += "(" + veRegex + ")";
-			} else {
-				separator = StringUtils.isEmpty(pve.frontSeparator()) ? splitRegex : "(?:\\" + pve.frontSeparator() + ")";
-				schemaRegex += separator + "(?=" + veRegex + ")(" + veRegex + ")";
-			}
-		}
-		return schemaRegex;
-	}
-
-	/**
 	 * This method parses version string into VersionHelper based on provided schema
 	 * The need for schema arises where version elements need to include special characters themselves, such as dashes, periods or underscores
 	 * @param version String
@@ -324,12 +288,6 @@ public class VersionUtils {
 			}
 		}
 		return ovc;
-	}
-	
-	private static String normalizeSeparator (String separator) {
-		if (".".equals(separator)) separator = "\\.";
-		if ("+".equals(separator)) separator = "\\+";
-		return separator;
 	}
 	
 	/**

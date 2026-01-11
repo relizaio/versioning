@@ -101,7 +101,6 @@ public class Version implements Comparable<Version> {
 	private String buildenv; // i.e. circleci
 	private String branch; // name of branch, i.e. 234-ticket_I_work_on
 	private boolean isSnapshot;
-	private VersionType versionType;
 	
 	/**
 	 * Private constructor to denote uninitializable class
