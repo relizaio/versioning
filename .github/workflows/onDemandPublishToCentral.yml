@@ -17,13 +17,13 @@ jobs:
       RELIZA_API_KEY: ${{ secrets.RELIZA_API_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 50
-      - name: Setup JDK 11
-        uses: actions/setup-java@v1
+      - name: Setup JDK
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
-          java-version: 11
+          java-version: 25
       - name: Get version
         run: |
           latest_rlz=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION)
