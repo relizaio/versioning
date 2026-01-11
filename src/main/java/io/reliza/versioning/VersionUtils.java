@@ -74,6 +74,32 @@ public class VersionUtils {
 		}
 		return retList;
 	}
+
+	/**
+	 * Checks if the given schema string is valid (all parts are recognized version elements).
+	 * @param schema String schema to validate
+	 * @return true if schema is valid and parseable, false otherwise
+	 */
+	public static boolean isSchemaValid(String schema) {
+		if (StringUtils.isEmpty(schema)) return false;
+		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
+		if (ovt.isPresent()) return true;
+		String[] strElements = schema.split(SPLIT_REGEX);
+		for (int i = 0; i < strElements.length; i++) {
+			String el = strElements[i];
+			if (i > 0) {
+				el = el.substring(1);
+			}
+			if (el.endsWith("?")) {
+				el = el.substring(0, el.length() - 1);
+			}
+			VersionElement ve = VersionElement.getVersionElement(el);
+			if (null == ve) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	/**
 	 * This method extracts separators from schema
@@ -476,6 +502,8 @@ public class VersionUtils {
 		// Check if it's the semver alias
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
 		if (ovt.isPresent() && ovt.get() == VersionType.SEMVER) return true;
+		// Check if schema is valid before parsing
+		if (!isSchemaValid(schema)) return false;
 		// Parse schema to version elements and check structure
 		List<ParsedVersionElement> schemaVeList = parseSchema(schema);
 		if (schemaVeList.size() < 3 || schemaVeList.size() > 5) return false;
@@ -497,6 +525,8 @@ public class VersionUtils {
 	 * @return true if schema contains a year element
 	 */
 	public static boolean isSchemaCalver (String schema) {
+		if (StringUtils.isEmpty(schema)) return false;
+		if (!isSchemaValid(schema)) return false;
 		boolean isCalver = false;
 		Set<VersionElement> veSet = parseSchema(schema).stream().map(x -> x.ve()).collect(Collectors.toSet());
 		if (veSet.contains(VersionElement.OY) || 
@@ -567,6 +597,8 @@ public class VersionUtils {
 		// Check if it's the four_part alias
 		Optional<VersionType> ovt = VersionType.resolveByAliasName(schema);
 		if (ovt.isPresent() && ovt.get() == VersionType.FOUR_PART_VERSIONING) return true;
+		// Check if schema is valid before parsing
+		if (!isSchemaValid(schema)) return false;
 		// Parse schema to version elements and check structure
 		List<ParsedVersionElement> elements = parseSchema(schema);
 		if (elements.size() < 4 || elements.size() > 6) return false;

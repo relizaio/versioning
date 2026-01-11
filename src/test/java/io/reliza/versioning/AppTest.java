@@ -1526,6 +1526,7 @@ public class AppTest
 		assertFalse(VersionUtils.isSchemaSemver("Major.Minor.Patch.Nano"));
 		assertFalse(VersionUtils.isSchemaSemver("YYYY.MM.Patch"));
 		assertFalse(VersionUtils.isSchemaSemver(""));
+		assertFalse(VersionUtils.isSchemaSemver("1.2.micro.nano"));  // version pin, not schema
 	}
 
 	@Test
@@ -1549,6 +1550,14 @@ public class AppTest
 		assertFalse(VersionUtils.isSchemaFourPartVersioning("YYYY.MM.Patch.Nano"));
 		assertFalse(VersionUtils.isSchemaFourPartVersioning(""));
 		assertFalse(VersionUtils.isSchemaFourPartVersioning(null));
+		assertFalse(VersionUtils.isSchemaFourPartVersioning("1.2.micro.nano"));  // version string, not schema
+	}
+
+	@Test
+	public void testIsSchemaCalver_InvalidSchemas() {
+		assertFalse(VersionUtils.isSchemaCalver(""));
+		assertFalse(VersionUtils.isSchemaCalver(null));
+		assertFalse(VersionUtils.isSchemaCalver("1.2.micro.nano"));  // version pin, not schema
 	}
 
 	@Test
