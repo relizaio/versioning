@@ -23,7 +23,8 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
-          java-version: 25
+          java-version: 21
+          distribution: temurin
       - name: Get version
         run: |
           latest_rlz=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION)
