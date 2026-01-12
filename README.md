@@ -93,7 +93,7 @@ Note: for SemVer always use "modifier" notation, for CalVer still use "modifier"
 
 Reliza Versioning also understands the following schema aliases:
 - **"SemVer"** - resolves to "Major.Minor.Patch-Modifier?+Metadata?" (where modifier and metadata are optional)
-- **"four_part"** - resolves to "Major.Minor.Patch.Nano-Modifier?+Metadata?" for Four-Part versioning (e.g., 1.2.3.4)
+- **"four_part"** - resolves to "Major.Minor.Patch.Nano-Modifier?" for Four-Part versioning (e.g., 1.2.3.4)
 
 ## 3 Different ways to use - CLI vs Java Library
 
