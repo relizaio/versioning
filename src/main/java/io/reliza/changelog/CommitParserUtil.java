@@ -174,6 +174,85 @@ public final class CommitParserUtil {
     }
     
     /**
+     * Header: {@code <type>[(<scope>)][!]: <description>}, case-insensitive type per
+     * {@link CommitType} (existing tooling constraint; spec §1/§14 permits any noun).
+     * Scope must be non-empty word chars or hyphens. Description must be non-empty.
+     */
+    private static final Pattern HEADER_PATTERN = Pattern.compile(
+            "^(?:" + Arrays.stream(CommitType.values()).map(CommitType::getPrefix).collect(joining("|"))
+            + ")(?:\\(([\\w-]+)\\))?(!)?: .+$",
+            Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Footer git-trailer token. Per spec §8–§9: token uses {@code -} in place of whitespace,
+     * separator is {@code ": "} or {@code " #"}; {@code BREAKING CHANGE} and {@code BREAKING-CHANGE}
+     * are permitted tokens (spec §9, §16).
+     */
+    private static final Pattern TRAILER_PATTERN = Pattern.compile(
+            "^(?:BREAKING CHANGE|BREAKING-CHANGE|[\\w-]+)(?:: | #).+$");
+
+    /**
+     * Non-throwing check for Conventional Commits v1.0.0 conformance
+     * (<a href="https://www.conventionalcommits.org/en/v1.0.0/#specification">spec</a>).
+     *
+     * <p>Validates structure directly rather than by invoking the throwing parser:</p>
+     * <ul>
+     *   <li>§1 header: {@code <type>[(<scope>)][!]: <description>}</li>
+     *   <li>§6 body starts one blank line after the description</li>
+     *   <li>§8 footer (if present) starts one blank line after the body; every footer line
+     *       must be a git trailer</li>
+     *   <li>§9 footer tokens are word tokens with {@code -} for whitespace, plus
+     *       {@code BREAKING CHANGE}/{@code BREAKING-CHANGE}</li>
+     * </ul>
+     *
+     * <p>Note: the type must be one of {@link CommitType}. Spec §14 permits arbitrary noun types,
+     * but the rest of this library is keyed off that enum, so the validator is scoped to match.</p>
+     *
+     * @param rawCommitMessage raw commit message to validate; may be null
+     * @return true if the message meets the Conventional Commit specification, false otherwise
+     */
+    public static boolean isConventionalCommit(String rawCommitMessage) {
+        if (StringUtils.isBlank(rawCommitMessage)) return false;
+
+        String[] lines = rawCommitMessage.split(LINE_SEPARATOR_REGEX, -1);
+
+        if (!HEADER_PATTERN.matcher(lines[0]).matches()) return false;
+
+        // Trim trailing blank lines so a single trailing newline doesn't invalidate the message.
+        int end = lines.length;
+        while (end > 1 && lines[end - 1].isEmpty()) end--;
+
+        // Header-only is valid.
+        if (end == 1) return true;
+
+        // §6: body/footer must be preceded by a blank line separating from the header.
+        if (!lines[1].isEmpty()) return false;
+
+        // Header + blank with nothing else is malformed (two-line commit — §6 implies body follows).
+        if (end == 2) return false;
+
+        // Walk remaining lines. Everything before the (optional) footer is free-form body.
+        // Footer starts at the first trailer line that is preceded by a blank line.
+        boolean inFooter = false;
+        String previousLine = lines[1]; // blank
+        for (int i = 2; i < end; i++) {
+            String line = lines[i];
+            boolean isTrailer = TRAILER_PATTERN.matcher(line).matches();
+            if (!inFooter) {
+                if (isTrailer && previousLine.isEmpty()) {
+                    inFooter = true;
+                }
+                // otherwise body content — free-form, always accepted
+            } else {
+                // §8: once in the footer, each line must be a trailer (blank lines ignored).
+                if (!line.isEmpty() && !isTrailer) return false;
+            }
+            previousLine = line;
+        }
+        return true;
+    }
+
+    /**
      * WIP do not use this method. Use parseRawCommit(String rawCommitMessage) instead.
      * This is not guaranteed to parse commits correctly at the moment.
      * 

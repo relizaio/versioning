@@ -1,6 +1,7 @@
 package io.reliza.changelog;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -16,6 +17,48 @@ import org.junit.jupiter.api.Test;
 
 class CommitParserUtilTest {
 	private static final String LS = System.lineSeparator();//"\n";
+
+	@Test
+	void testIsConventionalCommit_ValidSimpleHeader() {
+		assertTrue(CommitParserUtil.isConventionalCommit("fix: simple commit message"));
+	}
+
+	@Test
+	void testIsConventionalCommit_ValidWithScope() {
+		assertTrue(CommitParserUtil.isConventionalCommit("feat(parser): add new entry"));
+	}
+
+	@Test
+	void testIsConventionalCommit_ValidBreakingChange() {
+		assertTrue(CommitParserUtil.isConventionalCommit("feat!: drop Node 12 support"));
+	}
+
+	@Test
+	void testIsConventionalCommit_InvalidNoType() {
+		assertFalse(CommitParserUtil.isConventionalCommit("just a plain message"));
+	}
+
+	@Test
+	void testIsConventionalCommit_InvalidUnknownType() {
+		assertFalse(CommitParserUtil.isConventionalCommit("bogus: not a real type"));
+	}
+
+	@Test
+	void testIsConventionalCommit_NullInput() {
+		assertFalse(CommitParserUtil.isConventionalCommit(null));
+	}
+
+	@Test
+	void testIsConventionalCommit_BlankInput() {
+		assertFalse(CommitParserUtil.isConventionalCommit("   "));
+	}
+
+	@Test
+	void testIsConventionalCommit_InvalidMissingBlankLineBeforeBody() {
+		// Conventional commit requires a blank line between header and body.
+		String rawCommit = "fix: header" + LS + "body line without blank separator" + LS + "another line";
+		assertFalse(CommitParserUtil.isConventionalCommit(rawCommit));
+	}
 
 	@Test
 	@Disabled

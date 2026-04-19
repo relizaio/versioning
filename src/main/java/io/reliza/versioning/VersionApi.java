@@ -314,6 +314,20 @@ public class VersionApi {
 		ActionEnum actionToTake = VersionApi.getActionFromConventionalCommit(parsedCommit);
 		return actionToTake;
 	}
+
+	/**
+	 * Non-throwing check for whether a raw commit message conforms to the
+	 * Conventional Commit specification.
+	 *
+	 * <p>Use this to validate a commit message before calling throwing APIs such as
+	 * {@link #getActionFromRawCommit(String)} or {@link CommitParserUtil#parseRawCommit(String)}.</p>
+	 *
+	 * @param rawCommit raw commit message to validate; may be null
+	 * @return true if the commit message meets the Conventional Commit specification, false otherwise
+	 */
+	public static boolean isConventionalCommit(String rawCommit) {
+		return CommitParserUtil.isConventionalCommit(rawCommit);
+	}
 	
 	/**
 	 * This method applies a version bump on the given version object, corresponding to the
