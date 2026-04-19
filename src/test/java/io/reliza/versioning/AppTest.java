@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.reliza.versioning.Version.ModifierPolicy;
 import io.reliza.versioning.Version.VersionHelper;
 import io.reliza.versioning.Version.VersionStringComparator;
 import io.reliza.versioning.VersionApi.ActionEnum;
@@ -1570,5 +1571,67 @@ public class AppTest
 		Version v = Version.getVersionFromPinAndOldVersion(schema, pin, oldVersion, ActionEnum.BUMP, null);
 		// Since all 4 components are pinned, modifier should be bumped
 		assertEquals("0.0.5.7-1", v.constructVersionString());
+	}
+
+	@Test
+	public void testModifierPolicyInheritIsDefault() {
+		// Existing 5-arg overload must preserve current behavior: null namespace → INHERIT.
+		String v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0-foo", ActionEnum.BUMP, null).constructVersionString();
+		assertEquals("0.1.1-foo", v);
+	}
+
+	@Test
+	public void testModifierPolicyClearDropsInheritedModifierOnSemver() {
+		// "semver" schema expands to Major.Minor.Patch-Modifier?+Metadata? — the modifier slot
+		// is present but optional. Without CLEAR, "0.1.0-foo" → "0.1.1-foo". With CLEAR, modifier is dropped.
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0-foo", ActionEnum.BUMP, null, ModifierPolicy.CLEAR);
+		assertNull(v.getModifier());
+		assertEquals("0.1.1", v.constructVersionString());
+	}
+
+	@Test
+	public void testModifierPolicyClearDropsInheritedMetadataOnSemver() {
+		// Metadata should also be dropped under CLEAR.
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0+build42", ActionEnum.BUMP, null, ModifierPolicy.CLEAR);
+		assertEquals("0.1.1", v.constructVersionString());
+	}
+
+	@Test
+	public void testModifierPolicyInheritKeepsModifierAndMetadata() {
+		// Explicit INHERIT mirrors default behavior when namespace is null.
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0-foo+build42", ActionEnum.BUMP, null, ModifierPolicy.INHERIT);
+		assertEquals("foo", v.getModifier());
+		assertEquals("build42", v.getMetadata());
+	}
+
+	@Test
+	public void testModifierPolicyUseNamespaceSetsModifierFromNamespace() {
+		// When namespace is supplied, modifier is derived from namespace (existing behavior).
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0", ActionEnum.BUMP, "alpha", ModifierPolicy.USE_NAMESPACE);
+		assertEquals("alpha", v.getModifier());
+	}
+
+	@Test
+	public void testModifierPolicyClearOverridesPinModifier() {
+		// Pin supplies a literal modifier "rc". Under CLEAR, it should still be nulled
+		// by the post-pass after handleCalverOnSemverUpdates.
+		String schema = "Major.Minor.Patch-Modifier";
+		String pin = "Major.Minor.Patch-rc";
+		Version v = Version.getVersionFromPinAndOldVersion(
+				schema, pin, "0.1.0-rc", ActionEnum.BUMP, null, ModifierPolicy.CLEAR);
+		assertNull(v.getModifier());
+	}
+
+	@Test
+	public void testModifierPolicyClearNoOldVersionStillBumps() {
+		// CLEAR with no old version should behave like a normal pin-driven build.
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", null, ActionEnum.BUMP, null, ModifierPolicy.CLEAR);
+		assertNull(v.getModifier());
 	}
 }
