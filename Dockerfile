@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-community:25.0.1@sha256:30bb7c24b18a4f1af194d3858847b16e97ab616ef40f19d552f116a834874aeb AS builder
+FROM ghcr.io/graalvm/graalvm-community:25.0.2@sha256:7eeb80438dcda5edfcc58e804ce919018d2bf40ef61ddbb555936a8ba2a216aa AS builder
 
 WORKDIR /app
 COPY . /app
@@ -6,7 +6,7 @@ COPY . /app
 RUN ./gradlew nativeTest
 RUN ./gradlew nativeCompile
 
-FROM gcr.io/distroless/base-debian13:nonroot@sha256:c0d0c9c854a635e57be1d6635e066b076de3b217c7b971b213cea2e5641cc3a0 AS runner
+FROM gcr.io/distroless/base-debian13:nonroot@sha256:fb282f8ed3057f71dbfe3ea0f5fa7e961415dafe4761c23948a9d4628c6166fe AS runner
 
 ARG CI_ENV=noci
 ARG GIT_COMMIT=git_commit_undefined
