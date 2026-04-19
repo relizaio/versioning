@@ -25,8 +25,23 @@ import io.reliza.versioning.VersionElement.ParsedVersionElement;
  * class Version
  */
 public class Version implements Comparable<Version> {
-	
+
 	public static record VersionComponent (ParsedVersionElement pve, String representation) {}
+
+	/**
+	 * Controls how the modifier (and metadata) of the new version are derived
+	 * when an oldVersionString is supplied.
+	 *
+	 * <ul>
+	 *   <li>{@link #INHERIT} — carry forward the old version's modifier/metadata,
+	 *       but only when the schema actually has the corresponding slot.</li>
+	 *   <li>{@link #CLEAR} — do not carry forward modifier/metadata from the old
+	 *       version; also blank any modifier that was only introduced via the pin-parsing pass.</li>
+	 *   <li>{@link #USE_NAMESPACE} — defer to the namespace-driven logic in
+	 *       handleCalverOnSemverUpdates; modifier is set to namespace (or namespace + N on conflict bumps).</li>
+	 * </ul>
+	 */
+	public enum ModifierPolicy { INHERIT, CLEAR, USE_NAMESPACE }
 	
 	/**
 	 * 
@@ -832,13 +847,21 @@ public class Version implements Comparable<Version> {
 	 * @param oldVersionString
 	 * @param schema
 	 */
-	private static void populateNewVersionFromOldVersion (Version v, String oldVersionString, String schema) {
-		Optional<VersionHelper> ovh = Optional.empty();
-		if (StringUtils.isNotEmpty(oldVersionString)) {
-		    ovh = VersionUtils.parseVersion(oldVersionString, schema, false);
+	private static void populateNewVersionFromOldVersion (Version v, String oldVersionString, String schema, ModifierPolicy policy) {
+		if (StringUtils.isEmpty(oldVersionString)) return;
+		Optional<VersionHelper> ovh = VersionUtils.parseVersion(oldVersionString, schema, false);
+		if (ovh.isEmpty()) return;
+		v.isSnapshot = ovh.get().isSnapshot();
+		if (policy == ModifierPolicy.CLEAR) return;
+
+		Set<VersionElement> schemaEls = VersionUtils.parseSchema(schema).stream()
+				.map(ParsedVersionElement::ve).collect(Collectors.toSet());
+		if (schemaEls.contains(VersionElement.SEMVER_MODIFIER)
+				|| schemaEls.contains(VersionElement.CALVER_MODIFIER)) {
 			v.modifier = ovh.get().getModifier();
+		}
+		if (schemaEls.contains(VersionElement.METADATA)) {
 			v.metadata = ovh.get().getMetadata();
-			v.isSnapshot = ovh.get().isSnapshot();
 		}
 	}
 
@@ -948,19 +971,6 @@ public class Version implements Comparable<Version> {
 		default:
 			break;
 		}
-	}
-
-	/** This method checks if we had any updated calver components on the new version - and if yes, resets semver components to 0.
-	 *  It also normalizes years, months and days for comparison.
-	 * @param v
-	 * @param elsProtectedByPin
-	 * @param ae
-	 * @param oldV
-	 * @param schemaVeList
-	 */
-	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
-		ActionEnum ae, Version oldV, List<VersionElement> schemaVeList) {
-		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList, null);
 	}
 
 	private static void handleCalverOnSemverUpdates (Version v, Set<VersionElement> elsProtectedByPin,
@@ -1087,6 +1097,29 @@ public class Version implements Comparable<Version> {
 	 * @return Version object which represents product of schema if pin if old version is not present, or otherwise simply bump relative to old version
 	 */
 	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae, String namespace) {
+		ModifierPolicy policy = StringUtils.isNotEmpty(namespace)
+				? ModifierPolicy.USE_NAMESPACE
+				: ModifierPolicy.INHERIT;
+		return getVersionFromPinAndOldVersion(schema, pin, oldVersionString, ae, namespace, policy);
+	}
+
+	/**
+	 * Overload that accepts an explicit {@link ModifierPolicy}, giving callers control
+	 * over how modifier/metadata are derived from the old version.
+	 *
+	 * <p>Use {@link ModifierPolicy#CLEAR} to ensure that any modifier carried by the
+	 * old version string is not inherited by the new version, even when the schema
+	 * has an optional modifier slot (e.g. {@code Major.Minor.Patch-Modifier?}).</p>
+	 *
+	 * @param schema String, required
+	 * @param pin String, required
+	 * @param oldVersionString String, optional
+	 * @param ae ActionEnum
+	 * @param namespace String, optional — see {@link #getVersionFromPinAndOldVersion(String, String, String, ActionEnum, String)}
+	 * @param policy modifier handling policy; must not be null
+	 * @return Version object
+	 */
+	public static Version getVersionFromPinAndOldVersion (String schema, String pin, String oldVersionString, ActionEnum ae, String namespace, ModifierPolicy policy) {
 		validateGetVersionFromPinAndOldVersionInput(schema, pin, oldVersionString);
 		Version v = new Version();
 		v.schema = schema;
@@ -1103,7 +1136,7 @@ public class Version implements Comparable<Version> {
 		if (ovtpin.isPresent()) pin = ovtpin.get().getSchema();
 
 		initializeVersionElements(v, oldV, ae);
-		populateNewVersionFromOldVersion(v, oldVersionString, schema);
+		populateNewVersionFromOldVersion(v, oldVersionString, schema, policy);
 
 		// Parse pin to make sure we can do bump actions properly
 		Optional<VersionHelper> ovh = VersionUtils.parseVersion(pin, schema, true);
@@ -1133,6 +1166,10 @@ public class Version implements Comparable<Version> {
 		}
 
 		handleCalverOnSemverUpdates(v, elsProtectedByPin, ae, oldV, schemaVeList, namespace);
+
+		if (policy == ModifierPolicy.CLEAR) {
+			v.modifier = null;
+		}
 
 		return v;
 	}
