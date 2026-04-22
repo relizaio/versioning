@@ -194,7 +194,16 @@ public class VersionUtils {
 	 * @return VersionHelper
 	 */
 	public static Optional<VersionHelper> parseVersion (String version, String schema, boolean isPin) {
-		boolean handleBranchInVersion = (StringUtils.isNotEmpty(schema) && schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase())) || (StringUtils.isNotEmpty(version) && version.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase()));
+		// Capture the original schema's elements before any stripping below, so we can later
+		// reject versions/pins that carry a modifier or metadata the schema has no slot for.
+		Set<VersionElement> origSchemaEls = StringUtils.isEmpty(schema)
+				? java.util.Collections.emptySet()
+				: parseSchema(schema).stream().map(ParsedVersionElement::ve).collect(Collectors.toSet());
+		// Only the schema dictates whether a branch element exists. Inspecting the version
+		// string for the substring "branch" produced false positives when a user's modifier
+		// or metadata happened to contain that word (e.g. "0.0.0-my-weird-branch-name").
+		boolean handleBranchInVersion = StringUtils.isNotEmpty(schema)
+				&& schema.toLowerCase().contains(VersionElement.BRANCH.name().toLowerCase());
 		boolean dashInSchemaAfterBranch = handleBranchInVersion && StringUtils.isNotEmpty(schema) && schema.contains("-") 
 			&& schema.indexOf("-") > schema.toLowerCase().indexOf(VersionElement.BRANCH.name().toLowerCase());
 		// check special case for Maven-style Snapshot
@@ -269,6 +278,20 @@ public class VersionUtils {
 
 		String modifier = (null == dashel) ? null : dashel[1];
 		String metadata = (null == plusel) ? null : plusel[1];
+
+		// Reject versions that carry a modifier/metadata segment when the schema has no
+		// corresponding slot — otherwise trailing "-Branch" or "+build" silently becomes
+		// a modifier/metadata on a schema like "YY.0M.Micro" that doesn't allow one.
+		if (modifier != null
+				&& !origSchemaEls.contains(VersionElement.SEMVER_MODIFIER)
+				&& !origSchemaEls.contains(VersionElement.CALVER_MODIFIER)
+				&& !origSchemaEls.contains(VersionElement.BRANCH)) {
+			return Optional.empty();
+		}
+		if (metadata != null && !origSchemaEls.contains(VersionElement.METADATA)) {
+			return Optional.empty();
+		}
+
 		ovh = Optional.of(new VersionHelper(versionComponents, modifier, metadata, isSnapshot));
 
 		return ovh;

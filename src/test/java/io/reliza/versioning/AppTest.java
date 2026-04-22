@@ -1628,6 +1628,78 @@ public class AppTest
 	}
 
 	@Test
+	void testParseVersion_SemverModifierWithHyphens() {
+		// Pure-semver schema with multiple dashes in modifier. Parser should split on the first dash
+		// and treat everything after as the modifier (preserving internal hyphens).
+		String schema = "Major.Minor.Patch-Modifier";
+		String version = "0.0.0-feat-x-y";
+		VersionHelper vh = VersionUtils.parseVersion(version, schema, false).get();
+		assertEquals("feat-x-y", vh.getModifier());
+		assertNull(vh.getMetadata());
+	}
+
+	@Test
+	void testParseVersion_SemverOptionalModifierWithHyphens() {
+		// Same case but with the standard optional-modifier schema alias.
+		VersionHelper vh = VersionUtils.parseVersion("0.0.0-feat-x-y", "semver", false).get();
+		assertEquals("feat-x-y", vh.getModifier());
+	}
+
+	@Test
+	void testParseVersion_SemverModifierWithHyphensAndMetadata() {
+		// Hyphenated modifier plus metadata — metadata is split on '+', modifier captures the rest.
+		VersionHelper vh = VersionUtils.parseVersion(
+				"1.2.3-alpha-beta-rc1+build-17-abcdef", "semver", false).get();
+		assertEquals("alpha-beta-rc1", vh.getModifier());
+		assertEquals("build-17-abcdef", vh.getMetadata());
+	}
+
+	@Test
+	void testConstructVersionString_RoundTripsHyphenatedModifier() {
+		// Ensure the parsed modifier survives a parse -> construct round-trip.
+		String original = "0.0.0-feat-x-y";
+		Version v = Version.getVersion(original, "semver");
+		assertEquals("feat-x-y", v.getModifier());
+		assertEquals(original, v.constructVersionString());
+	}
+
+	@Test
+	void testParseVersion_RejectsModifierWhenSchemaHasNoModifierSlot() {
+		// Schema "YY.0M.Micro" has no modifier/branch/metadata slot. Appending "-Branch"
+		// (or any trailing dashed segment) must NOT silently parse as a modifier.
+		assertTrue(VersionUtils.parseVersion("23.06.0-newbr", "YY.0M.Micro", false).isEmpty());
+		assertTrue(VersionUtils.parseVersion("23.06.0-newbr", "YY.0M.Micro", true).isEmpty());
+	}
+
+	@Test
+	void testParseVersion_RejectsMetadataWhenSchemaHasNoMetadataSlot() {
+		// Same invariant for metadata: "+build" trailing content must not parse when schema
+		// declares no metadata slot.
+		assertTrue(VersionUtils.parseVersion("23.06.0+build1", "YY.0M.Micro", false).isEmpty());
+	}
+
+	@Test
+	void testIsVersionMatchingSchema_SemverModifierContainingBranchSubstring() {
+		// Regression: the parser used to key off any occurrence of the substring "branch"
+		// in the version string to switch into branch-handling mode. A user modifier like
+		// "my-weird-branch-name" would then be parsed incorrectly and the version would
+		// fail to match the "semver" schema. Schema alone must drive branch handling.
+		assertTrue(VersionUtils.isVersionMatchingSchema("semver", "0.0.0-my-weird-branch-name"));
+		VersionHelper vh = VersionUtils.parseVersion("0.0.0-my-weird-branch-name", "semver", false).get();
+		assertEquals("my-weird-branch-name", vh.getModifier());
+	}
+
+	@Test
+	void testBumpWithHyphenatedModifierInOldVersion() {
+		// Bumping an old version with a hyphenated modifier should carry the full modifier forward
+		// under default INHERIT policy.
+		Version v = Version.getVersionFromPinAndOldVersion(
+				"semver", "semver", "0.1.0-feat-x-y", ActionEnum.BUMP, null);
+		assertEquals("0.1.1-feat-x-y", v.constructVersionString());
+		assertEquals("feat-x-y", v.getModifier());
+	}
+
+	@Test
 	public void testModifierPolicyClearNoOldVersionStillBumps() {
 		// CLEAR with no old version should behave like a normal pin-driven build.
 		Version v = Version.getVersionFromPinAndOldVersion(
