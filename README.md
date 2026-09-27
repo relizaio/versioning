@@ -157,6 +157,29 @@ gradle test --tests '*bumpCalverVersionWithPin3*' --info
 ## 4. Usage as Java Library
 Use methods exposed in the VersionApi class to create vresions. More documentation is coming soon.
 
+### 4.1. Comparing third-party package versions
+The `io.reliza.versioning.ecosystem` package orders versions of third-party packages using each package ecosystem's own rules, and checks versions against ranges such as a vulnerability's affected range. `Ecosystem.fromPurl` picks the rules from a package URL (purl):
+
+| Ecosystem | purl types | Rules |
+|---|---|---|
+| `SEMVER` | npm, cargo, golang, hex, pub, swift, cocoapods | Semantic Versioning 2.0.0 precedence; accepts a leading `v` and any number of numeric parts |
+| `NUGET` | nuget | `SEMVER` with case-insensitive pre-release labels |
+| `MAVEN` | maven | Apache Maven ComparableVersion |
+| `PYPI` | pypi | PEP 440 |
+| `DEBIAN` | deb | dpkg (epoch, upstream version, revision) |
+| `RPM` | rpm | rpmvercmp (epoch, version, release) |
+| `ALPINE` | apk | apk-tools |
+| `GENERIC` | everything else | Dependency-Track's ComponentVersion ordering |
+
+Every comparator except `MAVEN` totally orders all strings, including malformed versions, so it is safe to sort with. `MAVEN` reproduces Maven's ComparableVersion exactly, including its cycles on some unusual versions (`1.foo.2 < 1-rc < 1 < 1.foo.2`). Surrounding whitespace is ignored.
+
+```java
+Ecosystem ecosystem = Ecosystem.fromPurl("pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1");
+ecosystem.compare("2.14.1", "2.15.0"); // negative
+VersionRange affected = VersionRange.fromBounds("2.0-beta9", null, null, "2.15.0");
+affected.contains(ecosystem, "2.14.1"); // true
+```
+
 ## Authors
 
 This project is created and open-sourced by [Reliza](https://reliza.io)
@@ -168,3 +191,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 * This project currently uses Java, Maven, Apache Commons and JUnit.
+* Portions of the `io.reliza.versioning.ecosystem` package are derived from Apache Maven and Dependency-Track (Apache License 2.0); see [NOTICE](NOTICE).
