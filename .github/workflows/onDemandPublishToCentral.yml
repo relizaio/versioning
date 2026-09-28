@@ -8,32 +8,61 @@ jobs:
   update:
     name: Update
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       CENTRAL_USER: ${{ secrets.CENTRAL_USER }}
       CENTRAL_PASS: ${{ secrets.CENTRAL_PASS }}
       SIGN_PASS: ${{ secrets.SIGN_PASS }}
       SIGN_KEY: ${{ secrets.SIGN_KEY }}
-      RELIZA_API_ID: ${{ secrets.RELIZA_API_ID }}
-      RELIZA_API_KEY: ${{ secrets.RELIZA_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          fetch-depth: 50
+          fetch-depth: 0
       - name: Setup JDK
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           java-version: 21
           distribution: temurin
-      - name: Get version
+      - name: Setup rearm CLI
+        uses: relizaio/rearm-actions/setup-cli@042ecc05633174c505ffe30ced465bf6b62bff3b # 1.8.0
+      # The ReARM output trigger sends {"version": "<release version>"} as the
+      # client payload. Publish only if that is still the latest ready-to-ship
+      # release on main: a newer approval between the trigger firing and this
+      # run starting would otherwise republish a superseded version.
+      - name: Resolve and verify approved release from ReARM
+        env:
+          REARM_API_ID: ${{ secrets.REARM_API_ID }}
+          REARM_API_KEY: ${{ secrets.REARM_API_KEY }}
+          PAYLOAD_VER: ${{ github.event.client_payload.version }}
         run: |
-          latest_rlz=$(docker run --rm relizaio/reliza-cli getlatestrelease -k ${{ secrets.RELIZA_API_KEY }} -i ${{ secrets.RELIZA_API_ID }} -b master --env PRODUCTION)
-          reliza_ver=$(echo $latest_rlz | jq -r ".version")
-          approved_commit=$(echo $latest_rlz | jq -r ".sourceCodeEntryDetails.commit")
-          echo $reliza_ver
-          echo $approved_commit
-          echo "RLZ_FULL_VER=$reliza_ver" >> $GITHUB_ENV
-          git checkout $approved_commit
+          set -euo pipefail
+          if [ -z "${PAYLOAD_VER:-}" ]; then
+            echo "::error::client_payload.version missing: the ReARM trigger's client payload must be {\"version\": \"\$releaseversion\"}"
+            exit 1
+          fi
+          latest=$(rearm getlatestrelease \
+            -i "$REARM_API_ID" -k "$REARM_API_KEY" \
+            -u https://reliza.rearmhq.com \
+            --branch main \
+            --lifecycle READY_TO_SHIP \
+            --vcsuri "github.com/${{ github.repository }}")
+          approved_ver=$(echo "$latest" | jq -r '.version')
+          approved_commit=$(echo "$latest" | jq -r '.sourceCodeEntryDetails.commit')
+          echo "ReARM approved: version=$approved_ver commit=$approved_commit"
+          if [ "$approved_ver" != "$PAYLOAD_VER" ]; then
+            echo "::error::trigger payload version '$PAYLOAD_VER' is not the latest ready-to-ship version '$approved_ver' on main; not publishing a superseded release"
+            exit 1
+          fi
+          if [ -z "$approved_commit" ] || [ "$approved_commit" = "null" ]; then
+            echo "::error::approved release $approved_ver has no recorded source commit"
+            exit 1
+          fi
+          echo "RLZ_FULL_VER=$approved_ver" >> "$GITHUB_ENV"
+          echo "APPROVED_COMMIT=$approved_commit" >> "$GITHUB_ENV"
+      - name: Checkout the approved commit
+        run: git checkout "$APPROVED_COMMIT"
       - name: Set build.gradle version
         run: gradle changeVersion -PnewVersion="${RLZ_FULL_VER}"
       - name: Run tests

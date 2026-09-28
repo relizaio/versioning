@@ -1,22 +1,25 @@
 on: [push]
 
-name: Build Docker Image And Submit Metadata To Reliza Hub
+name: Build Docker Image And Submit Metadata To ReARM
 
 jobs:
   build:
+    permissions:
+      contents: read
+      id-token: write
     name: Build And Push
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAMESPACE: ${{ secrets.IMAGE_NAMESPACE }}
-      IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
     steps:
-      - name: RelizaHub Build And Submit Release metadata action
-        uses: relizaio/reliza-docker-action@a8ba201f314e111885f1ec036e8eeabcb02739be # v3.14
+      - name: ReARM Build And Submit
+        uses: relizaio/rearm-docker-action@8c011b4568c9a96d74e00402280af7a619ea4e1c # v1.14.0
         with:
           registry_username: ${{ secrets.DOCKER_LOGIN }}
           registry_password: ${{ secrets.DOCKER_TOKEN }}
-          image_namespace: $IMAGE_NAMESPACE
-          image_name: $IMAGE_NAME
-          reliza_api_id: ${{ secrets.RELIZA_API_ID }}
-          reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
-      
+          image_namespace: ${{ secrets.IMAGE_NAMESPACE }}
+          image_name: ${{ secrets.IMAGE_NAME }}
+          rearm_api_id: ${{ secrets.REARM_API_ID }}
+          rearm_api_key: ${{ secrets.REARM_API_KEY }}
+          rearm_api_url: https://reliza.rearmhq.com
+          enable_sbom: true
+          source_code_sbom_type: other
+          enable_public_cosign_sigstore: true
