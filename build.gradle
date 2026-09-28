@@ -64,6 +64,13 @@ jar {
 	}
 }
 
+tasks.withType(Jar).configureEach {
+	from(rootDir) {
+		include 'LICENSE', 'NOTICE', 'licenses/**'
+		into 'META-INF'
+	}
+}
+
 test {
   useJUnitPlatform()
 }
