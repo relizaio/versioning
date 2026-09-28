@@ -79,6 +79,16 @@ final class Pep440Comparator implements Comparator<String> {
 		return c;
 	}
 
+	/**
+	 * Checks for a valid PEP 440 version, as matched by the Appendix B pattern, without the
+	 * fallback reading of other strings.
+	 * @param version version, not null
+	 * @return true when the version is valid PEP 440
+	 */
+	static boolean isValid(String version) {
+		return PEP440.matcher(version).matches();
+	}
+
 	private static Parsed parse(String version) {
 		Parsed strict = parseStrict(version);
 		return strict != null ? strict : parseLenient(version);

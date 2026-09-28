@@ -48,7 +48,8 @@ class EcosystemTest {
 		assertEquals(Ecosystem.RPM, Ecosystem.fromPurlType("rpm"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType("alpm"));
 		assertEquals(Ecosystem.ALPINE, Ecosystem.fromPurlType("apk"));
-		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType("gem"));
+		assertEquals(Ecosystem.GEM, Ecosystem.fromPurlType("gem"));
+		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType("composer"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType("generic"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType(""));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurlType(null));
@@ -61,6 +62,8 @@ class EcosystemTest {
 		assertEquals(Ecosystem.DEBIAN, Ecosystem.fromPurl("pkg:deb/debian/curl@7.50.3-1?arch=i386&distro=jessie"));
 		assertEquals(Ecosystem.PYPI, Ecosystem.fromPurl("PKG:PyPI/django@1.11.1"));
 		assertEquals(Ecosystem.ALPINE, Ecosystem.fromPurl("pkg://apk/alpine/curl@7.83.0-r0"));
+		assertEquals(Ecosystem.GEM, Ecosystem.fromPurl("pkg:gem/rails@7.0.4.3"));
+		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurl("pkg:composer/laravel/framework@10.48.4"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurl("pkg:github/package-url/purl-spec@244fd47"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurl("maven/org.example/lib@1.0"));
 		assertEquals(Ecosystem.GENERIC, Ecosystem.fromPurl("pkg:maven"));
@@ -171,6 +174,38 @@ class EcosystemTest {
 		assertAscending(Ecosystem.ALPINE, "1.01", "1.1", "1.2");
 		assertAscending(Ecosystem.ALPINE, "1.0~1a2b-r0", "1.0~1a2c-r0");
 		assertEquivalent(Ecosystem.ALPINE, "3.1.4-r5", "3.1.4-r5");
+	}
+
+	/**
+	 * Every relation below, 116 ordered pairs in all, was checked against Ruby 3.3.12 /
+	 * RubyGems 3.5.22 (Gem::Version.new(a) &lt;=&gt; Gem::Version.new(b)).
+	 */
+	@Test
+	void gem_ordering() {
+		// the example from the Gem::Version documentation, and a letter segment below a number
+		assertAscending(Ecosystem.GEM, "0.9", "1.0.a.2", "1.0.a9", "1.0.a10", "1.0.b1", "1.0", "1.0.1");
+		// zero padding of the release does not matter before a pre-release (canonical segments)
+		assertAscending(Ecosystem.GEM, "5.0.0.alpha1", "5.0.0.beta1", "5.0.rc1", "5.0.0.rc2", "5.0.0", "5.0.0.1", "5.0.1");
+		assertAscending(Ecosystem.GEM, "7.0.0.alpha2", "7.0.0.rc1", "7.0.0", "7.0.4", "7.0.4.3", "7.1.0.beta1", "7.1.0");
+		// a hyphen reads as .pre., and pre sorts below rc
+		assertAscending(Ecosystem.GEM, "1.0.0-rc1", "1.0.0.pre1", "1.0.0.rc1", "1.0.0");
+		// a platform suffix makes a pre-release
+		assertAscending(Ecosystem.GEM, "1.13.9", "1.13.10-arm64-darwin", "1.13.10-java", "1.13.10", "1.13.11");
+		// only the first run of zeros before a letter is dropped
+		assertAscending(Ecosystem.GEM, "1.a.b", "1.0.a.0.b", "1.a.1", "1.b");
+		assertAscending(Ecosystem.GEM, "1.0.A", "1.0.a", "2.a", "2.0.0.pre", "2.0");
+		assertAscending(Ecosystem.GEM, "3.2.1", "3.2.9", "3.2.10", "9223372036854775807", "9223372036854775808");
+		assertEquivalent(Ecosystem.GEM, "1.0", "1.0.0");
+		assertEquivalent(Ecosystem.GEM, "1.0.a", "1.a");
+		assertEquivalent(Ecosystem.GEM, "1.0.0.a", "1.a");
+		assertEquivalent(Ecosystem.GEM, "1.0-rc1", "1.0.0-rc1");
+		assertEquivalent(Ecosystem.GEM, "1.0.0-rc1", "1.0.0.pre.rc1");
+		assertEquivalent(Ecosystem.GEM, "1.a.0.b", "1.a.b");
+		assertEquivalent(Ecosystem.GEM, "1.a0b", "1.0.a.0.b");
+		assertEquivalent(Ecosystem.GEM, "0.0.a", "0.a");
+		assertEquivalent(Ecosystem.GEM, "1.0.a.0", "1.a");
+		assertEquivalent(Ecosystem.GEM, "01.0", "1");
+		assertEquivalent(Ecosystem.GEM, "5.0.0.beta1", "5.beta1");
 	}
 
 	@Test

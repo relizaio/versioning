@@ -169,6 +169,7 @@ The `io.reliza.versioning.ecosystem` package orders versions of third-party pack
 | `DEBIAN` | deb | dpkg (epoch, upstream version, revision) |
 | `RPM` | rpm | rpmvercmp (epoch, version, release) |
 | `ALPINE` | apk | apk-tools |
+| `GEM` | gem | RubyGems `Gem::Version`, including its canonical segments (`1.0.a` equals `1.a`) |
 | `GENERIC` | everything else | Dependency-Track's ComponentVersion ordering |
 
 Every comparator except `MAVEN` totally orders all strings, including malformed versions, so it is safe to sort with. `MAVEN` reproduces Maven's ComparableVersion exactly, including its cycles on some unusual versions (`1.foo.2 < 1-rc < 1 < 1.foo.2`). Surrounding whitespace is ignored.
@@ -179,6 +180,23 @@ ecosystem.compare("2.14.1", "2.15.0"); // negative
 VersionRange affected = VersionRange.fromBounds("2.0-beta9", null, null, "2.15.0");
 affected.contains(ecosystem, "2.14.1"); // true
 ```
+
+Because the comparators order any string, they also place strings that are not versions of the ecosystem at all, such as `latest`, somewhere in the order. Where a wrong answer is worse than no answer, use the strict layer instead:
+
+- `Ecosystem.canParse(version)` tells whether a string is a well-formed version of the ecosystem (for example SemVer 2.0.0 with an optional leading `v` for `SEMVER`, PEP 440 for `PYPI`, the `Gem::Version` pattern for `GEM`). It never throws and is false for null or blank input.
+- `EcosystemVersions.compare(ecosystem, a, b)` returns `Optional<Integer>` (-1, 0 or 1), empty when either version is not parseable.
+- `EcosystemVersions.inRange(ecosystem, version, range)` returns a `RangeMembership`: `IN_RANGE`, `OUT_OF_RANGE`, or `UNKNOWN` when the version or any bound of the range is not parseable. The caller decides what `UNKNOWN` means.
+
+```java
+Ecosystem npm = Ecosystem.fromPurl("pkg:npm/handlebars@4.0.5");
+VersionRange affected = VersionRange.fromBounds(null, null, null, "4.7.7");
+EcosystemVersions.inRange(npm, "4.0.5", affected);   // IN_RANGE
+EcosystemVersions.inRange(npm, "latest", affected);  // UNKNOWN (affected.contains would say true)
+EcosystemVersions.compare(npm, "4.0.5", "4.7.7");    // Optional[-1]
+EcosystemVersions.compare(npm, "4.0.5", "latest");   // Optional.empty
+```
+
+`VersionRange.fromBounds` and `VersionRange.exact` throw `IllegalArgumentException` on conflicting or blank bounds, so catch it when building ranges from external data.
 
 ## Authors
 

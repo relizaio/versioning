@@ -64,6 +64,17 @@ final class ApkComparator implements Comparator<String> {
 		return c;
 	}
 
+	/**
+	 * Checks that the whole string is a version in the format described on the class, that is
+	 * it starts with a digit and nothing is left over after the well-formed part.
+	 * @param version version, not null
+	 * @return true when the version is well formed
+	 */
+	static boolean isValid(String version) {
+		Parsed p = Parsed.parse(version);
+		return !p.numbers().isEmpty() && p.rest().isEmpty();
+	}
+
 	private static int compareNumbers(List<String> a, List<String> b) {
 		if (a.isEmpty()) return 0;
 		int c = NumericStrings.compare(a.get(0), b.get(0));
