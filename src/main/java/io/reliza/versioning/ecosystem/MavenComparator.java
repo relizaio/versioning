@@ -1,13 +1,15 @@
 /**
-* Copyright 2026 Reliza Incorporated. Licensed under MIT License.
-* https://reliza.io
-*
-* Parsing and ordering rules ported from Apache Maven's
-* org.apache.maven.artifact.versioning.ComparableVersion (maven-artifact 3.9.16):
+* This file is a derivative of Apache Maven's
+* org.apache.maven.artifact.versioning.ComparableVersion (maven-artifact 3.9.16) and is
+* distributed under the Apache License, Version 2.0, unlike the rest of this project, which is
+* MIT licensed (see NOTICE).
 *
 *   Apache Maven. Copyright The Apache Software Foundation.
 *   This product includes software developed at The Apache Software Foundation
 *   (http://www.apache.org/).
+*
+*   Modifications Copyright 2026 Reliza Incorporated (https://reliza.io).
+*
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
 *   You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0

@@ -206,7 +206,9 @@ This project is created and open-sourced by [Reliza](https://reliza.io)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
+Two files, `MavenComparator` and `GenericComparator` in the `io.reliza.versioning.ecosystem` package, are derived from Apache-2.0 code and are distributed under the Apache License 2.0 instead; see [NOTICE](NOTICE) and [licenses/APACHE-LICENSE-2.0.txt](licenses/APACHE-LICENSE-2.0.txt).
+
 ## Acknowledgments
 
 * This project currently uses Java, Maven, Apache Commons and JUnit.
-* Portions of the `io.reliza.versioning.ecosystem` package are derived from Apache Maven and Dependency-Track (Apache License 2.0); see [NOTICE](NOTICE).
+* The Maven and generic version orderings are derived from Apache Maven's ComparableVersion and Dependency-Track's ComponentVersion (see License above).

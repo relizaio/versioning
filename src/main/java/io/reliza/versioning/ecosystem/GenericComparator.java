@@ -1,12 +1,13 @@
 /**
-* Copyright 2026 Reliza Incorporated. Licensed under MIT License.
-* https://reliza.io
-*
-* Parsing and ordering rules ported from Dependency-Track's
-* org.dependencytrack.util.ComponentVersion (Dependency-Track 4.13.2), which was itself ported
-* from DependencyVersion in OWASP Dependency-Check 5.2.1 (author Jeremy Long):
+* This file is a derivative of Dependency-Track's org.dependencytrack.util.ComponentVersion
+* (Dependency-Track 4.13.2), itself ported from DependencyVersion in OWASP Dependency-Check
+* 5.2.1 (author Jeremy Long), and is distributed under the Apache License, Version 2.0, unlike
+* the rest of this project, which is MIT licensed (see NOTICE).
 *
 *   Copyright (c) OWASP Foundation. All Rights Reserved.
+*
+*   Modifications Copyright 2026 Reliza Incorporated (https://reliza.io).
+*
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
 *   You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
